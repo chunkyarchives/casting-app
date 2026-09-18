@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="CastingApp.Api/CastingApp.Api.csproj" />
+  <Project Path="CastingApp.Application/CastingApp.Application.csproj" />
+  <Project Path="CastingApp.Domain/CastingApp.Domain.csproj" />
+  <Project Path="CastingApp.Infrastructure/CastingApp.Infrastructure.csproj" />
+</Solution>
