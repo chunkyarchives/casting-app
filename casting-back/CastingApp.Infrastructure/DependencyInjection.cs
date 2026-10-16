@@ -1,10 +1,12 @@
+using CastingApp.Application.Abstractions;
+using CastingApp.Domain.Entities;
+using CastingApp.Infrastructure.Auth;
 using CastingApp.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
-using CastingApp.Domain.Entities;
-using CastingApp.Application.Abstractions;
+using System.Text;
 
 namespace CastingApp.Infrastructure;
 
@@ -29,6 +31,22 @@ public static class DependencyInjection
         .AddEntityFrameworkStores<AppDbContext>();
 
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
+
+        var jwt = new JwtOptions
+        {
+            Key = config["Jwt:Key"] ?? string.Empty,
+            Issuer = config["Jwt:Issuer"] ?? "CastingApp",
+            Audience = config["Jwt:Audience"] ?? "CastingApp",
+            ExpiresMinutes = int.TryParse(config["Jwt:ExpiresMinutes"], out var minutes) ? minutes : 120
+        };
+
+        if (Encoding.UTF8.GetByteCount(jwt.Key) < 32)
+            throw new InvalidOperationException(
+                "Jwt:Key is missing or shorter than 32 bytes. Set it with: dotnet user-secrets set \"Jwt:Key\" \"<random value>\" --project CastingApp.Api");
+
+        services.AddSingleton(jwt);
+        services.AddSingleton<IJwtTokenService, JwtTokenService>();
+
         return services;
     }
 }

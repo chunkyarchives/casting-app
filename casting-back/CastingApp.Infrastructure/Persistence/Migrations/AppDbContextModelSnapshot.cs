@@ -464,6 +464,10 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("phone_number_confirmed");
 
+                    b.Property<DateTime?>("ProfileCompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("profile_completed_at");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasMaxLength(20)

@@ -10,7 +10,7 @@ import { useCurrentParticipant } from '../useCurrentParticipant'
 export function SignInForm() {
   const { control, handleSubmit } = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
-    defaultValues: { username: '', password: '' },
+    defaultValues: { email: '', password: '' },
     mode: 'onTouched',
   })
 
@@ -26,10 +26,11 @@ export function SignInForm() {
       <FieldGroup>
         <AuthTextField
           control={control}
-          name="username"
-          label="Username"
-          autoComplete="username"
-          maxLength={30}
+          name="email"
+          label="E-mail"
+          type="email"
+          autoComplete="email"
+          maxLength={254}
         />
         <AuthTextField
           control={control}

@@ -2,7 +2,7 @@ export const participantRoles = ['Actor', 'Director', 'CastingDirector'] as cons
 export type ParticipantRole = (typeof participantRoles)[number]
 
 export type SignInRequest = {
-  username: string
+  email: string
   password: string
 }
 

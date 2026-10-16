@@ -3,6 +3,7 @@ using CastingApp.Application.Services.Directors;
 using CastingApp.Application.Services.CastingDirectors;
 using CastingApp.Application.Services.Crews;
 using CastingApp.Application.Services.Films;
+using CastingApp.Application.Services.Auth;
 using CastingApp.Application.Services.Conversations;
 using CastingApp.Application.Services.RoleApplications;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +20,7 @@ public static class DependencyInjection
         services.AddScoped<ICrewService, CrewService>();
         services.AddScoped<IFilmService, FilmService>();
         services.AddScoped<IFilmRoleService, FilmRoleService>();
+        services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IConversationService, ConversationService>();
         services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<IRoleApplicationService, RoleApplicationService>();

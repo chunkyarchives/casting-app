@@ -60,7 +60,8 @@ public static class DevSeeder
             EmailConfirmed = true,
             FirstName = firstName,
             LastName = lastName,
-            Role = role
+            Role = role,
+            ProfileCompletedAt = DateTime.UtcNow,
         };
 
         var result = await users.CreateAsync(participant, devPassword);  

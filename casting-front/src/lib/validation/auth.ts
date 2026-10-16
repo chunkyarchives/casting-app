@@ -12,7 +12,7 @@ export function splitFullName(fullName: string) {
 }
 
 export const signInSchema = z.object({
-  username: z.string().trim().min(1, 'Enter your username').max(30, 'Username is too long'),
+  email: z.string().trim().min(1, 'Enter your e-mail').max(254, 'E-mail is too long'),
   password: z.string().min(1, 'Enter your password').max(128, 'Password is too long'),
 })
 
