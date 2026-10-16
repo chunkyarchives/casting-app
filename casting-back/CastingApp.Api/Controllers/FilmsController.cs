@@ -2,6 +2,8 @@ using CastingApp.Application.DTOs.Films;
 using CastingApp.Application.Services.Films;
 using CastingApp.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
+using CastingApp.Application.Common;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CastingApp.Api.Controllers;
 
@@ -18,6 +20,7 @@ public class FilmsController(IFilmService films, IFilmRoleService roles) : Contr
         => Ok(await films.GetAsync(id, ct));
 
     [HttpPost]
+    [Authorize(Roles = AppRoles.Director)]
     public async Task<ActionResult<FilmDto>> Create(CreateFilmRequest request, CancellationToken ct)
     {
         var film = await films.CreateAsync(request, ct);
@@ -25,10 +28,12 @@ public class FilmsController(IFilmService films, IFilmRoleService roles) : Contr
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = AppRoles.DirectorOrAdmin)]
     public async Task<ActionResult<FilmDto>> Update(Guid id, UpdateFilmRequest request, CancellationToken ct)
         => Ok(await films.UpdateAsync(id, request, ct));
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = AppRoles.DirectorOrAdmin)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         await films.DeleteAsync(id, ct);
@@ -40,6 +45,7 @@ public class FilmsController(IFilmService films, IFilmRoleService roles) : Contr
         => Ok(await roles.ListByFilmAsync(filmId, ct));
 
     [HttpPost("{filmId:guid}/roles")]
+    [Authorize(Roles = AppRoles.DirectorOrAdmin)]
     public async Task<ActionResult<FilmRoleDto>> CreateRole(Guid filmId, CreateFilmRoleRequest request, CancellationToken ct)
     {
         var role = await roles.CreateAsync(filmId, request, ct);

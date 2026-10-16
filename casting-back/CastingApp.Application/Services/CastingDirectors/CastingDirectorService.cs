@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CastingApp.Application.Services.CastingDirectors;
 
-public class CastingDirectorService(IAppDbContext db) : ICastingDirectorService
+public class CastingDirectorService(IAppDbContext db, ICurrentUser currentUser) : ICastingDirectorService
 {
     public async Task<PagedResult<CastingDirectorSummaryDto>> ListAsync(string? search, int page, int pageSize, CancellationToken ct)
     {
@@ -42,6 +42,8 @@ public class CastingDirectorService(IAppDbContext db) : ICastingDirectorService
 
     public async Task<CastingDirectorDto> UpdateAsync(Guid id, UpdateCastingDirectorRequest request, CancellationToken ct)
     {
+        currentUser.EnsureOwnerOrAdmin(id);
+
         var castingDirector = await db.CastingDirectors
             .Include(c => c.Participant)
             .FirstOrDefaultAsync(c => c.ParticipantId == id, ct)

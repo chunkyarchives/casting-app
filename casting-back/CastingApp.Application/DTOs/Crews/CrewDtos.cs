@@ -16,15 +16,10 @@ public record CrewDto(
     DateTime CreatedAt,
     IReadOnlyList<CrewMemberDto> Members);
 
-// temporal: DirectorId i CastingDirectorId kasnije dolaze iz tokena, ne iz tela zahteva
-public record CreateCrewRequest(Guid DirectorId, [StringLength(200)] string ProductionName);
-
+public record CreateCrewRequest([StringLength(200)] string ProductionName);
 public record UpdateCrewRequest([StringLength(200)] string ProductionName);
 
-public record JoinCrewRequest(
-    [RegularExpression("^[A-Za-z0-9]{6}$", ErrorMessage = "Production code must be 6 letters or digits.")]
-    string ProductionCode,
-    Guid CastingDirectorId);
+public record JoinCrewRequest([RegularExpression("^[A-Za-z0-9]{6}$", ErrorMessage = "Production code must be 6 letters or digits.")] string ProductionCode);
 
 internal static class CrewMappings
 {

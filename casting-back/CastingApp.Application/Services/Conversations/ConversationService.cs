@@ -2,15 +2,21 @@ using CastingApp.Application.Abstractions;
 using CastingApp.Application.Common;
 using CastingApp.Application.DTOs.Conversations;
 using CastingApp.Domain.Entities;
+using CastingApp.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace CastingApp.Application.Services.Conversations;
 
-public class ConversationService(IAppDbContext db) : IConversationService
+public class ConversationService(IAppDbContext db, ICurrentUser currentUser) : IConversationService
 {
-    public async Task<PagedResult<ConversationDto>> ListAsync(
-        Guid? actorId, Guid? directorId, int page, int pageSize, CancellationToken ct)
+    public async Task<PagedResult<ConversationDto>> ListAsync(Guid? actorId, Guid? directorId, int page, int pageSize, CancellationToken ct)
     {
+        switch (currentUser.Role)
+        {
+            case ParticipantRole.Actor: actorId = currentUser.Id; break;
+            case ParticipantRole.Director: directorId = currentUser.Id; break;
+        }
+
         var query = db.Conversations.AsNoTracking();
         if (actorId is not null)
             query = query.Where(c => c.ActorId == actorId);
@@ -36,24 +42,30 @@ public class ConversationService(IAppDbContext db) : IConversationService
             .FirstOrDefaultAsync(c => c.Id == id, ct)
             ?? throw new NotFoundException(nameof(Conversation), id);
 
+        if (!currentUser.IsAdmin() && currentUser.Id != conversation.ActorId && currentUser.Id != conversation.DirectorId)
+            throw new ForbiddenException("You are not a participant of this conversation.");
+
         return conversation.ToDto();
     }
 
     public async Task<StartConversationResult> StartAsync(StartConversationRequest request, CancellationToken ct)
     {
-        if (!await db.Actors.AnyAsync(a => a.ParticipantId == request.ActorId, ct))
-            throw new NotFoundException(nameof(Actor), request.ActorId);
+        var directorId = currentUser.Id;  
+        var actorId = request.ActorId;
 
-        if (!await db.Directors.AnyAsync(d => d.ParticipantId == request.DirectorId, ct))
-            throw new NotFoundException(nameof(Director), request.DirectorId);
+        if (!await db.Actors.AnyAsync(a => a.ParticipantId == actorId, ct))
+            throw new NotFoundException(nameof(Actor), actorId);
 
-        if (await FindIdAsync(request.ActorId, request.DirectorId, ct) is { } existingId)
+        if (!await db.Directors.AnyAsync(d => d.ParticipantId == directorId, ct))
+            throw new NotFoundException(nameof(Director), directorId);
+
+        if (await FindIdAsync(actorId, directorId, ct) is { } existingId)
             return new StartConversationResult(await GetAsync(existingId, ct), Created: false);
 
         db.Conversations.Add(new Conversation
         {
-            ActorId = request.ActorId,
-            DirectorId = request.DirectorId
+            ActorId = actorId,
+            DirectorId = directorId
         });
 
         try
@@ -62,12 +74,13 @@ public class ConversationService(IAppDbContext db) : IConversationService
         }
         catch (DbUpdateException)
         {
-            var raceId = await FindIdAsync(request.ActorId, request.DirectorId, ct)
+            // Unique indeks uq_conversation: paralelan zahtev je upravo napravio isti razgovor, vraćamo njega
+            var raceId = await FindIdAsync(actorId, directorId, ct)
                 ?? throw new ConflictException("The conversation could not be created. Try again.");
             return new StartConversationResult(await GetAsync(raceId, ct), Created: false);
         }
 
-        var created = await FindIdAsync(request.ActorId, request.DirectorId, ct);
+        var created = await FindIdAsync(actorId, directorId, ct);
         return new StartConversationResult(await GetAsync(created!.Value, ct), Created: true);
     }
 
@@ -86,6 +99,7 @@ public class ConversationService(IAppDbContext db) : IConversationService
             .Select(c => (Guid?)c.Id)
             .FirstOrDefaultAsync(ct);
 
+    // Imena učesnika + SAMO najnovija poruka svakog razgovora (filtrirani Include sa Take(1))
     private static IQueryable<Conversation> WithDetails(IQueryable<Conversation> query) => query
         .Include(c => c.Actor).ThenInclude(a => a.Participant)
         .Include(c => c.Director).ThenInclude(d => d.Participant)

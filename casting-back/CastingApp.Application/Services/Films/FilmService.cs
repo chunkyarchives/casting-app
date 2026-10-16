@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CastingApp.Application.Services.Films;
 
-public class FilmService(IAppDbContext db) : IFilmService
+public class FilmService(IAppDbContext db, ICurrentUser currentUser) : IFilmService
 {
     public async Task<IReadOnlyList<FilmSummaryDto>> ListAsync(FilmStatus? status, CancellationToken ct)
     {
@@ -34,12 +34,13 @@ public class FilmService(IAppDbContext db) : IFilmService
 
     public async Task<FilmDto> CreateAsync(CreateFilmRequest request, CancellationToken ct)
     {
-        if (!await db.Directors.AnyAsync(d => d.ParticipantId == request.DirectorId, ct))
-            throw new NotFoundException(nameof(Director), request.DirectorId);
+        var directorId = currentUser.Id;   // reziser je prijavljeni korisnik, ne vrednost iz tela zahteva
+        if (!await db.Directors.AnyAsync(d => d.ParticipantId == directorId, ct))
+            throw new NotFoundException(nameof(Director), directorId);
 
         var film = new Film
         {
-            DirectorId = request.DirectorId,
+            DirectorId = directorId,
             Title = request.Title.Trim(),
             Description = request.Description,
             ContentRating = request.ContentRating,
@@ -58,6 +59,8 @@ public class FilmService(IAppDbContext db) : IFilmService
             .FirstOrDefaultAsync(f => f.Id == id, ct)
             ?? throw new NotFoundException(nameof(Film), id);
 
+        currentUser.EnsureOwnerOrAdmin(film.DirectorId);
+
         film.Title = request.Title.Trim();
         film.Description = request.Description;
         film.ContentRating = request.ContentRating;
@@ -72,6 +75,8 @@ public class FilmService(IAppDbContext db) : IFilmService
     {
         var film = await db.Films.FirstOrDefaultAsync(f => f.Id == id, ct)
             ?? throw new NotFoundException(nameof(Film), id);
+
+        currentUser.EnsureOwnerOrAdmin(film.DirectorId);
 
         db.Films.Remove(film);       // uloge briše baza (ON DELETE CASCADE)
         await db.SaveChangesAsync(ct);

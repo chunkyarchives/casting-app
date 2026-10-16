@@ -4,6 +4,6 @@ namespace CastingApp.Application.Services.Conversations;
 
 public interface IMessageService
 {
-    Task<MessageHistoryDto> ListAsync(Guid conversationId, DateTimeOffset? before, int limit, CancellationToken ct);
-    Task<MessageDto> SendAsync(Guid conversationId, SendMessageRequest request, CancellationToken ct);
+    Task<MessageHistoryDto> ListAsync(Guid conversationId, Guid viewerId, DateTimeOffset? before, int limit, CancellationToken ct);
+    Task<MessageDto> SendAsync(Guid conversationId, Guid senderId, string content, CancellationToken ct);
 }

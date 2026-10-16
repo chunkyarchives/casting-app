@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CastingApp.Application.Services.Films;
 
-public class FilmRoleService(IAppDbContext db) : IFilmRoleService
+public class FilmRoleService(IAppDbContext db, ICurrentUser currentUser) : IFilmRoleService
 {
     public async Task<IReadOnlyList<FilmRoleDto>> ListByFilmAsync(Guid filmId, CancellationToken ct)
     {
@@ -35,6 +35,8 @@ public class FilmRoleService(IAppDbContext db) : IFilmRoleService
         var film = await db.Films.AsNoTracking().FirstOrDefaultAsync(f => f.Id == filmId, ct)
             ?? throw new NotFoundException(nameof(Film), filmId);
 
+        currentUser.EnsureOwnerOrAdmin(film.DirectorId);
+
         if (film.Status == FilmStatus.Archived)
             throw new ConflictException("Cannot add roles to an archived film.");
 
@@ -59,10 +61,14 @@ public class FilmRoleService(IAppDbContext db) : IFilmRoleService
 
     public async Task<FilmRoleDto> UpdateAsync(Guid id, UpdateFilmRoleRequest request, CancellationToken ct)
     {
-        var role = await db.FilmRoles.FirstOrDefaultAsync(r => r.Id == id, ct)
+        var role = await db.FilmRoles
+            .Include(r => r.Film)
+            .FirstOrDefaultAsync(r => r.Id == id, ct)
             ?? throw new NotFoundException(nameof(FilmRole), id);
 
-        // Sloj 1: klijent je menjao staru kopiju (neko je sačuvao posle njegovog učitavanja)
+        currentUser.EnsureOwnerOrAdmin(role.Film.DirectorId);
+
+        // Sloj 1: klijent je menjao staru kopiju (neko je u međuvremenu sačuvao ulogu)
         if (role.RowVersion != request.RowVersion)
             throw new ConflictException("The role was changed by someone else. Reload it and try again.");
 
@@ -83,7 +89,7 @@ public class FilmRoleService(IAppDbContext db) : IFilmRoleService
         }
         catch (DbUpdateConcurrencyException)
         {
-            // Sloj 2: neko drugi je sačuvao između našeg čitanja i našeg upisa
+            // Sloj 2: drugi zahtev je sačuvao između našeg čitanja i upisa
             throw new ConflictException("The role was changed by someone else. Reload it and try again.");
         }
 
@@ -92,8 +98,12 @@ public class FilmRoleService(IAppDbContext db) : IFilmRoleService
 
     public async Task DeleteAsync(Guid id, CancellationToken ct)
     {
-        var role = await db.FilmRoles.FirstOrDefaultAsync(r => r.Id == id, ct)
+        var role = await db.FilmRoles
+            .Include(r => r.Film)
+            .FirstOrDefaultAsync(r => r.Id == id, ct)
             ?? throw new NotFoundException(nameof(FilmRole), id);
+
+        currentUser.EnsureOwnerOrAdmin(role.Film.DirectorId);
 
         db.FilmRoles.Remove(role);
         await db.SaveChangesAsync(ct);

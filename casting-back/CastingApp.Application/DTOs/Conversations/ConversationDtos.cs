@@ -18,13 +18,11 @@ public record ConversationDto(
 
 public record MessageHistoryDto(IReadOnlyList<MessageDto> Items, bool HasMore, DateTime? NextBefore);
 
-// temporal: ActorId i DirectorId kasnije dolaze iz tokena, a ne iz tela zahteva
-public record StartConversationRequest(Guid ActorId, Guid DirectorId);
+public record StartConversationRequest(Guid ActorId);
 
 public record StartConversationResult(ConversationDto Conversation, bool Created);
 
-// temporal: SenderId kasnije dolazi iz tokena
-public record SendMessageRequest(Guid SenderId, [Required, StringLength(2000)] string Content);
+public record SendMessageRequest([Required, StringLength(2000)] string Content);
 
 internal static class ConversationMappings
 {

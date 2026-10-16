@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CastingApp.Application.Services.Directors;
 
-public class DirectorService(IAppDbContext db) : IDirectorService
+public class DirectorService(IAppDbContext db, ICurrentUser currentUser) : IDirectorService
 {
     public async Task<PagedResult<DirectorSummaryDto>> ListAsync(string? search, int page, int pageSize, CancellationToken ct)
     {
@@ -42,6 +42,8 @@ public class DirectorService(IAppDbContext db) : IDirectorService
 
     public async Task<DirectorDto> UpdateAsync(Guid id, UpdateDirectorRequest request, CancellationToken ct)
     {
+        currentUser.EnsureOwnerOrAdmin(id);
+
         var director = await db.Directors
             .Include(d => d.Participant)
             .FirstOrDefaultAsync(d => d.ParticipantId == id, ct)

@@ -2,11 +2,13 @@ using CastingApp.Application.Abstractions;
 using CastingApp.Application.Common;
 using CastingApp.Application.DTOs.Actors;
 using CastingApp.Domain.Entities;
+using CastingApp.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace CastingApp.Application.Services.Actors;
 
-public class ActorService(IAppDbContext db) : IActorService
+// konstruktor
+public class ActorService(IAppDbContext db, ICurrentUser currentUser) : IActorService
 {
     public Task<PagedResult<ActorSummaryDto>> ListAsync(ActorFilter filter, int page, int pageSize, CancellationToken ct)
         => QueryPageAsync(filter, page, pageSize, ct);
@@ -33,6 +35,9 @@ public class ActorService(IAppDbContext db) : IActorService
 
     public async Task<ActorDto> GetAsync(Guid id, CancellationToken ct)
     {
+        if (currentUser.Role == ParticipantRole.Actor)
+            currentUser.EnsureOwnerOrAdmin(id);
+
         var actor = await db.Actors.AsNoTracking()
             .Include(a => a.Participant)
             .FirstOrDefaultAsync(a => a.ParticipantId == id, ct)
@@ -43,6 +48,8 @@ public class ActorService(IAppDbContext db) : IActorService
 
     public async Task<ActorDto> UpdateAsync(Guid id, UpdateActorRequest request, CancellationToken ct)
     {
+        currentUser.EnsureOwnerOrAdmin(id);
+
         var actor = await db.Actors
             .Include(a => a.Participant)
             .FirstOrDefaultAsync(a => a.ParticipantId == id, ct)

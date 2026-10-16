@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using CastingApp.Application.Common;
 using CastingApp.Application.DTOs.Directors;
 using CastingApp.Application.Services.Directors;
 using Microsoft.AspNetCore.Mvc;
+using CastingApp.Application.Common;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CastingApp.Api.Controllers;
 
@@ -23,6 +24,7 @@ public class DirectorsController(IDirectorService directors) : ControllerBase
         => Ok(await directors.GetAsync(id, ct));
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = AppRoles.DirectorOrAdmin)]
     public async Task<ActionResult<DirectorDto>> Update(Guid id, UpdateDirectorRequest request, CancellationToken ct)
         => Ok(await directors.UpdateAsync(id, request, ct));
 }

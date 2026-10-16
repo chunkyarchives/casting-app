@@ -8,11 +8,12 @@ namespace CastingApp.Application.Services.Conversations;
 
 public class MessageService(IAppDbContext db) : IMessageService
 {
+    private const int maxContentLength = 2000;
+
     public async Task<MessageHistoryDto> ListAsync(
-        Guid conversationId, DateTimeOffset? before, int limit, CancellationToken ct)
+        Guid conversationId, Guid viewerId, DateTimeOffset? before, int limit, CancellationToken ct)
     {
-        if (!await db.Conversations.AnyAsync(c => c.Id == conversationId, ct))
-            throw new NotFoundException(nameof(Conversation), conversationId);
+        await EnsureParticipantAsync(conversationId, viewerId, ct);
 
         var query = db.Messages.AsNoTracking().Where(m => m.ConversationId == conversationId);
         if (before is { } cursor)
@@ -21,6 +22,7 @@ public class MessageService(IAppDbContext db) : IMessageService
             query = query.Where(m => m.SentAt < cursorUtc);
         }
 
+        // Tražimo limit + 1 poruku: ako stigne višak, znamo da postoje starije poruke
         var page = await query
             .OrderByDescending(m => m.SentAt)
             .ThenByDescending(m => m.Id)
@@ -33,24 +35,21 @@ public class MessageService(IAppDbContext db) : IMessageService
         return new MessageHistoryDto(items, hasMore, hasMore ? items[^1].SentAt : null);
     }
 
-    public async Task<MessageDto> SendAsync(Guid conversationId, SendMessageRequest request, CancellationToken ct)
+    public async Task<MessageDto> SendAsync(Guid conversationId, Guid senderId, string content, CancellationToken ct)
     {
-        var conversation = await db.Conversations.AsNoTracking()
-            .Where(c => c.Id == conversationId)
-            .Select(c => new { c.ActorId, c.DirectorId })
-            .FirstOrDefaultAsync(ct)
-            ?? throw new NotFoundException(nameof(Conversation), conversationId);
+        var text = (content ?? string.Empty).Trim();
+        if (text.Length == 0 || text.Length > maxContentLength)
+            throw new BadRequestException($"A message must have between 1 and {maxContentLength} characters.");
 
-        if (request.SenderId != conversation.ActorId && request.SenderId != conversation.DirectorId)
-            throw new ForbiddenException("Only the participants of a conversation can send messages in it.");
+        await EnsureParticipantAsync(conversationId, senderId, ct);
 
-        // Postgres čuva mikrosekunde, a DateTime ima 100 ns: skraćujemo odmah da vrednost
+        // Postgres čuva mikrosekunde, a DateTime ima 100 ns: skraćujemo odmah da vrednost koju vraćamo bude identična onoj u bazi 
         var now = DateTime.UtcNow;
         var message = new Message
         {
             ConversationId = conversationId,
-            SenderId = request.SenderId,
-            Content = request.Content.Trim(),
+            SenderId = senderId,
+            Content = text,
             SentAt = new DateTime(now.Ticks - now.Ticks % 10, DateTimeKind.Utc)
         };
 
@@ -58,5 +57,18 @@ public class MessageService(IAppDbContext db) : IMessageService
         await db.SaveChangesAsync(ct);
 
         return message.ToDto();
+    }
+
+    // Poruke jednog razgovora vide i šalju samo njegovi učesnici (ni admin ne čita tuđe poruke)
+    private async Task EnsureParticipantAsync(Guid conversationId, Guid userId, CancellationToken ct)
+    {
+        var conversation = await db.Conversations.AsNoTracking()
+            .Where(c => c.Id == conversationId)
+            .Select(c => new { c.ActorId, c.DirectorId })
+            .FirstOrDefaultAsync(ct)
+            ?? throw new NotFoundException(nameof(Conversation), conversationId);
+
+        if (userId != conversation.ActorId && userId != conversation.DirectorId)
+            throw new ForbiddenException("Only the participants of a conversation can access its messages.");
     }
 }

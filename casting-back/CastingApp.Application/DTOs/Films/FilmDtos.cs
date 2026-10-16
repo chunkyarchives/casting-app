@@ -25,7 +25,6 @@ public record FilmDto(
     IReadOnlyList<FilmRoleDto> Roles);
 
 public record CreateFilmRequest(
-    Guid DirectorId,    // Temporal: kad uvedemo prijavu, ovo dolazi iz tokena, ne iz tela zahteva
     [StringLength(200)] string Title,
     [StringLength(4000)] string? Description,
     [StringLength(20)] string? ContentRating,

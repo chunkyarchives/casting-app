@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using CastingApp.Application.Common;
 using CastingApp.Application.DTOs.Actors;
 using CastingApp.Application.Services.Actors;
 using Microsoft.AspNetCore.Mvc;
+using CastingApp.Application.Common;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CastingApp.Api.Controllers;
 
@@ -11,6 +12,7 @@ namespace CastingApp.Api.Controllers;
 public class ActorsController(IActorService actors) : ControllerBase
 {
     [HttpGet]
+    [Authorize(Roles = AppRoles.DirectorCastingDirectorOrAdmin)]
     public async Task<ActionResult<PagedResult<ActorSummaryDto>>> List(
         [FromQuery] ActorFilter filter,
         [FromQuery, Range(1, int.MaxValue)] int page = 1,
@@ -19,6 +21,7 @@ public class ActorsController(IActorService actors) : ControllerBase
         => Ok(await actors.ListAsync(filter, page, pageSize, ct));
 
     [HttpGet("matching")]
+    [Authorize(Roles = AppRoles.DirectorCastingDirectorOrAdmin)]
     public async Task<ActionResult<PagedResult<ActorSummaryDto>>> ListMatching(
         [FromQuery] Guid filmRoleId,
         [FromQuery, Range(1, int.MaxValue)] int page = 1,
@@ -31,6 +34,7 @@ public class ActorsController(IActorService actors) : ControllerBase
         => Ok(await actors.GetAsync(id, ct));
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = AppRoles.ActorOrAdmin)]
     public async Task<ActionResult<ActorDto>> Update(Guid id, UpdateActorRequest request, CancellationToken ct)
         => Ok(await actors.UpdateAsync(id, request, ct));
 }

@@ -14,7 +14,5 @@ public record RoleApplicationDto(
     DateTime CreatedAt,
     DateTime? DecidedAt);
 
-// temporal: kad uvedemo prijavu, ActorId i ProposedById dolaze iz tokena, ne iz tela zahteva
-public record CreateRoleApplicationRequest(
-    Guid ActorId,
-    Guid? ProposedById);
+// Glumac salje prazno telo ({}), casting director salje ActorId glumca koga predlaze, ziveo dnd
+public record CreateRoleApplicationRequest(Guid? ActorId);
