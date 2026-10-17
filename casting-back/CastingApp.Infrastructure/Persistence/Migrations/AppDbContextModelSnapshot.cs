@@ -504,6 +504,55 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("CastingApp.Domain.Entities.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<Guid>("FamilyId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("family_id");
+
+                    b.Property<Guid>("ParticipantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("participant_id");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("token_hash");
+
+                    b.HasKey("Id")
+                        .HasName("pk_refresh_token");
+
+                    b.HasIndex("FamilyId")
+                        .HasDatabaseName("ix_refresh_token_family");
+
+                    b.HasIndex("ParticipantId")
+                        .HasDatabaseName("ix_refresh_token_participant");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("uq_refresh_token_hash");
+
+                    b.ToTable("refresh_token", (string)null);
+                });
+
             modelBuilder.Entity("CastingApp.Domain.Entities.RoleApplication", b =>
                 {
                     b.Property<Guid>("Id")
@@ -775,6 +824,16 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
                     b.Navigation("Conversation");
 
                     b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("CastingApp.Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("CastingApp.Domain.Entities.Participant", null)
+                        .WithMany()
+                        .HasForeignKey("ParticipantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_refresh_token_participant_participant_id");
                 });
 
             modelBuilder.Entity("CastingApp.Domain.Entities.RoleApplication", b =>

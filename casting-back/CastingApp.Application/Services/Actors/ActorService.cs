@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CastingApp.Application.Services.Actors;
 
-// konstruktor
 public class ActorService(IAppDbContext db, ICurrentUser currentUser) : IActorService
 {
     public Task<PagedResult<ActorSummaryDto>> ListAsync(ActorFilter filter, int page, int pageSize, CancellationToken ct)

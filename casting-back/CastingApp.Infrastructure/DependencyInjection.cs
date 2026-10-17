@@ -37,7 +37,8 @@ public static class DependencyInjection
             Key = config["Jwt:Key"] ?? string.Empty,
             Issuer = config["Jwt:Issuer"] ?? "CastingApp",
             Audience = config["Jwt:Audience"] ?? "CastingApp",
-            ExpiresMinutes = int.TryParse(config["Jwt:ExpiresMinutes"], out var minutes) ? minutes : 120
+            ExpiresMinutes = int.TryParse(config["Jwt:ExpiresMinutes"], out var minutes) ? minutes : 15,
+            RefreshTokenDays = int.TryParse(config["Jwt:RefreshTokenDays"], out var days) ? days : 30,
         };
 
         if (Encoding.UTF8.GetByteCount(jwt.Key) < 32)
@@ -46,7 +47,8 @@ public static class DependencyInjection
 
         services.AddSingleton(jwt);
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
-
+        services.AddScoped<ISessionService, SessionService>();
+        
         return services;
     }
 }

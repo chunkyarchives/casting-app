@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 const links = [
   { to: '/movies', label: 'Movies' },
   { to: '/roles', label: 'Roles' },
-  { to: '/members', label: 'Members' },
+  { to: '/network', label: 'Network' },
 ]
 
 export function Navbar() {
