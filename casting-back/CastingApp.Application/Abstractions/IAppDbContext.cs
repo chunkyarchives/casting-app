@@ -16,6 +16,8 @@ public interface IAppDbContext
     DbSet<RoleApplication> RoleApplications { get; }
     DbSet<Conversation> Conversations { get; }
     DbSet<Message> Messages { get; }
+    DbSet<MediaAsset> MediaAssets { get; }
+    DbSet<Participant> Users { get; }
 
     EntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class;
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

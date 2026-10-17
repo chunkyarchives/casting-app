@@ -357,6 +357,60 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("CastingApp.Domain.Entities.MediaAsset", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Caption")
+                        .HasMaxLength(140)
+                        .HasColumnType("character varying(140)")
+                        .HasColumnName("caption");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("content_type");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("kind");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("owner_id");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("size_bytes");
+
+                    b.Property<string>("StorageKey")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("storage_key");
+
+                    b.HasKey("Id")
+                        .HasName("pk_media_asset");
+
+                    b.HasIndex("OwnerId", "Kind")
+                        .HasDatabaseName("ix_media_asset_owner_kind");
+
+                    b.ToTable("media_asset", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_media_asset_kind", "kind IN ('ProfilePicture','Headshot','FullBody','ProductionStill','Showreel')");
+                        });
+                });
+
             modelBuilder.Entity("CastingApp.Domain.Entities.Message", b =>
                 {
                     b.Property<Guid>("Id")
@@ -468,6 +522,10 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("profile_completed_at");
 
+                    b.Property<Guid?>("ProfilePictureId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("profile_picture_id");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -497,6 +555,9 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
+
+                    b.HasIndex("ProfilePictureId")
+                        .HasDatabaseName("ix_participant_profile_picture_id");
 
                     b.ToTable("participant", null, t =>
                         {
@@ -805,6 +866,16 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
                     b.Navigation("Film");
                 });
 
+            modelBuilder.Entity("CastingApp.Domain.Entities.MediaAsset", b =>
+                {
+                    b.HasOne("CastingApp.Domain.Entities.Participant", null)
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_media_asset_asp_net_users_owner_id");
+                });
+
             modelBuilder.Entity("CastingApp.Domain.Entities.Message", b =>
                 {
                     b.HasOne("CastingApp.Domain.Entities.Conversation", "Conversation")
@@ -824,6 +895,15 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
                     b.Navigation("Conversation");
 
                     b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("CastingApp.Domain.Entities.Participant", b =>
+                {
+                    b.HasOne("CastingApp.Domain.Entities.MediaAsset", null)
+                        .WithMany()
+                        .HasForeignKey("ProfilePictureId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_participant_media_asset_profile_picture_id");
                 });
 
             modelBuilder.Entity("CastingApp.Domain.Entities.RefreshToken", b =>

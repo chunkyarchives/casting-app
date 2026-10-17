@@ -1,6 +1,7 @@
 using CastingApp.Application.Abstractions;
 using CastingApp.Domain.Entities;
 using CastingApp.Infrastructure.Auth;
+using CastingApp.Infrastructure.Media;
 using CastingApp.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -48,7 +49,12 @@ public static class DependencyInjection
         services.AddSingleton(jwt);
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
         services.AddScoped<ISessionService, SessionService>();
-        
+
+        var mediaRoot = config["Media:RootPath"];
+        if (string.IsNullOrWhiteSpace(mediaRoot))
+            mediaRoot = Path.Combine(AppContext.BaseDirectory, "media");   // bin\Debug\net10.0\media
+        services.AddSingleton<IMediaStorage>(new LocalMediaStorage(mediaRoot));
+
         return services;
     }
 }
