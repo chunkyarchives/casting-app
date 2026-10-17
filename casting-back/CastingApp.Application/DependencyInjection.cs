@@ -7,6 +7,7 @@ using CastingApp.Application.Services.Auth;
 using CastingApp.Application.Services.Conversations;
 using CastingApp.Application.Services.Media;
 using CastingApp.Application.Services.RoleApplications;
+using CastingApp.Application.Services.Profiles;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CastingApp.Application;
@@ -26,6 +27,7 @@ public static class DependencyInjection
         services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<IMediaService, MediaService>();
         services.AddScoped<IRoleApplicationService, RoleApplicationService>();
+        services.AddScoped<IProfileCompletionService, ProfileCompletionService>();
         return services;
     }
 }

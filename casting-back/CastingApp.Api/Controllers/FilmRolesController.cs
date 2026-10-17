@@ -5,11 +5,13 @@ using CastingApp.Application.Services.Films;
 using Microsoft.AspNetCore.Mvc;
 using CastingApp.Application.Common;
 using Microsoft.AspNetCore.Authorization;
+using CastingApp.Api.Filters;
 
 namespace CastingApp.Api.Controllers;
 
 [ApiController]
 [Route("api/roles")]
+[RequireCompleteProfile]
 public class FilmRolesController(IFilmRoleService roles, IRoleApplicationService applications) : ControllerBase
 {
     [HttpGet("{id:guid}")]

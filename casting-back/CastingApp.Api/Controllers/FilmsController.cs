@@ -4,11 +4,13 @@ using CastingApp.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 using CastingApp.Application.Common;
 using Microsoft.AspNetCore.Authorization;
+using CastingApp.Api.Filters;
 
 namespace CastingApp.Api.Controllers;
 
 [ApiController]
 [Route("api/films")]
+[RequireCompleteProfile]
 public class FilmsController(IFilmService films, IFilmRoleService roles) : ControllerBase
 {
     [HttpGet]

@@ -4,10 +4,11 @@ using CastingApp.Application.DTOs.Media;
 using CastingApp.Domain.Entities;
 using CastingApp.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using CastingApp.Application.Services.Profiles;
 
 namespace CastingApp.Application.Services.Media;
 
-public class MediaService(IAppDbContext db, IMediaStorage storage, ICurrentUser currentUser) : IMediaService
+public class MediaService(IAppDbContext db, IMediaStorage storage, ICurrentUser currentUser, IProfileCompletionService profileCompletion) : IMediaService
 {
     public async Task<ProfilePictureDto> SetProfilePictureAsync(Stream content, long length, CancellationToken ct)
     {
@@ -21,8 +22,6 @@ public class MediaService(IAppDbContext db, IMediaStorage storage, ICurrentUser 
 
         var asset = await ValidateAndStoreAsync(MediaKind.ProfilePicture, null, content, length, ct);
 
-        // Novi red, pokazivač na njega i brisanje starog reda idu u jednu transakciju.
-        // Pokazivač prvo prebacujemo na novu sliku, pa tek onda brišemo staru.
         db.MediaAssets.Add(asset);
         user.ProfilePictureId = asset.Id;
         if (oldAsset is not null)
@@ -38,10 +37,12 @@ public class MediaService(IAppDbContext db, IMediaStorage storage, ICurrentUser 
             throw new ConflictException("The profile picture was changed at the same time. Try again.");
         }
 
+        await profileCompletion.RefreshAsync(userId, ct);
+
         if (oldAsset is not null)
             await TryDeleteFileAsync(oldAsset.StorageKey);
 
-        return new ProfilePictureDto(asset.Id, $"/api/participants/{userId}/profile-picture?v={asset.Id:N}");
+        return new ProfilePictureDto(asset.Id, MediaUrls.ProfilePicture(userId, asset.Id)!);
     }
 
     public async Task DeleteProfilePictureAsync(CancellationToken ct)
@@ -51,7 +52,7 @@ public class MediaService(IAppDbContext db, IMediaStorage storage, ICurrentUser 
             ?? throw new NotFoundException(nameof(Participant), userId);
 
         if (user.ProfilePictureId is not { } assetId)
-            return;  
+            return;   
 
         var asset = await db.MediaAssets.FirstOrDefaultAsync(m => m.Id == assetId, ct);
 
@@ -61,10 +62,11 @@ public class MediaService(IAppDbContext db, IMediaStorage storage, ICurrentUser 
 
         await db.SaveChangesAsync(ct);
 
+        await profileCompletion.RefreshAsync(userId, ct);
+
         if (asset is not null)
             await TryDeleteFileAsync(asset.StorageKey);
     }
-
     public async Task<MediaFile> GetProfilePictureAsync(Guid participantId, CancellationToken ct)
     {
         var owner = await db.Users.AsNoTracking()
@@ -166,10 +168,7 @@ public class MediaService(IAppDbContext db, IMediaStorage storage, ICurrentUser 
         await TryDeleteFileAsync(asset.StorageKey);
     }
 
-
-    // Provere (veličina, tip po potpisu fajla, vrsta) pa upis na disk. Red u bazi pravi pozivalac.
-    private async Task<MediaAsset> ValidateAndStoreAsync(
-        MediaKind kind, string? caption, Stream content, long length, CancellationToken ct)
+    private async Task<MediaAsset> ValidateAndStoreAsync(MediaKind kind, string? caption, Stream content, long length, CancellationToken ct)
     {
         if (length <= 0)
             throw new BadRequestException("The file is empty.");
@@ -234,7 +233,6 @@ public class MediaService(IAppDbContext db, IMediaStorage storage, ICurrentUser 
         return new MediaFile(stream, asset.ContentType, asset.Id, asset.CreatedAt);
     }
 
-    // Vlasnik i admin uvek; slike reditelja vide svi prijavljeni; slike glumaca i casting direktora samo reditelji i casting direktori
     private void EnsureCanViewProfilePicture(Guid ownerId, ParticipantRole ownerRole)
     {
         if (currentUser.IsAdmin() || currentUser.Id == ownerId)
@@ -252,7 +250,6 @@ public class MediaService(IAppDbContext db, IMediaStorage storage, ICurrentUser 
             throw new ForbiddenException("You do not have access to this picture.");
     }
 
-    // Portfolio glumca: on sam, admin, reditelji i casting direktori (isto kao spisak glumaca)
     private void EnsureCanViewPortfolio(Guid actorId)
     {
         if (currentUser.IsAdmin() || currentUser.Id == actorId)

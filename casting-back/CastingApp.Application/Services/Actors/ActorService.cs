@@ -4,10 +4,11 @@ using CastingApp.Application.DTOs.Actors;
 using CastingApp.Domain.Entities;
 using CastingApp.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using CastingApp.Application.Services.Profiles;
 
 namespace CastingApp.Application.Services.Actors;
 
-public class ActorService(IAppDbContext db, ICurrentUser currentUser) : IActorService
+public class ActorService(IAppDbContext db, ICurrentUser currentUser, IProfileCompletionService profileCompletion) : IActorService
 {
     public Task<PagedResult<ActorSummaryDto>> ListAsync(ActorFilter filter, int page, int pageSize, CancellationToken ct)
         => QueryPageAsync(filter, page, pageSize, ct);
@@ -70,6 +71,7 @@ public class ActorService(IAppDbContext db, ICurrentUser currentUser) : IActorSe
             .ToList();
 
         await db.SaveChangesAsync(ct);
+        await profileCompletion.RefreshAsync(id, ct);
         return actor.ToDto(Today());
     }
 
@@ -77,7 +79,10 @@ public class ActorService(IAppDbContext db, ICurrentUser currentUser) : IActorSe
         ActorFilter filter, int page, int pageSize, CancellationToken ct)
     {
         var today = Today();
-        var query = ApplyFilter(db.Actors.AsNoTracking(), filter, today);
+        var query = ApplyFilter(
+            db.Actors.AsNoTracking().Where(a => a.Participant.ProfileCompletedAt != null),   // nepotpuni profili se ne prikazuju
+            filter,
+            today);
 
         var total = await query.CountAsync(ct);
         var actors = await query

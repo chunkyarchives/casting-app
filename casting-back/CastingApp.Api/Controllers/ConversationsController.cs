@@ -5,11 +5,13 @@ using Microsoft.AspNetCore.Mvc;
 using CastingApp.Application.Abstractions;
 using CastingApp.Application.Common;
 using Microsoft.AspNetCore.Authorization;
+using CastingApp.Api.Filters;
 
 namespace CastingApp.Api.Controllers;
 
 [ApiController]
 [Route("api/conversations")]
+[RequireCompleteProfile]
 public class ConversationsController(IConversationService conversations, IMessageService messages, ICurrentUser currentUser) : ControllerBase
 {
     [HttpGet]

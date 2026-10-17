@@ -4,6 +4,7 @@ using CastingApp.Application.Services.Actors;
 using Microsoft.AspNetCore.Mvc;
 using CastingApp.Application.Common;
 using Microsoft.AspNetCore.Authorization;
+using CastingApp.Api.Filters;
 
 namespace CastingApp.Api.Controllers;
 
@@ -13,6 +14,7 @@ public class ActorsController(IActorService actors) : ControllerBase
 {
     [HttpGet]
     [Authorize(Roles = AppRoles.DirectorCastingDirectorOrAdmin)]
+    [RequireCompleteProfile]
     public async Task<ActionResult<PagedResult<ActorSummaryDto>>> List(
         [FromQuery] ActorFilter filter,
         [FromQuery, Range(1, int.MaxValue)] int page = 1,
@@ -22,6 +24,7 @@ public class ActorsController(IActorService actors) : ControllerBase
 
     [HttpGet("matching")]
     [Authorize(Roles = AppRoles.DirectorCastingDirectorOrAdmin)]
+    [RequireCompleteProfile]
     public async Task<ActionResult<PagedResult<ActorSummaryDto>>> ListMatching(
         [FromQuery] Guid filmRoleId,
         [FromQuery, Range(1, int.MaxValue)] int page = 1,

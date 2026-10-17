@@ -3,11 +3,13 @@ using CastingApp.Application.Services.Crews;
 using Microsoft.AspNetCore.Mvc;
 using CastingApp.Application.Common;
 using Microsoft.AspNetCore.Authorization;
+using CastingApp.Api.Filters;
 
 namespace CastingApp.Api.Controllers;
 
 [ApiController]
 [Route("api/crews")]
+[RequireCompleteProfile]
 public class CrewsController(ICrewService crews) : ControllerBase
 {
     [HttpGet]

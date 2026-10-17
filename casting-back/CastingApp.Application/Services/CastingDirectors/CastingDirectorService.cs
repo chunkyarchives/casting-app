@@ -3,10 +3,11 @@ using CastingApp.Application.Common;
 using CastingApp.Application.DTOs.CastingDirectors;
 using CastingApp.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using CastingApp.Application.Services.Profiles;
 
 namespace CastingApp.Application.Services.CastingDirectors;
 
-public class CastingDirectorService(IAppDbContext db, ICurrentUser currentUser) : ICastingDirectorService
+public class CastingDirectorService(IAppDbContext db, ICurrentUser currentUser, IProfileCompletionService profileCompletion) : ICastingDirectorService
 {
     public async Task<PagedResult<CastingDirectorSummaryDto>> ListAsync(string? search, int page, int pageSize, CancellationToken ct)
     {
@@ -53,6 +54,7 @@ public class CastingDirectorService(IAppDbContext db, ICurrentUser currentUser) 
         castingDirector.Gender = request.Gender;
 
         await db.SaveChangesAsync(ct);
+        await profileCompletion.RefreshAsync(id, ct);
         return castingDirector.ToDto(DateOnly.FromDateTime(DateTime.UtcNow));
     }
 }

@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using CastingApp.Domain.Entities;
 using CastingApp.Domain.Enums;
+using CastingApp.Application.Services.Media;
 
 namespace CastingApp.Application.DTOs.Auth;
 
@@ -24,7 +25,7 @@ public record LoginRequest([Required, StringLength(256)] string Email,[Required,
 
 // ProfileComplete: false dok korisnik ne popuni obavezne podatke
 public record MeDto(
-    Guid Id, string Email, string FirstName, string LastName, ParticipantRole Role, bool ProfileComplete);
+    Guid Id, string Email, string FirstName, string LastName, ParticipantRole Role, bool ProfileComplete, string? ProfilePictureUrl = null);
 
 // Token ne ide klijentu u telu odgovora: kontroler ga stavlja u cookie
 public record AuthResult(MeDto Me, string Token, DateTime ExpiresAt);
@@ -33,5 +34,6 @@ internal static class AuthMappings
 {
     public static MeDto ToMeDto(this Participant p) => new(
         p.Id, p.Email ?? string.Empty, p.FirstName, p.LastName, p.Role,
-        p.Role == ParticipantRole.Admin || p.ProfileCompletedAt is not null);
+        p.Role == ParticipantRole.Admin || p.ProfileCompletedAt is not null,
+        MediaUrls.ProfilePicture(p.Id, p.ProfilePictureId));
 }
