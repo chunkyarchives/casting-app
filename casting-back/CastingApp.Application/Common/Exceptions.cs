@@ -9,3 +9,4 @@ public class ForbiddenException(string message) : Exception(message);
 public class UnauthorizedException(string message) : Exception(message);
 
 public class BadRequestException(string message) : Exception(message);
+public class TooManyRequestsException(string message) : Exception(message);

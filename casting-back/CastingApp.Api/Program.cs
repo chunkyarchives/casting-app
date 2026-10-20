@@ -1,10 +1,12 @@
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using CastingApp.Api.Auth;
+using CastingApp.Api.Chat;
 using CastingApp.Api.RateLimiting;
 using CastingApp.Application.Abstractions;
 using CastingApp.Infrastructure.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.IdentityModel.Tokens;
 using System.Text.Json.Serialization;
 using CastingApp.Api;
@@ -65,6 +67,12 @@ builder.Services.AddAuthorization(o =>
 
 builder.Services.AddCastingRateLimiting();
 
+// Chat u realnom vremenu: korisnik se prepoznaje po "sub", a Redis povezuje više instanci API-ja
+builder.Services.AddSingleton<IUserIdProvider, SubUserIdProvider>();
+builder.Services.AddSingleton<IChatNotifier, SignalRChatNotifier>();
+builder.Services.AddSignalR()
+    .AddStackExchangeRedis(builder.Configuration.GetConnectionString("Redis")!);
+
 builder.Services.AddCors(o => o.AddPolicy("frontend", p => p
     .WithOrigins("http://localhost:5173")
     .AllowAnyHeader()
@@ -99,5 +107,8 @@ app.UseAuthentication();
 app.UseRateLimiter();      // posle autentikacije, da zna ko je korisnik
 app.UseAuthorization();
 app.MapControllers();
+
+// Veza se zatvara kad istekne access token, pa zaključan ili odjavljen korisnik ne ostaje povezan zauvek
+app.MapHub<ChatHub>("/hubs/chat", o => o.CloseOnAuthenticationExpiration = true);
 
 app.Run();

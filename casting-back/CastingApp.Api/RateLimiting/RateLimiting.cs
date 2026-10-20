@@ -38,7 +38,7 @@ public static class RateLimitingExtensions
 
             // Opšte ograničenje za ceo /api: po korisniku, a ako nije prijavljen po IP adresi
             options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(ctx =>
-                ctx.Request.Path.StartsWithSegments("/api")
+                ctx.Request.Path.StartsWithSegments("/api") || ctx.Request.Path.StartsWithSegments("/hubs")
                     ? RateLimitPartition.GetFixedWindowLimiter(UserOrIp(ctx), _ => Fixed(300, TimeSpan.FromMinutes(1)))
                     : RateLimitPartition.GetNoLimiter("outside-api"));
 

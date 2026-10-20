@@ -15,11 +15,12 @@ public class ApiExceptionHandler(IProblemDetailsService problemDetails) : IExcep
             ForbiddenException => (StatusCodes.Status403Forbidden, "Forbidden"),
             UnauthorizedException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
             BadRequestException => (StatusCodes.Status400BadRequest, "Bad request"),
+            TooManyRequestsException => (StatusCodes.Status429TooManyRequests, "Too many requests"),
             _ => (0, "")
         };
 
         if (status == 0)
-            return false;  
+            return false;
 
         httpContext.Response.StatusCode = status;
         return await problemDetails.TryWriteAsync(new ProblemDetailsContext

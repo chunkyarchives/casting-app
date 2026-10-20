@@ -6,9 +6,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CastingApp.Application.Services.Conversations;
 
-public class MessageService(IAppDbContext db) : IMessageService
+public class MessageService(IAppDbContext db, IChatNotifier notifier) : IMessageService
 {
     private const int maxContentLength = 2000;
+    private const int maxMessagesPerMinute = 20;   // po pošiljaocu, u jednom razgovoru
 
     public async Task<MessageHistoryDto> ListAsync(
         Guid conversationId, Guid viewerId, DateTimeOffset? before, int limit, CancellationToken ct)
@@ -41,9 +42,10 @@ public class MessageService(IAppDbContext db) : IMessageService
         if (text.Length == 0 || text.Length > maxContentLength)
             throw new BadRequestException($"A message must have between 1 and {maxContentLength} characters.");
 
-        await EnsureParticipantAsync(conversationId, senderId, ct);
+        var participants = await EnsureParticipantAsync(conversationId, senderId, ct);
+        await EnsureCanSendAsync(conversationId, senderId, ct);
 
-        // Postgres čuva mikrosekunde, a DateTime ima 100 ns: skraćujemo odmah da vrednost koju vraćamo bude identična onoj u bazi 
+        // Postgres čuva mikrosekunde, a DateTime ima 100 ns: skraćujemo odmah da vrednost koju vraćamo bude identična onoj u bazi
         var now = DateTime.UtcNow;
         var message = new Message
         {
@@ -56,11 +58,17 @@ public class MessageService(IAppDbContext db) : IMessageService
         db.Messages.Add(message);
         await db.SaveChangesAsync(ct);
 
-        return message.ToDto();
+        var dto = message.ToDto();
+
+        // Poruka je već snimljena; notifier sam guta greške isporuke, pa slanje ne pada ako uživo ne stigne
+        await notifier.MessageSentAsync(dto, participants.ActorId, participants.DirectorId, ct);
+
+        return dto;
     }
 
     // Poruke jednog razgovora vide i šalju samo njegovi učesnici (ni admin ne čita tuđe poruke)
-    private async Task EnsureParticipantAsync(Guid conversationId, Guid userId, CancellationToken ct)
+    private async Task<(Guid ActorId, Guid DirectorId)> EnsureParticipantAsync(
+        Guid conversationId, Guid userId, CancellationToken ct)
     {
         var conversation = await db.Conversations.AsNoTracking()
             .Where(c => c.Id == conversationId)
@@ -70,5 +78,32 @@ public class MessageService(IAppDbContext db) : IMessageService
 
         if (userId != conversation.ActorId && userId != conversation.DirectorId)
             throw new ForbiddenException("Only the participants of a conversation can access its messages.");
+
+        return (conversation.ActorId, conversation.DirectorId);
+    }
+
+    // Zaključan nalog i nalog sa nekompletnim profilom ne šalju; uz to ograničenje broja poruka u minuti
+    private async Task EnsureCanSendAsync(Guid conversationId, Guid senderId, CancellationToken ct)
+    {
+        var now = DateTimeOffset.UtcNow;
+
+        var sender = await db.Users.AsNoTracking()
+            .Where(u => u.Id == senderId)
+            .Select(u => new { u.ProfileCompletedAt, u.LockoutEnabled, u.LockoutEnd })
+            .FirstOrDefaultAsync(ct)
+            ?? throw new NotFoundException(nameof(Participant), senderId);
+
+        if (sender.LockoutEnabled && sender.LockoutEnd > now)
+            throw new ForbiddenException("This account is locked.");
+
+        if (sender.ProfileCompletedAt is null)
+            throw new ForbiddenException("Complete your profile before sending messages.");
+
+        var since = DateTime.UtcNow.AddMinutes(-1);
+        var recent = await db.Messages.CountAsync(
+            m => m.ConversationId == conversationId && m.SenderId == senderId && m.SentAt > since, ct);
+
+        if (recent >= maxMessagesPerMinute)
+            throw new TooManyRequestsException("You are sending messages too fast. Try again in a moment.");
     }
 }
