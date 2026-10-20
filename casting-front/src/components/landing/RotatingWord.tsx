@@ -8,7 +8,7 @@ const words = [
   'film.',
   'production.',
   'premiere.',
-  'prequel',
+  'prequel.', // zaboravio sam tačku
   'sequel.',
   'trilogy.',
   'montage.',

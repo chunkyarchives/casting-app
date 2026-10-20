@@ -20,6 +20,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityUser
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<MediaAsset> MediaAssets => Set<MediaAsset>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<AdminAuditEntry> AdminAudit => Set<AdminAuditEntry>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

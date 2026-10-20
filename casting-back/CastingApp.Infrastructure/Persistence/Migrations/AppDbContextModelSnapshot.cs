@@ -70,6 +70,69 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
                     b.ToTable("actor", (string)null);
                 });
 
+            modelBuilder.Entity("CastingApp.Domain.Entities.AdminAuditEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("action");
+
+                    b.Property<string>("AdminEmail")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("admin_email");
+
+                    b.Property<Guid>("AdminId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("admin_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(600)
+                        .HasColumnType("character varying(600)")
+                        .HasColumnName("reason");
+
+                    b.Property<Guid>("TargetId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("target_id");
+
+                    b.Property<string>("TargetLabel")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("target_label");
+
+                    b.Property<string>("TargetType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("target_type");
+
+                    b.HasKey("Id")
+                        .HasName("pk_admin_audit");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_admin_audit_created_at");
+
+                    b.HasIndex("TargetId")
+                        .HasDatabaseName("ix_admin_audit_target");
+
+                    b.ToTable("admin_audit", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_admin_audit_action", "action IN ('LockAccount','UnlockAccount','ForceLogout','DeleteAccount','DeleteFilm','DeleteConversation')");
+                        });
+                });
+
             modelBuilder.Entity("CastingApp.Domain.Entities.CastingDirector", b =>
                 {
                     b.Property<Guid>("ParticipantId")
