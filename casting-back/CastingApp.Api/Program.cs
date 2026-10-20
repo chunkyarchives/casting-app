@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using CastingApp.Api.Auth;
+using CastingApp.Api.RateLimiting;
 using CastingApp.Application.Abstractions;
 using CastingApp.Infrastructure.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -32,7 +33,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
     .Configure<JwtOptions>((bearer, jwt) =>
     {
-        bearer.MapInboundClaims = false;  
+        bearer.MapInboundClaims = false;
         bearer.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -46,7 +47,7 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
             NameClaimType = "name",
             RoleClaimType = "role"
         };
-       
+
         bearer.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
@@ -56,12 +57,13 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
             }
         };
     });
-// builder.Services.AddAuthorization();
 builder.Services.AddAuthorization(o =>
 {
     // Svaki endpoint traži prijavljenog korisnika, osim onih označenih sa [AllowAnonymous]
     o.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
 });
+
+builder.Services.AddCastingRateLimiting();
 
 builder.Services.AddCors(o => o.AddPolicy("frontend", p => p
     .WithOrigins("http://localhost:5173")
@@ -71,7 +73,7 @@ builder.Services.AddCors(o => o.AddPolicy("frontend", p => p
 
 var app = builder.Build();
 
-app.UseExceptionHandler();   
+app.UseExceptionHandler();
 
 app.MapGet("/health", async (AppDbContext db, IConnectionMultiplexer redis) =>
 {
@@ -88,9 +90,13 @@ if (app.Environment.IsDevelopment())
     await DevSeeder.SeedAsync(app.Services);
 }
 
+// Posle DevSeeder-a, jer on preskače seed ako u bazi već postoji bilo koji nalog
+await AdminBootstrapper.EnsureAsync(app.Services, app.Configuration);
+
 app.UseHttpsRedirection();
 app.UseCors("frontend");
 app.UseAuthentication();
+app.UseRateLimiter();      // posle autentikacije, da zna ko je korisnik
 app.UseAuthorization();
 app.MapControllers();
 

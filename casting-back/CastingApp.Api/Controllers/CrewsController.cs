@@ -1,9 +1,11 @@
+using CastingApp.Api.Filters;
+using CastingApp.Api.RateLimiting;
+using CastingApp.Application.Common;
 using CastingApp.Application.DTOs.Crews;
 using CastingApp.Application.Services.Crews;
-using Microsoft.AspNetCore.Mvc;
-using CastingApp.Application.Common;
 using Microsoft.AspNetCore.Authorization;
-using CastingApp.Api.Filters;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace CastingApp.Api.Controllers;
 
@@ -51,6 +53,7 @@ public class CrewsController(ICrewService crews) : ControllerBase
 
     [HttpPost("join")]
     [Authorize(Roles = AppRoles.CastingDirector)]
+    [EnableRateLimiting(RateLimitPolicies.JoinCrew)]
     public async Task<ActionResult<CrewDto>> Join(JoinCrewRequest request, CancellationToken ct)
         => Ok(await crews.JoinAsync(request, ct));
 

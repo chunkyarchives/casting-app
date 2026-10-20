@@ -7,12 +7,12 @@ public record CrewSummaryDto(Guid Id, Guid DirectorId, string ProductionName, in
 
 public record CrewMemberDto(Guid CastingDirectorId, string FirstName, string LastName, DateTime JoinedAt);
 
-// ProductionCode je ovde; kad uvedemo autorizaciju, vide ga samo reditelj i članovi ekipe
+// ProductionCode vide samo reditelj ekipe, njeni članovi i admin; za sve ostale je null
 public record CrewDto(
     Guid Id,
     Guid DirectorId,
     string ProductionName,
-    string ProductionCode,
+    string? ProductionCode,
     DateTime CreatedAt,
     IReadOnlyList<CrewMemberDto> Members);
 
@@ -23,8 +23,8 @@ public record JoinCrewRequest([RegularExpression("^[A-Za-z0-9]{6}$", ErrorMessag
 
 internal static class CrewMappings
 {
-    public static CrewDto ToDto(this Crew c) => new(
-        c.Id, c.DirectorId, c.ProductionName, c.ProductionCode, c.CreatedAt,
+    public static CrewDto ToDto(this Crew c, bool includeCode = false) => new(
+        c.Id, c.DirectorId, c.ProductionName, includeCode ? c.ProductionCode : null, c.CreatedAt,
         c.Memberships
             .OrderBy(m => m.JoinedAt)
             .Select(m => new CrewMemberDto(

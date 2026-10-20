@@ -38,7 +38,7 @@ public class DirectorService(IAppDbContext db, ICurrentUser currentUser, IProfil
             .FirstOrDefaultAsync(d => d.ParticipantId == id, ct)
             ?? throw new NotFoundException(nameof(Director), id);
 
-        return director.ToDto(DateOnly.FromDateTime(DateTime.UtcNow));
+        return director.ToDto(Today(), currentUser.CanSeePrivateDataOf(id));
     }
 
     public async Task<DirectorDto> UpdateAsync(Guid id, UpdateDirectorRequest request, CancellationToken ct)
@@ -57,6 +57,9 @@ public class DirectorService(IAppDbContext db, ICurrentUser currentUser, IProfil
 
         await db.SaveChangesAsync(ct);
         await profileCompletion.RefreshAsync(id, ct);
-        return director.ToDto(DateOnly.FromDateTime(DateTime.UtcNow));
+
+        return director.ToDto(Today(), includePrivate: true);
     }
+
+    private static DateOnly Today() => DateOnly.FromDateTime(DateTime.UtcNow);
 }

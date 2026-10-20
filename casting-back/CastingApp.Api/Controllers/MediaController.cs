@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using CastingApp.Api.RateLimiting;
 using CastingApp.Application.Common;
 using CastingApp.Application.DTOs.Media;
 using CastingApp.Application.Services.Media;
 using CastingApp.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Net.Http.Headers;
 
 namespace CastingApp.Api.Controllers;
@@ -16,6 +18,7 @@ public class MediaController(IMediaService media) : ControllerBase
     private const long ShowreelRequestLimit = 210L * 1024 * 1024;
 
     [HttpPut("me/profile-picture")]
+    [EnableRateLimiting(RateLimitPolicies.Upload)]
     public async Task<ActionResult<ProfilePictureDto>> UploadProfilePicture(IFormFile file, CancellationToken ct)
     {
         await using var stream = file.OpenReadStream();
@@ -35,6 +38,7 @@ public class MediaController(IMediaService media) : ControllerBase
 
     [HttpPost("me/photos")]
     [Authorize(Roles = AppRoles.Actor)]
+    [EnableRateLimiting(RateLimitPolicies.Upload)]
     public async Task<ActionResult<MediaItemDto>> AddPhoto([FromForm] AddPhotoForm form, CancellationToken ct)
     {
         var kind = form.Kind.Trim().ToLowerInvariant() switch
@@ -56,6 +60,7 @@ public class MediaController(IMediaService media) : ControllerBase
 
     [HttpPost("me/showreels")]
     [Authorize(Roles = AppRoles.Actor)]
+    [EnableRateLimiting(RateLimitPolicies.UploadVideo)]
     [RequestSizeLimit(ShowreelRequestLimit)]
     [RequestFormLimits(MultipartBodyLengthLimit = ShowreelRequestLimit)]
     public async Task<ActionResult<MediaItemDto>> AddShowreel([FromForm] AddShowreelForm form, CancellationToken ct)

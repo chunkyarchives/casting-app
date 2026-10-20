@@ -31,7 +31,7 @@ internal static class DirectorMappings
     public static DirectorSummaryDto ToSummaryDto(this Director d) => new(
         d.ParticipantId, d.Participant.FirstName, d.Participant.LastName, d.Origin, d.Gender);
 
-    public static DirectorDto ToDto(this Director d, DateOnly today) => new(
+    public static DirectorDto ToDto(this Director d, DateOnly today, bool includePrivate = false) => new(
         d.ParticipantId, d.Participant.FirstName, d.Participant.LastName,
-        d.DateOfBirth, AgeCalculator.AgeOn(d.DateOfBirth, today), d.Origin, d.Gender, d.Bio);
+        includePrivate ? d.DateOfBirth : null, AgeCalculator.AgeOn(d.DateOfBirth, today), d.Origin, d.Gender, d.Bio);
 }

@@ -14,6 +14,7 @@ public record ActorSummaryDto(
     string? Origin,
     string? Gender);
 
+// DateOfBirth je null za sve osim vlasnika profila i admina; Age vide svi
 public record ActorDto(
     Guid Id,
     string FirstName,
@@ -78,9 +79,10 @@ internal static class ActorMappings
         a.ParticipantId, a.Participant.FirstName, a.Participant.LastName,
         AgeCalculator.AgeOn(a.DateOfBirth, today), a.Height, a.Weight, a.Origin, a.Gender);
 
-    public static ActorDto ToDto(this Actor a, DateOnly today) => new(
+    // includePrivate = true samo kad zahtev šalje vlasnik profila ili admin
+    public static ActorDto ToDto(this Actor a, DateOnly today, bool includePrivate = false) => new(
         a.ParticipantId, a.Participant.FirstName, a.Participant.LastName,
-        a.DateOfBirth, AgeCalculator.AgeOn(a.DateOfBirth, today),
+        includePrivate ? a.DateOfBirth : null, AgeCalculator.AgeOn(a.DateOfBirth, today),
         a.Height, a.Weight, a.Origin, a.Gender, a.Bio,
         a.Links.Select(l => new ActorLinkDto(l.Label, l.Url)).ToList(),
         a.RoleInterests.ToList());

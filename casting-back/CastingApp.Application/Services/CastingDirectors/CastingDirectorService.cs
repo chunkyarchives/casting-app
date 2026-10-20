@@ -38,7 +38,7 @@ public class CastingDirectorService(IAppDbContext db, ICurrentUser currentUser, 
             .FirstOrDefaultAsync(c => c.ParticipantId == id, ct)
             ?? throw new NotFoundException(nameof(CastingDirector), id);
 
-        return castingDirector.ToDto(DateOnly.FromDateTime(DateTime.UtcNow));
+        return castingDirector.ToDto(Today(), currentUser.CanSeePrivateDataOf(id));
     }
 
     public async Task<CastingDirectorDto> UpdateAsync(Guid id, UpdateCastingDirectorRequest request, CancellationToken ct)
@@ -55,6 +55,9 @@ public class CastingDirectorService(IAppDbContext db, ICurrentUser currentUser, 
 
         await db.SaveChangesAsync(ct);
         await profileCompletion.RefreshAsync(id, ct);
-        return castingDirector.ToDto(DateOnly.FromDateTime(DateTime.UtcNow));
+
+        return castingDirector.ToDto(Today(), includePrivate: true);
     }
+
+    private static DateOnly Today() => DateOnly.FromDateTime(DateTime.UtcNow);
 }

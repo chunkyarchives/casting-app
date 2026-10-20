@@ -43,7 +43,7 @@ public class ActorService(IAppDbContext db, ICurrentUser currentUser, IProfileCo
             .FirstOrDefaultAsync(a => a.ParticipantId == id, ct)
             ?? throw new NotFoundException(nameof(Actor), id);
 
-        return actor.ToDto(Today());
+        return actor.ToDto(Today(), currentUser.CanSeePrivateDataOf(id));
     }
 
     public async Task<ActorDto> UpdateAsync(Guid id, UpdateActorRequest request, CancellationToken ct)
@@ -72,7 +72,8 @@ public class ActorService(IAppDbContext db, ICurrentUser currentUser, IProfileCo
 
         await db.SaveChangesAsync(ct);
         await profileCompletion.RefreshAsync(id, ct);
-        return actor.ToDto(Today());
+
+        return actor.ToDto(Today(), includePrivate: true);
     }
 
     private async Task<PagedResult<ActorSummaryDto>> QueryPageAsync(
@@ -89,7 +90,7 @@ public class ActorService(IAppDbContext db, ICurrentUser currentUser, IProfileCo
             .Include(a => a.Participant)
             .OrderBy(a => a.Participant.LastName)
             .ThenBy(a => a.Participant.FirstName)
-            .ThenBy(a => a.ParticipantId)           
+            .ThenBy(a => a.ParticipantId)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(ct);

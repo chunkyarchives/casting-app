@@ -27,7 +27,7 @@ internal static class CastingDirectorMappings
     public static CastingDirectorSummaryDto ToSummaryDto(this CastingDirector c) => new(
         c.ParticipantId, c.Participant.FirstName, c.Participant.LastName, c.Gender);
 
-    public static CastingDirectorDto ToDto(this CastingDirector c, DateOnly today) => new(
+    public static CastingDirectorDto ToDto(this CastingDirector c, DateOnly today, bool includePrivate = false) => new(
         c.ParticipantId, c.Participant.FirstName, c.Participant.LastName,
-        c.DateOfBirth, AgeCalculator.AgeOn(c.DateOfBirth, today), c.Gender);
+        includePrivate ? c.DateOfBirth : null, AgeCalculator.AgeOn(c.DateOfBirth, today), c.Gender);
 }

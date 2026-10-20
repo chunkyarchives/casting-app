@@ -33,12 +33,17 @@ public class CrewService(IAppDbContext db, ICurrentUser currentUser) : ICrewServ
             .FirstOrDefaultAsync(c => c.Id == id, ct)
             ?? throw new NotFoundException(nameof(Crew), id);
 
-        return crew.ToDto();
+        // Kod vide reditelj ekipe, njeni članovi i admin
+        var includeCode = currentUser.IsAdmin()
+            || currentUser.Id == crew.DirectorId
+            || crew.Memberships.Any(m => m.CastingDirectorId == currentUser.Id);
+
+        return crew.ToDto(includeCode);
     }
 
     public async Task<CrewDto> CreateAsync(CreateCrewRequest request, CancellationToken ct)
     {
-        var directorId = currentUser.Id; 
+        var directorId = currentUser.Id;
         if (!await db.Directors.AnyAsync(d => d.ParticipantId == directorId, ct))
             throw new NotFoundException(nameof(Director), directorId);
 
@@ -96,13 +101,13 @@ public class CrewService(IAppDbContext db, ICurrentUser currentUser) : ICrewServ
 
         currentUser.EnsureOwnerOrAdmin(crew.DirectorId);
 
-        db.Crews.Remove(crew);      
+        db.Crews.Remove(crew);
         await db.SaveChangesAsync(ct);
     }
 
     public async Task<CrewDto> JoinAsync(JoinCrewRequest request, CancellationToken ct)
     {
-        var castingDirectorId = currentUser.Id;  
+        var castingDirectorId = currentUser.Id;
         var code = request.ProductionCode.Trim().ToUpperInvariant();
 
         var crew = await db.Crews.AsNoTracking().FirstOrDefaultAsync(c => c.ProductionCode == code, ct)

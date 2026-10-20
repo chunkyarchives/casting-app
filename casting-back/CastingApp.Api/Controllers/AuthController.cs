@@ -1,10 +1,12 @@
 using CastingApp.Api.Auth;
+using CastingApp.Api.RateLimiting;
 using CastingApp.Application.Abstractions;
 using CastingApp.Application.Common;
 using CastingApp.Application.DTOs.Auth;
 using CastingApp.Application.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace CastingApp.Api.Controllers;
 
@@ -14,6 +16,7 @@ public class AuthController(IAuthService auth, ISessionService sessions, IWebHos
 {
     [HttpPost("register")]
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
     public async Task<ActionResult<MeDto>> Register(RegisterRequest request, CancellationToken ct)
     {
         var result = await auth.RegisterAsync(request);
@@ -23,6 +26,7 @@ public class AuthController(IAuthService auth, ISessionService sessions, IWebHos
 
     [HttpPost("login")]
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.Auth)]
     public async Task<ActionResult<MeDto>> Login(LoginRequest request, CancellationToken ct)
     {
         var result = await auth.LoginAsync(request);
@@ -33,6 +37,7 @@ public class AuthController(IAuthService auth, ISessionService sessions, IWebHos
     // Mora biti AllowAnonymous: poziva se upravo kad je access token istekao
     [HttpPost("refresh")]
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.Refresh)]
     public async Task<IActionResult> Refresh(CancellationToken ct)
     {
         try
