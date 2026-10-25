@@ -104,7 +104,7 @@ await AdminBootstrapper.EnsureAsync(app.Services, app.Configuration);
 app.UseHttpsRedirection();
 app.UseCors("frontend");
 app.UseAuthentication();
-app.UseRateLimiter();      // posle autentikacije, da zna ko je korisnik
+app.UseCastingRateLimiting();   // posle autentikacije, da zna ko je korisnik
 app.UseAuthorization();
 app.MapControllers();
 

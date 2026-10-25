@@ -8,7 +8,12 @@ using CastingApp.Application.Services.Profiles;
 
 namespace CastingApp.Application.Services.Media;
 
-public class MediaService(IAppDbContext db, IMediaStorage storage, ICurrentUser currentUser, IProfileCompletionService profileCompletion) : IMediaService
+public class MediaService(
+    IAppDbContext db,
+    IMediaStorage storage,
+    ICurrentUser currentUser,
+    IProfileCompletionService profileCompletion,
+    IMediaMetadataCache cache) : IMediaService
 {
     public async Task<ProfilePictureDto> SetProfilePictureAsync(Stream content, long length, CancellationToken ct)
     {
@@ -37,6 +42,7 @@ public class MediaService(IAppDbContext db, IMediaStorage storage, ICurrentUser 
             throw new ConflictException("The profile picture was changed at the same time. Try again.");
         }
 
+        await InvalidateProfilePictureAsync(userId, oldAsset?.Id, ct);
         await profileCompletion.RefreshAsync(userId, ct);
 
         if (oldAsset is not null)
@@ -52,7 +58,7 @@ public class MediaService(IAppDbContext db, IMediaStorage storage, ICurrentUser 
             ?? throw new NotFoundException(nameof(Participant), userId);
 
         if (user.ProfilePictureId is not { } assetId)
-            return;   
+            return;
 
         var asset = await db.MediaAssets.FirstOrDefaultAsync(m => m.Id == assetId, ct);
 
@@ -62,28 +68,21 @@ public class MediaService(IAppDbContext db, IMediaStorage storage, ICurrentUser 
 
         await db.SaveChangesAsync(ct);
 
+        await InvalidateProfilePictureAsync(userId, asset?.Id, ct);
         await profileCompletion.RefreshAsync(userId, ct);
 
         if (asset is not null)
             await TryDeleteFileAsync(asset.StorageKey);
     }
+
     public async Task<MediaFile> GetProfilePictureAsync(Guid participantId, CancellationToken ct)
     {
-        var owner = await db.Users.AsNoTracking()
-            .Where(u => u.Id == participantId)
-            .Select(u => new { u.Role, u.ProfilePictureId })
-            .FirstOrDefaultAsync(ct)
+        var meta = await ProfilePictureMetaAsync(participantId, ct)
             ?? throw new NotFoundException("Profile picture", participantId);
 
-        EnsureCanViewProfilePicture(participantId, owner.Role);
+        EnsureCanViewProfilePicture(participantId, meta.OwnerRole!.Value);
 
-        var asset = owner.ProfilePictureId is { } assetId
-            ? await db.MediaAssets.AsNoTracking().FirstOrDefaultAsync(m => m.Id == assetId, ct)
-            : null;
-        if (asset is null)
-            throw new NotFoundException("Profile picture", participantId);
-
-        return await OpenAsync(asset, ct);
+        return await OpenAsync(meta, ct);
     }
 
     public async Task<MediaItemDto> AddAsync(MediaKind kind, string? caption, Stream content, long length, CancellationToken ct)
@@ -108,7 +107,7 @@ public class MediaService(IAppDbContext db, IMediaStorage storage, ICurrentUser 
         }
         catch
         {
-            await storage.DeleteAsync(asset.StorageKey, CancellationToken.None);   // bez reda u bazi fajl nikome ne treba
+            await storage.DeleteAsync(asset.StorageKey, CancellationToken.None);   
             throw;
         }
 
@@ -133,23 +132,23 @@ public class MediaService(IAppDbContext db, IMediaStorage storage, ICurrentUser 
 
     public async Task<MediaFile> GetAsync(Guid mediaId, CancellationToken ct)
     {
-        var asset = await db.MediaAssets.AsNoTracking().FirstOrDefaultAsync(m => m.Id == mediaId, ct)
+        var meta = await cache.GetAsync(mediaId, ct)
+            ?? await LoadMetaAsync(mediaId, ct)
             ?? throw new NotFoundException("Media", mediaId);
 
-        if (asset.Kind == MediaKind.ProfilePicture)
+        // Pravo pristupa se računa na svaki zahtev, i kad su metapodaci iz keša
+        if (meta.Kind == MediaKind.ProfilePicture)
         {
-            var ownerRole = await db.Users.AsNoTracking()
-                .Where(u => u.Id == asset.OwnerId)
-                .Select(u => u.Role)
-                .FirstAsync(ct);
-            EnsureCanViewProfilePicture(asset.OwnerId, ownerRole);
+            var ownerRole = meta.OwnerRole
+                ?? throw new InvalidOperationException("A cached profile picture is missing its owner role.");
+            EnsureCanViewProfilePicture(meta.OwnerId, ownerRole);
         }
         else
         {
-            EnsureCanViewPortfolio(asset.OwnerId);
+            EnsureCanViewPortfolio(meta.OwnerId);
         }
 
-        return await OpenAsync(asset, ct);
+        return await OpenAsync(meta, ct);
     }
 
     public async Task DeleteAsync(Guid mediaId, CancellationToken ct)
@@ -165,8 +164,64 @@ public class MediaService(IAppDbContext db, IMediaStorage storage, ICurrentUser 
         db.MediaAssets.Remove(asset);
         await db.SaveChangesAsync(ct);
 
+        await cache.RemoveAssetAsync(asset.Id, ct);
         await TryDeleteFileAsync(asset.StorageKey);
     }
+
+    private async Task<MediaMeta?> LoadMetaAsync(Guid mediaId, CancellationToken ct)
+    {
+        var asset = await db.MediaAssets.AsNoTracking().FirstOrDefaultAsync(m => m.Id == mediaId, ct);
+        if (asset is null)
+            return null;
+
+        ParticipantRole? ownerRole = null;
+        if (asset.Kind == MediaKind.ProfilePicture)
+        {
+            ownerRole = await db.Users.AsNoTracking()
+                .Where(u => u.Id == asset.OwnerId)
+                .Select(u => (ParticipantRole?)u.Role)
+                .FirstOrDefaultAsync(ct);
+        }
+
+        var meta = ToMeta(asset, ownerRole);
+        await cache.SetAsync(meta, ct);
+        return meta;
+    }
+
+    // Trenutna profilna slika učesnika: keš (id slike pa metapodaci), a ako nešto fali zovemo bazu
+    private async Task<MediaMeta?> ProfilePictureMetaAsync(Guid participantId, CancellationToken ct)
+    {
+        if (await cache.GetProfilePictureIdAsync(participantId, ct) is { } cachedId
+            && await cache.GetAsync(cachedId, ct) is { OwnerRole: not null } cachedMeta)
+            return cachedMeta;
+
+        var owner = await db.Users.AsNoTracking()
+            .Where(u => u.Id == participantId)
+            .Select(u => new { u.Role, u.ProfilePictureId })
+            .FirstOrDefaultAsync(ct);
+
+        if (owner?.ProfilePictureId is not { } assetId)
+            return null;
+
+        var asset = await db.MediaAssets.AsNoTracking().FirstOrDefaultAsync(m => m.Id == assetId, ct);
+        if (asset is null)
+            return null;
+
+        var meta = ToMeta(asset, owner.Role);
+        await cache.SetAsync(meta, ct);
+        await cache.SetProfilePictureIdAsync(participantId, assetId, ct);
+        return meta;
+    }
+
+    private async Task InvalidateProfilePictureAsync(Guid ownerId, Guid? assetId, CancellationToken ct)
+    {
+        await cache.RemoveProfilePictureAsync(ownerId, ct);
+        if (assetId is { } id)
+            await cache.RemoveAssetAsync(id, ct);
+    }
+
+    private static MediaMeta ToMeta(MediaAsset a, ParticipantRole? ownerRole) =>
+        new(a.Id, a.OwnerId, a.Kind, a.ContentType, a.StorageKey, a.CreatedAt, ownerRole);
 
     private async Task<MediaAsset> ValidateAndStoreAsync(MediaKind kind, string? caption, Stream content, long length, CancellationToken ct)
     {
@@ -206,7 +261,6 @@ public class MediaService(IAppDbContext db, IMediaStorage storage, ICurrentUser 
         return asset;
     }
 
-    // Čita prvih 64 bajta za prepoznavanje tipa i vraća tok na početak
     private static async Task<byte[]> ReadHeaderAsync(Stream content, CancellationToken ct)
     {
         if (!content.CanSeek)
@@ -226,11 +280,11 @@ public class MediaService(IAppDbContext db, IMediaStorage storage, ICurrentUser 
         return header[..total];
     }
 
-    private async Task<MediaFile> OpenAsync(MediaAsset asset, CancellationToken ct)
+    private async Task<MediaFile> OpenAsync(MediaMeta meta, CancellationToken ct)
     {
-        var stream = await storage.OpenReadAsync(asset.StorageKey, ct)
-            ?? throw new NotFoundException("Media", asset.Id);
-        return new MediaFile(stream, asset.ContentType, asset.Id, asset.CreatedAt);
+        var stream = await storage.OpenReadAsync(meta.StorageKey, ct)
+            ?? throw new NotFoundException("Media", meta.AssetId);
+        return new MediaFile(stream, meta.ContentType, meta.AssetId, meta.CreatedAt);
     }
 
     private void EnsureCanViewProfilePicture(Guid ownerId, ParticipantRole ownerRole)
@@ -264,10 +318,9 @@ public class MediaService(IAppDbContext db, IMediaStorage storage, ICurrentUser 
     private static MediaItemDto ToItemDto(MediaAsset a) =>
         new(a.Id, a.Kind, a.Caption, a.ContentType, a.SizeBytes, a.CreatedAt, $"/api/media/{a.Id}");
 
-    // Fajl bez reda u bazi je samo smeće, ne greška: ne rušimo zahtev ako brisanje ne uspe
     private async Task TryDeleteFileAsync(string key)
     {
         try { await storage.DeleteAsync(key, CancellationToken.None); }
-        catch { /* siroče na disku je bezopasno */ }
+        catch {}
     }
 }

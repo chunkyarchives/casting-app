@@ -6,6 +6,7 @@ using CastingApp.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 using System.Text;
 
@@ -54,6 +55,15 @@ public static class DependencyInjection
         if (string.IsNullOrWhiteSpace(mediaRoot))
             mediaRoot = Path.Combine(AppContext.BaseDirectory, "media");   // bin\Debug\net10.0\media
         services.AddSingleton<IMediaStorage>(new LocalMediaStorage(mediaRoot));
+
+        // Keš metapodataka slika u Redisu; Cache:MediaMetadataSeconds = 0 isključuje keširanje
+        var cacheSeconds = int.TryParse(config["Cache:MediaMetadataSeconds"], out var seconds) && seconds >= 0
+            ? seconds
+            : 300;
+        services.AddSingleton<IMediaMetadataCache>(sp => new RedisMediaMetadataCache(
+            sp.GetRequiredService<IConnectionMultiplexer>(),
+            sp.GetRequiredService<ILogger<RedisMediaMetadataCache>>(),
+            TimeSpan.FromSeconds(cacheSeconds)));
 
         return services;
     }
