@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { authApi } from '@/lib/api/auth'
-import type { CurrentParticipant, SignInRequest } from '@/types/participant'
+import type { CurrentParticipant, SignInRequest, SignUpRequest } from '@/types/participant'
 import { SessionContext, type SessionStatus } from './session-context'
 
 export function SessionProvider({ children }: { children: ReactNode }) {
@@ -32,6 +32,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return me
   }
 
+  const signUp = async (request: SignUpRequest) => {
+    const me = await authApi.signUp(request)
+    setParticipant(me)
+    return me
+  }
+
   const signOut = async () => {
     try {
       await authApi.signOut()
@@ -42,7 +48,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <SessionContext value={{ status, participant, signIn, signOut }}>
+    <SessionContext value={{ status, participant, signIn, signUp, signOut }}>
       {children}
     </SessionContext>
   )

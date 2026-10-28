@@ -22,7 +22,6 @@ export type SignInRequest = {
 export type SignUpRequest = {
   firstName: string
   lastName: string
-  username: string
   email: string
   password: string 
   role: ParticipantRole

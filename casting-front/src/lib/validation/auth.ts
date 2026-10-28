@@ -1,11 +1,10 @@
 import * as z from 'zod'
 import { signUpRoles } from '@/types/participant'
 
-// Unicode letters (č, ć, đ, ž...), spaces, apostrophes, hyphens, dots
 const nameChars = /^[\p{L}\p{M}][\p{L}\p{M}'’. -]*$/u
-const usernameChars = /^[a-zA-Z0-9_]+$/
 
-// "Donny De Pippa" -> { firstName: "Donny", lastName: "De Pippa" }
+const specialChar = /[^a-zA-Z0-9]/
+
 export function splitFullName(fullName: string) {
   const [firstName, ...rest] = fullName.trim().replace(/\s+/g, ' ').split(' ')
   return { firstName, lastName: rest.join(' ') }
@@ -25,12 +24,6 @@ export const signUpSchema = z
       .max(100, 'Name is too long')
       .regex(nameChars, 'Name can only contain letters, spaces, apostrophes, hyphens and dots')
       .refine((v) => v.split(/\s+/).length >= 2, 'Enter both first and last name'),
-    username: z
-      .string()
-      .trim()
-      .min(3, 'Username must be at least 3 characters')
-      .max(30, 'Username must be at most 30 characters')
-      .regex(usernameChars, 'Only letters, numbers and underscores'),
     email: z
       .string()
       .trim()
@@ -42,7 +35,8 @@ export const signUpSchema = z
       .max(100, 'Password must be at most 100 characters')
       .regex(/[a-z]/, 'Add a lowercase letter')
       .regex(/[A-Z]/, 'Add an uppercase letter')
-      .regex(/\d/, 'Add a number'),
+      .regex(/\d/, 'Add a number')
+      .regex(specialChar, 'Add a special character, for example ! or #'),
     confirmPassword: z.string().min(1, 'Confirm your password'),
     role: z.enum(signUpRoles, { error: 'Choose your role' }),
   })

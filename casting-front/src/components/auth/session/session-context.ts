@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react'
-import type { CurrentParticipant, SignInRequest } from '@/types/participant'
+import type { CurrentParticipant, SignInRequest, SignUpRequest } from '@/types/participant'
 
 export type SessionStatus = 'loading' | 'ready'
 
@@ -7,6 +7,7 @@ type SessionContextValue = {
   status: SessionStatus
   participant: CurrentParticipant | null
   signIn: (request: SignInRequest) => Promise<CurrentParticipant>
+  signUp: (request: SignUpRequest) => Promise<CurrentParticipant>
   signOut: () => Promise<void>
 }
 

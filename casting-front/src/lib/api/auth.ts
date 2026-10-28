@@ -1,9 +1,16 @@
-import type { CurrentParticipant, SignInRequest } from '@/types/participant'
+import type { CurrentParticipant, SignInRequest, SignUpRequest } from '@/types/participant'
 import { request } from './http'
 
 export const authApi = {
   signIn: (body: SignInRequest) =>
     request<CurrentParticipant>('/api/auth/login', {
+      method: 'POST',
+      body,
+      refreshOnUnauthorized: false,
+    }),
+
+  signUp: (body: SignUpRequest) =>
+    request<CurrentParticipant>('/api/auth/register', {
       method: 'POST',
       body,
       refreshOnUnauthorized: false,

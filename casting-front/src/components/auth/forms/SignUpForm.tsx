@@ -1,15 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
-import {
-  FieldError,
-  FieldGroup,
-  FieldLegend,
-  FieldSet,
-} from '@/components/ui/field'
+import { FieldError, FieldGroup, FieldLegend, FieldSet } from '@/components/ui/field'
 import { Separator } from '@/components/ui/separator'
 import { signUpSchema, splitFullName, type SignUpValues } from '@/lib/validation/auth'
 import { cn } from '@/lib/utils'
-import type { SignUpRequest, SignUpRole } from '@/types/participant'
+import type { SignUpRole } from '@/types/participant'
+import { signUpErrors } from '../auth-errors'
+import { useSignUp } from '../useSignUp'
 import { AuthTextField } from './AuthTextField'
 import { signUpFormId } from './form-ids'
 
@@ -28,27 +25,42 @@ const roleOptions: { value: SignUpRole; label: string; description: string }[] =
     value: 'CastingDirector',
     label: 'Casting Director',
     description: "Join a director's crew and match actors to roles.",
-  },
+  }
 ]
 
-export function SignUpForm() {
-  const { control, handleSubmit } = useForm<SignUpValues>({
+type Props = {
+  onPendingChange: (pending: boolean) => void
+  onSuccess: () => void
+}
+
+export function SignUpForm({ onPendingChange, onSuccess }: Props) {
+  const {
+    control,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm<SignUpValues>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { fullName: '', username: '', email: '', password: '', confirmPassword: '' },
+    defaultValues: { fullName: '', email: '', password: '', confirmPassword: '' },
     mode: 'onTouched',
   })
 
-  const onSubmit = ({ fullName, username, email, password, role }: SignUpValues) => {
+  const signUp = useSignUp()
+
+  const onSubmit = async ({ fullName, email, password, role }: SignUpValues) => {
     const { firstName, lastName } = splitFullName(fullName)
-    const payload: SignUpRequest = {
-      firstName,
-      lastName,
-      username,
-      email: email.toLowerCase(),
-      password,
-      role,
+
+    onPendingChange(true)
+    try {
+      await signUp({ firstName, lastName, email: email.toLowerCase(), password, role })
+      onSuccess()
+    } catch (error) {
+      for (const { field, message } of signUpErrors(error)) {
+        setError(field, { message })
+      }
+    } finally {
+      onPendingChange(false)
     }
-    if (import.meta.env.DEV) console.table(payload)
   }
 
   return (
@@ -61,13 +73,6 @@ export function SignUpForm() {
           autoComplete="name"
           placeholder="Dale Cooper"
           maxLength={100}
-        />
-        <AuthTextField
-          control={control}
-          name="username"
-          label="Username"
-          autoComplete="username"
-          maxLength={30}
         />
         <AuthTextField
           control={control}
@@ -97,58 +102,62 @@ export function SignUpForm() {
         <Separator />
 
         <Controller
-            name="role"
-            control={control}
-            render={({ field, fieldState }) => {
-                const selected = roleOptions.find((option) => option.value === field.value)
+          name="role"
+          control={control}
+          render={({ field, fieldState }) => {
+            const selected = roleOptions.find((option) => option.value === field.value)
 
-                return (
-                <FieldSet data-invalid={fieldState.invalid}>
-                  <FieldLegend variant="label" className="w-full text-center">Join as</FieldLegend>
-                    <div
-                    className={cn(
-                        'grid grid-cols-[1fr_1fr_1.35fr] gap-1 rounded-full bg-muted p-0.75',
-                        fieldState.invalid && 'ring-1 ring-destructive',
-                    )}
+            return (
+              <FieldSet data-invalid={fieldState.invalid}>
+                <FieldLegend variant="label" className="w-full text-center">
+                  Join as
+                </FieldLegend>
+                <div
+                  className={cn(
+                    'grid grid-cols-[1fr_1fr_1.35fr] gap-1 rounded-full bg-muted p-0.75',
+                    fieldState.invalid && 'ring-1 ring-destructive',
+                  )}
+                >
+                  {roleOptions.map(({ value, label }) => (
+                    <label
+                      key={value}
+                      className={cn(
+                        'flex h-8 cursor-pointer items-center justify-center rounded-full px-2 text-center text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors',
+                        'hover:text-foreground',
+                        'has-checked:bg-input/50 has-checked:text-foreground',
+                        'has-focus-visible:ring-3 has-focus-visible:ring-ring/50',
+                      )}
                     >
-                    {roleOptions.map(({ value, label }) => (
-                        <label
-                        key={value}
-                        className={cn(
-                            'flex h-8 cursor-pointer items-center justify-center rounded-full px-2 text-center text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors',
-                            'hover:text-foreground',
-                            'has-checked:bg-input/50 has-checked:text-foreground',
-                            'has-focus-visible:ring-3 has-focus-visible:ring-ring/50',
-                        )}
-                        >
-                        <input
-                            type="radio"
-                            className="sr-only"
-                            name={field.name}
-                            value={value}
-                            checked={field.value === value}
-                            onChange={() => field.onChange(value)}
-                            onBlur={field.onBlur}
-                            aria-invalid={fieldState.invalid}
-                        />
-                        {label}
-                        </label>
-                    ))}
-                    </div>
+                      <input
+                        type="radio"
+                        className="sr-only"
+                        name={field.name}
+                        value={value}
+                        checked={field.value === value}
+                        onChange={() => field.onChange(value)}
+                        onBlur={field.onBlur}
+                        aria-invalid={fieldState.invalid}
+                      />
+                      {label}
+                    </label>
+                  ))}
+                </div>
 
-                    <div aria-live="polite" className="min-h-10 text-center text-sm">
-                    {fieldState.invalid ? (
-                        <FieldError errors={[fieldState.error]} className="text-center" />
-                    ) : (
-                        <p className="text-muted-foreground">
-                        {selected?.description ?? 'Pick the option that fits you.'}
-                        </p>
-                    )}
-                    </div>
-                </FieldSet>
-                )
-            }}
-            />
+                <div aria-live="polite" className="min-h-10 text-center text-sm">
+                  {fieldState.invalid ? (
+                    <FieldError errors={[fieldState.error]} className="text-center" />
+                  ) : (
+                    <p className="text-muted-foreground">
+                      {selected?.description ?? 'Pick the option that fits you.'}
+                    </p>
+                  )}
+                </div>
+              </FieldSet>
+            )
+          }}
+        />
+
+        <FieldError className="text-center">{errors.root?.server?.message}</FieldError>
       </FieldGroup>
     </form>
   )

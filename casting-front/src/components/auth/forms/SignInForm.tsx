@@ -1,12 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { useNavigate } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { FieldError, FieldGroup, FieldSeparator } from '@/components/ui/field'
-import { roleHomePath } from '@/lib/routes'
 import { signInSchema, type SignInValues } from '@/lib/validation/auth'
+import { authErrorMessage } from '../auth-errors'
 import { useCurrentParticipant } from '../useCurrentParticipant'
-import { signInErrorMessage, useSignIn } from '../useSignIn'
+import { useGoToRoleHome } from '../useGoToRoleHome'
+import { useSignIn } from '../useSignIn'
 import { AuthTextField } from './AuthTextField'
 import { signInFormId } from './form-ids'
 
@@ -16,16 +16,20 @@ type Props = {
 }
 
 export function SignInForm({ onPendingChange, onSuccess }: Props) {
-  const { control, handleSubmit, setError, formState: { errors }} = useForm<SignInValues>(
-  {
+  const {
+    control,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: '', password: '' },
-    mode: 'onTouched'
+    mode: 'onTouched',
   })
 
   const signIn = useSignIn()
   const participant = useCurrentParticipant()
-  const navigate = useNavigate()
+  const goToRoleHome = useGoToRoleHome()
 
   const onSubmit = async (values: SignInValues) => {
     onPendingChange(true)
@@ -33,7 +37,7 @@ export function SignInForm({ onPendingChange, onSuccess }: Props) {
       await signIn(values)
       onSuccess()
     } catch (error) {
-      setError('root.server', { message: signInErrorMessage(error) })
+      setError('root.server', { message: authErrorMessage(error) })
     } finally {
       onPendingChange(false)
     }
@@ -41,7 +45,7 @@ export function SignInForm({ onPendingChange, onSuccess }: Props) {
 
   const continueAsParticipant = () => {
     if (!participant) return
-    navigate(roleHomePath(participant.role))
+    goToRoleHome(participant.role)
     onSuccess()
   }
 
