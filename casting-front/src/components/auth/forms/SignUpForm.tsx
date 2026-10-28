@@ -9,11 +9,11 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { signUpSchema, splitFullName, type SignUpValues } from '@/lib/validation/auth'
 import { cn } from '@/lib/utils'
-import type { ParticipantRole, SignUpRequest } from '@/types/participant'
+import type { SignUpRequest, SignUpRole } from '@/types/participant'
 import { AuthTextField } from './AuthTextField'
 import { signUpFormId } from './form-ids'
 
-const roleOptions: { value: ParticipantRole; label: string; description: string }[] = [
+const roleOptions: { value: SignUpRole; label: string; description: string }[] = [
   {
     value: 'Actor',
     label: 'Actor',
@@ -83,7 +83,7 @@ export function SignUpForm() {
           label="Password"
           type="password"
           autoComplete="new-password"
-          maxLength={128}
+          maxLength={100}
         />
         <AuthTextField
           control={control}
@@ -91,7 +91,7 @@ export function SignUpForm() {
           label="Confirm password"
           type="password"
           autoComplete="new-password"
-          maxLength={128}
+          maxLength={100}
         />
 
         <Separator />

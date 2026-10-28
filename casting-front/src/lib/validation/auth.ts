@@ -1,5 +1,5 @@
 import * as z from 'zod'
-import { participantRoles } from '@/types/participant'
+import { signUpRoles } from '@/types/participant'
 
 // Unicode letters (č, ć, đ, ž...), spaces, apostrophes, hyphens, dots
 const nameChars = /^[\p{L}\p{M}][\p{L}\p{M}'’. -]*$/u
@@ -13,7 +13,7 @@ export function splitFullName(fullName: string) {
 
 export const signInSchema = z.object({
   email: z.string().trim().min(1, 'Enter your e-mail').max(254, 'E-mail is too long'),
-  password: z.string().min(1, 'Enter your password').max(128, 'Password is too long'),
+  password: z.string().min(1, 'Enter your password').max(100, 'Password is too long'),
 })
 
 export const signUpSchema = z
@@ -39,12 +39,12 @@ export const signUpSchema = z
     password: z
       .string()
       .min(8, 'Password must be at least 8 characters')
-      .max(128, 'Password must be at most 128 characters')
+      .max(100, 'Password must be at most 100 characters')
       .regex(/[a-z]/, 'Add a lowercase letter')
       .regex(/[A-Z]/, 'Add an uppercase letter')
       .regex(/\d/, 'Add a number'),
     confirmPassword: z.string().min(1, 'Confirm your password'),
-    role: z.enum(participantRoles, { error: 'Choose your role' }),
+    role: z.enum(signUpRoles, { error: 'Choose your role' }),
   })
   .refine((d) => d.password === d.confirmPassword, {
     path: ['confirmPassword'],

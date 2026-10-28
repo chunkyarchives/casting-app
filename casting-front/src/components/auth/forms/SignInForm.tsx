@@ -1,25 +1,49 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { FieldGroup, FieldSeparator } from '@/components/ui/field'
+import { useNavigate } from 'react-router'
+import { Button } from '@/components/ui/button'
+import { FieldError, FieldGroup, FieldSeparator } from '@/components/ui/field'
+import { roleHomePath } from '@/lib/routes'
 import { signInSchema, type SignInValues } from '@/lib/validation/auth'
-import type { SignInRequest } from '@/types/participant'
+import { useCurrentParticipant } from '../useCurrentParticipant'
+import { signInErrorMessage, useSignIn } from '../useSignIn'
 import { AuthTextField } from './AuthTextField'
 import { signInFormId } from './form-ids'
-import { useCurrentParticipant } from '../useCurrentParticipant'
 
-export function SignInForm() {
-  const { control, handleSubmit } = useForm<SignInValues>({
+type Props = {
+  onPendingChange: (pending: boolean) => void
+  onSuccess: () => void
+}
+
+export function SignInForm({ onPendingChange, onSuccess }: Props) {
+  const { control, handleSubmit, setError, formState: { errors }} = useForm<SignInValues>(
+  {
     resolver: zodResolver(signInSchema),
     defaultValues: { email: '', password: '' },
-    mode: 'onTouched',
+    mode: 'onTouched'
   })
 
-  const onSubmit = (values: SignInValues) => {
-    const payload: SignInRequest = values
-    if (import.meta.env.DEV) console.table(payload)
+  const signIn = useSignIn()
+  const participant = useCurrentParticipant()
+  const navigate = useNavigate()
+
+  const onSubmit = async (values: SignInValues) => {
+    onPendingChange(true)
+    try {
+      await signIn(values)
+      onSuccess()
+    } catch (error) {
+      setError('root.server', { message: signInErrorMessage(error) })
+    } finally {
+      onPendingChange(false)
+    }
   }
 
-  const participant = useCurrentParticipant()
+  const continueAsParticipant = () => {
+    if (!participant) return
+    navigate(roleHomePath(participant.role))
+    onSuccess()
+  }
 
   return (
     <form id={signInFormId} noValidate onSubmit={handleSubmit(onSubmit)}>
@@ -38,18 +62,21 @@ export function SignInForm() {
           label="Password"
           type="password"
           autoComplete="current-password"
-          maxLength={128}
+          maxLength={100}
         />
 
+        <FieldError>{errors.root?.server?.message}</FieldError>
+
         {participant && (
-            <>
-                <FieldSeparator>or</FieldSeparator>
-                {/* "Continue as <avatar> {participant.firstName}" button */}
-            </>
+          <>
+            <FieldSeparator>or</FieldSeparator>
+            {/* TODO: avatar from participant.profilePictureUrl */}
+            <Button type="button" variant="outline" onClick={continueAsParticipant}>
+              Continue as {participant.firstName}
+            </Button>
+          </>
         )}
 
-        {/* Reserved: "Continue as <avatar> username" button for an already
-            signed-in participant, once auth exists on the backend */}
         <div className="min-h-20" />
       </FieldGroup>
     </form>

@@ -77,7 +77,8 @@ builder.Services.AddCors(o => o.AddPolicy("frontend", p => p
     .WithOrigins("http://localhost:5173")
     .AllowAnyHeader()
     .AllowAnyMethod()
-    .AllowCredentials()));
+    .AllowCredentials()
+    .WithExposedHeaders("Retry-After")));
 
 var app = builder.Build();
 

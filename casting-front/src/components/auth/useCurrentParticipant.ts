@@ -1,12 +1,5 @@
-import type { ParticipantRole } from '@/types/participant'
+import { useSession } from './session/session-context'
 
-export type CurrentParticipant = {
-  username: string
-  firstName: string
-  role: ParticipantRole
-}
-
-export function useCurrentParticipant(): CurrentParticipant | null {
-  // TODO: read from the auth state, filled by GET /api/auth/me
-  return null
+export function useCurrentParticipant() {
+  return useSession().participant
 }
