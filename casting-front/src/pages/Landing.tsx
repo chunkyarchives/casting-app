@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import { useAuthDrawer } from '@/components/auth/drawer/auth-context'
 import { RotatingWord } from '@/components/landing/RotatingWord'
 
-export default function LandingPage() {
+export default function Landing() {
   const { openAuth } = useAuthDrawer()
 
   return (

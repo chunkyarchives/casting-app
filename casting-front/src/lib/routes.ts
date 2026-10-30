@@ -6,6 +6,7 @@ export const paths = {
   director: '/director',
   castingDirector: '/casting-director',
   admin: '/admin',
+  adminStatistics: '/admin/statistics',
 } as const
 
 const roleHomePaths: Record<ParticipantRole, string> = {

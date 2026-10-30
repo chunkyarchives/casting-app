@@ -1,5 +1,5 @@
 import type { SignUpRequest } from '@/types/participant'
-import { useSession } from './session/session-context'
+import { useSession } from '../session/session-context'
 import { useGoToRoleHome } from './useGoToRoleHome'
 
 export function useSignUp() {

@@ -1,20 +1,11 @@
 import { ApiError } from '@/lib/api/http'
+import { apiErrorMessage } from '@/lib/api/errors'
 
 export function authErrorMessage(error: unknown): string {
-  if (!(error instanceof ApiError)) return 'Something went wrong. Try again.'
-
-  switch (error.status) {
-    case 0:
-      return "Can't reach the server. Check your connection and try again."
-    case 401:
-      return error.detail ?? 'Wrong e-mail or password.'
-    case 429:
-      return error.retryAfterSeconds
-        ? `Too many attempts. Try again in ${error.retryAfterSeconds} s.`
-        : 'Too many attempts. Try again in a minute.'
-    default:
-      return error.detail ?? error.title
+  if (error instanceof ApiError && error.status === 401) {
+    return error.detail ?? 'Wrong e-mail or password.'
   }
+  return apiErrorMessage(error)
 }
 
 type SignUpErrorField = 'fullName' | 'email' | 'password' | 'role' | 'root.server'

@@ -3,10 +3,10 @@ import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { FieldError, FieldGroup, FieldSeparator } from '@/components/ui/field'
 import { signInSchema, type SignInValues } from '@/lib/validation/auth'
-import { authErrorMessage } from '../auth-errors'
+import { authErrorMessage } from './auth-errors'
 import { useCurrentParticipant } from '../useCurrentParticipant'
-import { useGoToRoleHome } from '../useGoToRoleHome'
-import { useSignIn } from '../useSignIn'
+import { useGoToRoleHome } from '../hooks/useGoToRoleHome'
+import { useSignIn } from '../hooks/useSignIn'
 import { AuthTextField } from './AuthTextField'
 import { signInFormId } from './form-ids'
 
@@ -38,9 +38,8 @@ export function SignInForm({ onPendingChange, onSuccess }: Props) {
       onSuccess()
     } catch (error) {
       setError('root.server', { message: authErrorMessage(error) })
-    } finally {
-      onPendingChange(false)
     }
+    onPendingChange(false)
   }
 
   const continueAsParticipant = () => {

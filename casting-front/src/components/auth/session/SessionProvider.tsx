@@ -42,9 +42,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     try {
       await authApi.signOut()
     } catch {
-    } finally {
-      setParticipant(null)
+      // Clear the local session even when the server can't be reached
     }
+    setParticipant(null)
   }
 
   return (

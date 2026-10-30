@@ -5,8 +5,8 @@ import { Separator } from '@/components/ui/separator'
 import { signUpSchema, splitFullName, type SignUpValues } from '@/lib/validation/auth'
 import { cn } from '@/lib/utils'
 import type { SignUpRole } from '@/types/participant'
-import { signUpErrors } from '../auth-errors'
-import { useSignUp } from '../useSignUp'
+import { signUpErrors } from './auth-errors'
+import { useSignUp } from '../hooks/useSignUp'
 import { AuthTextField } from './AuthTextField'
 import { signUpFormId } from './form-ids'
 
@@ -49,7 +49,7 @@ export function SignUpForm({ onPendingChange, onSuccess }: Props) {
 
   const onSubmit = async ({ fullName, email, password, role }: SignUpValues) => {
     const { firstName, lastName } = splitFullName(fullName)
-
+    
     onPendingChange(true)
     try {
       await signUp({ firstName, lastName, email: email.toLowerCase(), password, role })
@@ -58,9 +58,8 @@ export function SignUpForm({ onPendingChange, onSuccess }: Props) {
       for (const { field, message } of signUpErrors(error)) {
         setError(field, { message })
       }
-    } finally {
-      onPendingChange(false)
     }
+    onPendingChange(false)
   }
 
   return (
