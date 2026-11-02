@@ -1,8 +1,7 @@
-import { ArrowRight01Icon, ChartBarLineIcon } from '@hugeicons/core-free-icons'
+import { ChartBarLineIcon, UserMultiple02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Link, useMatch } from 'react-router'
 import { SignOutButton } from '@/components/auth/SignOutButton'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
   Sidebar,
   SidebarContent,
@@ -10,18 +9,14 @@ import {
   SidebarGroup,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuAction,
   SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
+  SidebarMenuItem
 } from '@/components/ui/sidebar'
 import { paths } from '@/lib/routes'
-import { statisticsSectionIds, statisticsSectionTitles } from './statistics/sections'
 
 export function AdminSidebar() {
   const onStatistics = useMatch(paths.adminStatistics) !== null
+  const onAccounts = useMatch(paths.adminAccounts) !== null
 
   return (
     <Sidebar>
@@ -32,33 +27,18 @@ export function AdminSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            <Collapsible defaultOpen render={<SidebarMenuItem />}>
+            <SidebarMenuItem>
               <SidebarMenuButton isActive={onStatistics} render={<Link to={paths.adminStatistics} />}>
                 <HugeiconsIcon icon={ChartBarLineIcon} strokeWidth={2} />
                 <span>Statistics</span>
               </SidebarMenuButton>
-
-              <CollapsibleTrigger
-                render={<SidebarMenuAction className="transition-transform aria-expanded:rotate-90" />}
-              >
-                <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} />
-                <span className="sr-only">Show or hide statistics sections</span>
-              </CollapsibleTrigger>
-
-              <CollapsibleContent>
-                <SidebarMenuSub>
-                  {statisticsSectionIds.map((id) => (
-                    <SidebarMenuSubItem key={id}>
-                      <SidebarMenuSubButton
-                        render={<Link to={{ pathname: paths.adminStatistics, hash: id }} />}
-                      >
-                        <span>{statisticsSectionTitles[id]}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  ))}
-                </SidebarMenuSub>
-              </CollapsibleContent>
-            </Collapsible>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton isActive={onAccounts} render={<Link to={paths.adminAccounts} />}>
+                <HugeiconsIcon icon={UserMultiple02Icon} strokeWidth={2} />
+                <span>Accounts</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>

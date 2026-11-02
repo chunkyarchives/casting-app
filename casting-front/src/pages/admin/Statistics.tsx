@@ -11,16 +11,15 @@ import {
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useApiQuery } from '@/hooks/useApiQuery'
-import { useScrollToHash } from '@/hooks/useScrollToHash'
 import { adminApi } from '@/lib/api/admin'
 import { apiErrorMessage } from '@/lib/api/errors'
+import { AdminWrap } from '@/components/admin/AdminWrap'
 
 export default function Statistics() {
   const stats = useApiQuery('admin-stats', adminApi.getStats)
-  useScrollToHash(stats.status === 'success')
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-12 p-6">
+    <AdminWrap>
       <h1 className="sr-only">Statistics</h1>
 
       <StatisticsSection id="activity">
@@ -55,6 +54,6 @@ export default function Statistics() {
           </StatisticsSection>
         </>
       )}
-    </div>
+    </AdminWrap>
   )
 }

@@ -43,3 +43,15 @@ export function formatChange(change: number) {
   if (change >= 1) return `↑ ${multiplierFormat.format(change + 1)}×`
   return `${change > 0 ? '↑' : '↓'} ${formatPercent(Math.abs(change))}`
 }
+
+const dateFormat = new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short', year: 'numeric' })
+const dateTimeFormat = new Intl.DateTimeFormat('en', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+})
+
+export const formatDate = (value: string | Date) => dateFormat.format(new Date(value))
+export const formatDateTime = (value: string | Date) => dateTimeFormat.format(new Date(value))

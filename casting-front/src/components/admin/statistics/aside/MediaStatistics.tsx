@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { File01Icon } from '@hugeicons/core-free-icons'
 import { Switch } from '@/components/ui/switch'
-import { formatCount, toByteSize, type ByteSize, type ByteUnit } from '@/lib/format'
+import { ByteSizeValue } from '@/components/common/ByteSizeValue'
+import { formatCount, type ByteUnit } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { MediaStats } from '@/types/admin'
 import { StatAside } from './StatAside'
@@ -19,7 +20,7 @@ export function MediaStatistics({ media }: Props) {
       title="Media"
       items={[
         { label: 'Files', value: formatCount(media.files) },
-        { label: 'Total size', value: <SizeValue size={toByteSize(media.totalBytes, unit)} /> }
+        { label: 'Total size', value: <ByteSizeValue bytes={media.totalBytes} unit={unit} /> },
       ]}
     >
       <div className="mt-2 flex items-center justify-end gap-2.5">
@@ -40,16 +41,5 @@ function UnitLabel({ active, children }: { active: boolean; children: string }) 
     <span aria-hidden className={cn('font-medium', active ? 'text-foreground' : 'text-muted-foreground')}>
       {children}
     </span>
-  )
-}
-
-function SizeValue({ size }: { size: ByteSize }) {
-  return (
-    <>
-      {size.belowSmallest && (
-        <span className="relative -top-[0.1em] mr-1">&lt;</span>
-      )}
-      {size.amount} {size.unit}
-    </>
   )
 }

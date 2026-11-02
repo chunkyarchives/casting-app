@@ -1,3 +1,5 @@
+import type { ParticipantRole } from '@/types/participant'
+
 export type AccountStats = {
   total: number
   actors: number
@@ -46,4 +48,32 @@ export type TimelinePoint = {
   registrations: number
   films: number
   messages: number
+}
+
+export type AdminAccount = {
+  id: string
+  email: string
+  firstName: string
+  lastName: string
+  role: ParticipantRole
+  profileComplete: boolean
+  locked: boolean
+  createdAt: string // ISO date-time
+}
+
+export type AdminAccountDetail = AdminAccount & {
+  profileCompletedAt: string | null
+  lockedUntil: string | null 
+  lockReason: string | null
+  lastActiveAt: string | null
+  activeSessions: number
+  films: number
+  applications: number
+  conversations: number
+  mediaFiles: number
+  mediaBytes: number
+}
+
+export type ForceLogoutResult = {
+  sessionsEnded: number
 }

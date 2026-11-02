@@ -26,30 +26,27 @@ public class AdminController(IAdminService admin) : ControllerBase
     [HttpGet("accounts")]
     public async Task<ActionResult<PagedResult<AdminAccountDto>>> ListAccounts(
         [FromQuery] string? search,
-        [FromQuery] ParticipantRole? role,
+        [FromQuery] ParticipantRole[]? roles,
         [FromQuery] bool? locked,
+        [FromQuery] bool? profileComplete,
         [FromQuery, Range(1, int.MaxValue)] int page = 1,
         [FromQuery, Range(1, 100)] int pageSize = 20,
-        CancellationToken ct = default)
-        => Ok(await admin.ListAccountsAsync(search, role, locked, page, pageSize, ct));
+        CancellationToken ct = default) => Ok(await admin.ListAccountsAsync(new AccountListFilter(search, roles ?? [], locked, profileComplete), page, pageSize, ct));
 
     [HttpGet("accounts/{id:guid}")]
     public async Task<ActionResult<AdminAccountDetailDto>> GetAccount(Guid id, CancellationToken ct)
         => Ok(await admin.GetAccountAsync(id, ct));
 
     [HttpPost("accounts/{id:guid}/lock")]
-    public async Task<ActionResult<AdminAccountDto>> Lock(
-        Guid id, [FromBody] LockAccountRequest request, CancellationToken ct)
+    public async Task<ActionResult<AdminAccountDto>> Lock(Guid id, [FromBody] LockAccountRequest request, CancellationToken ct)
         => Ok(await admin.LockAccountAsync(id, request, ct));
 
     [HttpPost("accounts/{id:guid}/unlock")]
-    public async Task<ActionResult<AdminAccountDto>> Unlock(
-        Guid id, [FromQuery, StringLength(500)] string? reason, CancellationToken ct)
+    public async Task<ActionResult<AdminAccountDto>> Unlock(Guid id, [FromQuery, StringLength(500)] string? reason, CancellationToken ct)
         => Ok(await admin.UnlockAccountAsync(id, reason, ct));
 
     [HttpPost("accounts/{id:guid}/force-logout")]
-    public async Task<ActionResult<ForceLogoutResult>> ForceLogout(
-        Guid id, [FromQuery, StringLength(500)] string? reason, CancellationToken ct)
+    public async Task<ActionResult<ForceLogoutResult>> ForceLogout(Guid id, [FromQuery, StringLength(500)] string? reason, CancellationToken ct)
         => Ok(await admin.ForceLogoutAsync(id, reason, ct));
 
     [HttpDelete("accounts/{id:guid}")]

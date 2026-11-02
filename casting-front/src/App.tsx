@@ -9,9 +9,10 @@ import Landing from '@/pages/Landing'
 import Settings from '@/pages/settings/Settings'
 import AdminLayout from '@/layouts/AdminLayout'
 import Statistics from '@/pages/admin/Statistics'
+import Accounts from '@/pages/admin/Accounts'
 
 export default function App() {
-  return (
+  return (  
     <Routes>
       <Route element={<PublicLayout />}>
         <Route index element={<Landing />} />
@@ -33,6 +34,7 @@ export default function App() {
         <Route path={paths.admin} element={<AdminLayout />}>
           <Route index element={<Navigate to={paths.adminStatistics} replace />} />
           <Route path={paths.adminStatistics} element={<Statistics />} />
+          <Route path={paths.adminAccounts} element={<Accounts />} />
         </Route>
       </Route>
 

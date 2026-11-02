@@ -77,28 +77,30 @@ public class AdminService(IAppDbContext db, ICurrentUser currentUser, IMediaStor
         return points;
     }
 
-    public async Task<PagedResult<AdminAccountDto>> ListAccountsAsync(
-        string? search, ParticipantRole? role, bool? locked, int page, int pageSize, CancellationToken ct)
+    public async Task<PagedResult<AdminAccountDto>> ListAccountsAsync(AccountListFilter filter, int page, int pageSize, CancellationToken ct)
     {
         EnsureAdmin();
         var now = DateTimeOffset.UtcNow;
-
         var query = db.Users.AsNoTracking();
 
-        if (role is { } r)
-            query = query.Where(u => u.Role == r);
+        query = filter.Roles.Count > 0
+            ? query.Where(u => filter.Roles.Contains(u.Role))
+            : query.Where(u => u.Role != ParticipantRole.Admin);
 
-        if (locked is true)
+        if (filter.Locked is true)
             query = query.Where(u => u.LockoutEnabled && u.LockoutEnd != null && u.LockoutEnd > now);
-        else if (locked is false)
+        else if (filter.Locked is false)
             query = query.Where(u => !u.LockoutEnabled || u.LockoutEnd == null || u.LockoutEnd <= now);
 
-        if (!string.IsNullOrWhiteSpace(search))
+        if (filter.ProfileComplete is true)
+            query = query.Where(u => u.Role == ParticipantRole.Admin || u.ProfileCompletedAt != null);
+        else if (filter.ProfileComplete is false)
+            query = query.Where(u => u.Role != ParticipantRole.Admin && u.ProfileCompletedAt == null);
+
+        if (!string.IsNullOrWhiteSpace(filter.Search))
         {
-            var term = search.Trim().ToLower();
-            query = query.Where(u =>
-                (u.FirstName + " " + u.LastName).ToLower().Contains(term)
-                || (u.Email != null && u.Email.ToLower().Contains(term)));
+            var term = filter.Search.Trim().ToLower();
+            query = query.Where(u => (u.FirstName + " " + u.LastName).ToLower().Contains(term) || (u.Email != null && u.Email.ToLower().Contains(term)));
         }
 
         var total = await query.CountAsync(ct);

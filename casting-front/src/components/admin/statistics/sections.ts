@@ -6,5 +6,3 @@ export const statisticsSectionTitles = {
 } as const
 
 export type StatisticsSectionId = keyof typeof statisticsSectionTitles
-
-export const statisticsSectionIds = Object.keys(statisticsSectionTitles) as StatisticsSectionId[]

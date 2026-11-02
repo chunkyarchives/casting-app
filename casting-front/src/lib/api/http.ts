@@ -107,3 +107,18 @@ async function readProblem(response: Response): Promise<ProblemDetails> {
     return {}
   }
 }
+
+type QueryValue = string | number | boolean | readonly string[] | undefined
+
+export function withQuery(path: string, params: Record<string, QueryValue>) {
+  const query = new URLSearchParams()
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === '') continue
+    if (typeof value === 'object') value.forEach((item) => query.append(key, item))
+    else query.append(key, String(value))
+  }
+
+  const search = query.toString()
+  return search ? `${path}?${search}` : path
+}

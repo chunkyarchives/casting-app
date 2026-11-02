@@ -81,3 +81,9 @@ public record AdminStatsDto(
     ApplicationStats Applications,
     ChatStats Chat,
     MediaStats Media);
+
+public record AccountListFilter(
+    string? Search,
+    IReadOnlyCollection<ParticipantRole> Roles,
+    bool? Locked,
+    bool? ProfileComplete);

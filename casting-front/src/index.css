@@ -177,6 +177,14 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+[data-slot$='-overlay']:has(~ [data-nested-dialog-open]) {
+  backdrop-filter: none;
+}
+
+[data-slot$='-overlay'] {
+  backdrop-filter: none;
+}
+
 /* Tailwind mapping (shadcn) */
 @theme inline {
   --font-heading: var(--font-sans);

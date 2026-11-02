@@ -9,8 +9,7 @@ public interface IAdminService
     Task<AdminStatsDto> GetStatsAsync(CancellationToken ct);
     Task<IReadOnlyList<TimelinePointDto>> GetTimelineAsync(int days, CancellationToken ct);
 
-    Task<PagedResult<AdminAccountDto>> ListAccountsAsync(
-        string? search, ParticipantRole? role, bool? locked, int page, int pageSize, CancellationToken ct);
+    Task<PagedResult<AdminAccountDto>> ListAccountsAsync(AccountListFilter filter, int page, int pageSize, CancellationToken ct);
     Task<AdminAccountDetailDto> GetAccountAsync(Guid id, CancellationToken ct);
     Task<AdminAccountDto> LockAccountAsync(Guid id, LockAccountRequest request, CancellationToken ct);
     Task<AdminAccountDto> UnlockAccountAsync(Guid id, string? reason, CancellationToken ct);
