@@ -6,5 +6,7 @@ public enum MediaKind
     Headshot,          
     FullBody,         
     ProductionStill,  
-    Showreel          
+    Showreel,
+    FilmPoster,
+    RoleConceptArt
 }

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Net.Http.Headers;
+using CastingApp.Api.Filters;
 
 namespace CastingApp.Api.Controllers;
 
@@ -78,6 +79,46 @@ public class MediaController(IMediaService media) : ControllerBase
     public async Task<IActionResult> GetMedia(Guid id, CancellationToken ct)
         => ToFile(await media.GetAsync(id, ct));
 
+    [HttpPut("films/{id:guid}/poster")]
+    [Authorize(Roles = AppRoles.Director)]
+    [RequireCompleteProfile]
+    [EnableRateLimiting(RateLimitPolicies.Upload)]
+    public async Task<ActionResult<MediaItemDto>> UploadPoster(Guid id, IFormFile file, CancellationToken ct)
+    {
+        await using var stream = file.OpenReadStream();
+        return Ok(await media.SetFilmPosterAsync(id, stream, file.Length, ct));
+    }
+
+    [HttpDelete("films/{id:guid}/poster")]
+    [Authorize(Roles = AppRoles.DirectorOrAdmin)]
+    [RequireCompleteProfile]
+    public async Task<IActionResult> DeletePoster(Guid id, CancellationToken ct)
+    {
+        await media.DeleteFilmPosterAsync(id, ct);
+        return NoContent();
+    }
+
+    [HttpPost("roles/{id:guid}/concept-art")]
+    [Authorize(Roles = AppRoles.Director)]
+    [RequireCompleteProfile]
+    [EnableRateLimiting(RateLimitPolicies.Upload)]
+    [Consumes("multipart/form-data")]
+    public async Task<ActionResult<MediaItemDto>> AddConceptArt(Guid id, [FromForm] AddConceptArtForm form, CancellationToken ct)
+    {
+        await using var stream = form.File.OpenReadStream();
+        var item = await media.AddConceptArtAsync(id, form.Caption, stream, form.File.Length, ct);
+        return StatusCode(StatusCodes.Status201Created, item);
+    }
+
+    [HttpDelete("roles/{roleId:guid}/concept-art/{mediaId:guid}")]
+    [Authorize(Roles = AppRoles.DirectorOrAdmin)]
+    [RequireCompleteProfile]
+    public async Task<IActionResult> DeleteConceptArt(Guid roleId, Guid mediaId, CancellationToken ct)
+    {
+        await media.DeleteConceptArtAsync(roleId, mediaId, ct);
+        return NoContent();
+    }
+
     [HttpDelete("me/media/{id:guid}")]
     public async Task<IActionResult> DeleteMedia(Guid id, CancellationToken ct)
     {
@@ -109,6 +150,12 @@ public class AddPhotoForm
 }
 
 public class AddShowreelForm
+{
+    [StringLength(140)] public string? Caption { get; set; }
+    [Required] public IFormFile File { get; set; } = null!;
+}
+
+public class AddConceptArtForm
 {
     [StringLength(140)] public string? Caption { get; set; }
     [Required] public IFormFile File { get; set; } = null!;

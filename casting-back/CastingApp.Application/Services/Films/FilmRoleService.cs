@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CastingApp.Application.Services.Films;
 
-public class FilmRoleService(IAppDbContext db, ICurrentUser currentUser) : IFilmRoleService
+public class FilmRoleService(IAppDbContext db, ICurrentUser currentUser, IMediaStorage storage) : IFilmRoleService
 {
     public async Task<IReadOnlyList<FilmRoleDto>> ListByFilmAsync(Guid filmId, CancellationToken ct)
     {
@@ -15,6 +15,7 @@ public class FilmRoleService(IAppDbContext db, ICurrentUser currentUser) : IFilm
             throw new NotFoundException(nameof(Film), filmId);
 
         var roles = await db.FilmRoles.AsNoTracking()
+            .Include(r => r.ConceptArt)
             .Where(r => r.FilmId == filmId)
             .OrderBy(r => r.Name)
             .ToListAsync(ct);
@@ -24,7 +25,9 @@ public class FilmRoleService(IAppDbContext db, ICurrentUser currentUser) : IFilm
 
     public async Task<FilmRoleDto> GetAsync(Guid id, CancellationToken ct)
     {
-        var role = await db.FilmRoles.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id, ct)
+        var role = await db.FilmRoles.AsNoTracking()
+            .Include(r => r.ConceptArt)
+            .FirstOrDefaultAsync(r => r.Id == id, ct)
             ?? throw new NotFoundException(nameof(FilmRole), id);
 
         return role.ToDto();
@@ -32,8 +35,7 @@ public class FilmRoleService(IAppDbContext db, ICurrentUser currentUser) : IFilm
 
     public async Task<FilmRoleDto> CreateAsync(Guid filmId, CreateFilmRoleRequest request, CancellationToken ct)
     {
-        var film = await db.Films.AsNoTracking().FirstOrDefaultAsync(f => f.Id == filmId, ct)
-            ?? throw new NotFoundException(nameof(Film), filmId);
+        var film = await db.Films.AsNoTracking().FirstOrDefaultAsync(f => f.Id == filmId, ct) ?? throw new NotFoundException(nameof(Film), filmId);
 
         currentUser.EnsureOwnerOrAdmin(film.DirectorId);
 
@@ -44,6 +46,7 @@ public class FilmRoleService(IAppDbContext db, ICurrentUser currentUser) : IFilm
         {
             FilmId = filmId,
             Name = request.Name.Trim(),
+            Description = request.Description,
             AgeMin = request.AgeMin,
             AgeMax = request.AgeMax,
             HeightMin = request.HeightMin,
@@ -63,6 +66,7 @@ public class FilmRoleService(IAppDbContext db, ICurrentUser currentUser) : IFilm
     {
         var role = await db.FilmRoles
             .Include(r => r.Film)
+            .Include(r => r.ConceptArt)
             .FirstOrDefaultAsync(r => r.Id == id, ct)
             ?? throw new NotFoundException(nameof(FilmRole), id);
 
@@ -73,6 +77,7 @@ public class FilmRoleService(IAppDbContext db, ICurrentUser currentUser) : IFilm
             throw new ConflictException("The role was changed by someone else. Reload it and try again.");
 
         role.Name = request.Name.Trim();
+        role.Description = request.Description;
         role.AgeMin = request.AgeMin;
         role.AgeMax = request.AgeMax;
         role.HeightMin = request.HeightMin;
@@ -105,7 +110,13 @@ public class FilmRoleService(IAppDbContext db, ICurrentUser currentUser) : IFilm
 
         currentUser.EnsureOwnerOrAdmin(role.Film.DirectorId);
 
+        var files = await db.MediaAssets.AsNoTracking()
+            .Where(m => m.FilmRoleId == id)
+            .Select(m => m.StorageKey)
+            .ToListAsync(ct);
+
         db.FilmRoles.Remove(role);
         await db.SaveChangesAsync(ct);
+        await storage.TryDeleteAsync(files);
     }
 }

@@ -1,3 +1,4 @@
+using CastingApp.Application.DTOs.Films;
 using System.ComponentModel.DataAnnotations;
 using CastingApp.Domain.Enums;
 
@@ -46,7 +47,15 @@ public record AdminFilmDto(
     Guid DirectorId,
     string DirectorName,
     int RoleCount,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    string? PosterUrl);
+
+public record AdminFilmDetailDto(
+    FilmDto Film,
+    string DirectorName,
+    IReadOnlyList<RoleApplicationCounts> Applications);
+
+public record RoleApplicationCounts(Guid RoleId, int Proposed, int Accepted, int Rejected);
 
 public record AdminConversationDto(
     Guid Id,

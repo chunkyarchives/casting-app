@@ -55,7 +55,8 @@ public static class DependencyInjection
         if (string.IsNullOrWhiteSpace(mediaRoot))
             mediaRoot = Path.Combine(AppContext.BaseDirectory, "media");   // bin\Debug\net10.0\media
         services.AddSingleton<IMediaStorage>(new LocalMediaStorage(mediaRoot));
-
+        services.AddSingleton<IImageProcessor, ImageProcessor>();
+        
         // Keš metapodataka slika u Redisu; Cache:MediaMetadataSeconds = 0 isključuje keširanje
         var cacheSeconds = int.TryParse(config["Cache:MediaMetadataSeconds"], out var seconds) && seconds >= 0
             ? seconds

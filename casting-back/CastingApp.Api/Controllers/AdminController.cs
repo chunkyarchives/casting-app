@@ -66,6 +66,9 @@ public class AdminController(IAdminService admin) : ControllerBase
         CancellationToken ct = default)
         => Ok(await admin.ListFilmsAsync(search, status, page, pageSize, ct));
 
+    [HttpGet("films/{id:guid}")]
+    public async Task<ActionResult<AdminFilmDetailDto>> GetFilm(Guid id, CancellationToken ct) => Ok(await admin.GetFilmAsync(id, ct));
+
     [HttpDelete("films/{id:guid}")]
     public async Task<IActionResult> DeleteFilm(
         Guid id, [FromQuery, StringLength(500, MinimumLength = 3)] string reason, CancellationToken ct)

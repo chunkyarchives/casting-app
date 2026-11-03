@@ -316,6 +316,10 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("director_id");
 
+                    b.Property<Guid?>("PosterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("poster_id");
+
                     b.Property<int?>("ReleaseYear")
                         .HasColumnType("integer")
                         .HasColumnName("release_year");
@@ -338,6 +342,9 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
                     b.HasIndex("DirectorId")
                         .HasDatabaseName("ix_film_director_id");
 
+                    b.HasIndex("PosterId")
+                        .HasDatabaseName("ix_film_poster_id");
+
                     b.ToTable("film", null, t =>
                         {
                             t.HasCheckConstraint("ck_film_status", "status IN ('Active','Archived')");
@@ -358,6 +365,11 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
                     b.Property<int?>("AgeMin")
                         .HasColumnType("integer")
                         .HasColumnName("age_min");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("description");
 
                     b.Property<Guid>("FilmId")
                         .HasColumnType("uuid")
@@ -442,6 +454,10 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<Guid?>("FilmRoleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("film_role_id");
+
                     b.Property<string>("Kind")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -465,12 +481,15 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_media_asset");
 
+                    b.HasIndex("FilmRoleId")
+                        .HasDatabaseName("ix_media_asset_film_role_id");
+
                     b.HasIndex("OwnerId", "Kind")
                         .HasDatabaseName("ix_media_asset_owner_kind");
 
                     b.ToTable("media_asset", null, t =>
                         {
-                            t.HasCheckConstraint("ck_media_asset_kind", "kind IN ('ProfilePicture','Headshot','FullBody','ProductionStill','Showreel')");
+                            t.HasCheckConstraint("ck_media_asset_kind", "kind IN ('ProfilePicture','Headshot','FullBody','ProductionStill','Showreel','FilmPoster','RoleConceptArt')");
                         });
                 });
 
@@ -914,6 +933,12 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_film_director_director_id");
 
+                    b.HasOne("CastingApp.Domain.Entities.MediaAsset", null)
+                        .WithMany()
+                        .HasForeignKey("PosterId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_film_media_asset_poster_id");
+
                     b.Navigation("Director");
                 });
 
@@ -931,6 +956,12 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("CastingApp.Domain.Entities.MediaAsset", b =>
                 {
+                    b.HasOne("CastingApp.Domain.Entities.FilmRole", null)
+                        .WithMany("ConceptArt")
+                        .HasForeignKey("FilmRoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_media_asset_film_role_film_role_id");
+
                     b.HasOne("CastingApp.Domain.Entities.Participant", null)
                         .WithMany()
                         .HasForeignKey("OwnerId")
@@ -1079,6 +1110,8 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("CastingApp.Domain.Entities.FilmRole", b =>
                 {
                     b.Navigation("Applications");
+
+                    b.Navigation("ConceptArt");
                 });
 
             modelBuilder.Entity("CastingApp.Domain.Entities.Participant", b =>

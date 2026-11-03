@@ -4,6 +4,9 @@ using CastingApp.Application.DTOs.Admin;
 using CastingApp.Domain.Entities;
 using CastingApp.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using CastingApp.Application.DTOs.Films;
+using CastingApp.Application.Services.Films;
+using CastingApp.Application.Services.Media;
 
 namespace CastingApp.Application.Services.Admin;
 
@@ -274,8 +277,7 @@ public class AdminService(IAppDbContext db, ICurrentUser currentUser, IMediaStor
             await TryDeleteFileAsync(key);
     }
 
-    public async Task<PagedResult<AdminFilmDto>> ListFilmsAsync(
-        string? search, FilmStatus? status, int page, int pageSize, CancellationToken ct)
+    public async Task<PagedResult<AdminFilmDto>> ListFilmsAsync(string? search, FilmStatus? status, int page, int pageSize, CancellationToken ct)
     {
         EnsureAdmin();
 
@@ -305,10 +307,45 @@ public class AdminService(IAppDbContext db, ICurrentUser currentUser, IMediaStor
                 f.DirectorId,
                 f.Director.Participant.FirstName + " " + f.Director.Participant.LastName,
                 f.Roles.Count,
-                f.CreatedAt))
+                f.CreatedAt,
+                MediaUrls.Media(f.PosterId)))
             .ToListAsync(ct);
 
         return new PagedResult<AdminFilmDto>(items, page, pageSize, total);
+    }
+
+    public async Task<AdminFilmDetailDto> GetFilmAsync(Guid id, CancellationToken ct)
+    {
+        EnsureAdmin();
+
+        var film = await db.Films.AsNoTracking()
+            .Include(f => f.Roles).ThenInclude(r => r.ConceptArt)
+            .FirstOrDefaultAsync(f => f.Id == id, ct)
+            ?? throw new NotFoundException(nameof(Film), id);
+
+        var directorName = await db.Users.AsNoTracking()
+            .Where(u => u.Id == film.DirectorId)
+            .Select(u => u.FirstName + " " + u.LastName)
+            .FirstAsync(ct);
+
+        var counts = await db.RoleApplications.AsNoTracking()
+            .Where(a => a.FilmRole.FilmId == id)
+            .GroupBy(a => new { a.FilmRoleId, a.Status })
+            .Select(g => new { g.Key.FilmRoleId, g.Key.Status, Count = g.Count() })
+            .ToListAsync(ct);
+
+        int CountOf(Guid roleId, ApplicationStatus status) =>
+            counts.FirstOrDefault(c => c.FilmRoleId == roleId && c.Status == status)?.Count ?? 0;
+
+        var applications = film.Roles
+            .Select(r => new RoleApplicationCounts(
+                r.Id,
+                CountOf(r.Id, ApplicationStatus.Proposed),
+                CountOf(r.Id, ApplicationStatus.Accepted),
+                CountOf(r.Id, ApplicationStatus.Rejected)))
+            .ToList();
+
+        return new AdminFilmDetailDto(film.ToDto(), directorName, applications);
     }
 
     public async Task DeleteFilmAsync(Guid id, string reason, CancellationToken ct)
@@ -319,8 +356,9 @@ public class AdminService(IAppDbContext db, ICurrentUser currentUser, IMediaStor
             ?? throw new NotFoundException(nameof(Film), id);
 
         await AddAuditAsync(AdminAction.DeleteFilm, "Film", id, film.Title, reason, ct);
-        db.Films.Remove(film);
+        var files = await FilmRemoval.RemoveAsync(db, film, ct);
         await db.SaveChangesAsync(ct);
+        await storage.TryDeleteAsync(files);
     }
 
     public async Task<PagedResult<AdminConversationDto>> ListConversationsAsync(

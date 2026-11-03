@@ -9,6 +9,7 @@ public class FilmRole
     public Film Film { get; set; } = null!;
 
     public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }    
     public int? AgeMin { get; set; }
     public int? AgeMax { get; set; }
     public int? HeightMin { get; set; }
@@ -21,4 +22,5 @@ public class FilmRole
     public int RowVersion { get; set; }     // optimistic concurrency token
 
     public ICollection<RoleApplication> Applications { get; set; } = [];
+    public ICollection<MediaAsset> ConceptArt { get; set; } = [];
 }

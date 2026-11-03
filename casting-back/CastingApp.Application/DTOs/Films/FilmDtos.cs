@@ -11,7 +11,8 @@ public record FilmSummaryDto(
     int? ReleaseYear,
     FilmStatus Status,
     DateTime CreatedAt,
-    int RoleCount);
+    int RoleCount, 
+    string? PosterUrl);
 
 public record FilmDto(
     Guid Id,
@@ -22,7 +23,8 @@ public record FilmDto(
     int? ReleaseYear,
     FilmStatus Status,
     DateTime CreatedAt,
-    IReadOnlyList<FilmRoleDto> Roles);
+    IReadOnlyList<FilmRoleDto> Roles,
+    string? PosterUrl);
 
 public record CreateFilmRequest(
     [StringLength(200)] string Title,

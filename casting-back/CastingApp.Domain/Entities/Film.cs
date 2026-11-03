@@ -6,6 +6,7 @@ public class Film
 {
     public Guid Id { get; set; } = Guid.CreateVersion7();
     public Guid DirectorId { get; set; }
+    public Guid? PosterId { get; set; }
     public Director Director { get; set; } = null!;
 
     public string Title { get; set; } = string.Empty;

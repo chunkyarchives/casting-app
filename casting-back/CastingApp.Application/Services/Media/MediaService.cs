@@ -13,7 +13,8 @@ public class MediaService(
     IMediaStorage storage,
     ICurrentUser currentUser,
     IProfileCompletionService profileCompletion,
-    IMediaMetadataCache cache) : IMediaService
+    IMediaMetadataCache cache,
+    IImageProcessor images) : IMediaService
 {
     public async Task<ProfilePictureDto> SetProfilePictureAsync(Stream content, long length, CancellationToken ct)
     {
@@ -111,7 +112,7 @@ public class MediaService(
             throw;
         }
 
-        return ToItemDto(asset);
+        return asset.ToItemDto();
     }
 
     public async Task<IReadOnlyList<MediaItemDto>> ListAsync(Guid actorId, bool showreels, CancellationToken ct)
@@ -127,7 +128,7 @@ public class MediaService(
             : query.Where(m => m.Kind != MediaKind.Showreel && m.Kind != MediaKind.ProfilePicture);
 
         var assets = await query.OrderByDescending(m => m.CreatedAt).ToListAsync(ct);
-        return assets.Select(ToItemDto).ToList();
+        return assets.Select(a => a.ToItemDto()).ToList();
     }
 
     public async Task<MediaFile> GetAsync(Guid mediaId, CancellationToken ct)
@@ -137,15 +138,20 @@ public class MediaService(
             ?? throw new NotFoundException("Media", mediaId);
 
         // Pravo pristupa se računa na svaki zahtev, i kad su metapodaci iz keša
-        if (meta.Kind == MediaKind.ProfilePicture)
+        switch (meta.Kind)
         {
-            var ownerRole = meta.OwnerRole
-                ?? throw new InvalidOperationException("A cached profile picture is missing its owner role.");
-            EnsureCanViewProfilePicture(meta.OwnerId, ownerRole);
-        }
-        else
-        {
-            EnsureCanViewPortfolio(meta.OwnerId);
+            case MediaKind.ProfilePicture:
+                var ownerRole = meta.OwnerRole
+                    ?? throw new InvalidOperationException("A cached profile picture is missing its owner role.");
+                EnsureCanViewProfilePicture(meta.OwnerId, ownerRole);
+                break;
+
+            case MediaKind.FilmPoster or MediaKind.RoleConceptArt:
+                break;      // kao i sami filmovi, vidljive su svakom prijavljenom korisniku
+
+            default:
+                EnsureCanViewPortfolio(meta.OwnerId);
+                break;
         }
 
         return await OpenAsync(meta, ct);
@@ -160,6 +166,117 @@ public class MediaService(
 
         if (asset.Kind == MediaKind.ProfilePicture)
             throw new BadRequestException("Use the profile picture endpoint to remove a profile picture.");
+        if (asset.Kind is MediaKind.FilmPoster or MediaKind.RoleConceptArt)
+            throw new BadRequestException("Use the film and role endpoints to remove posters and concept art.");
+
+        db.MediaAssets.Remove(asset);
+        await db.SaveChangesAsync(ct);
+
+        await cache.RemoveAssetAsync(asset.Id, ct);
+        await TryDeleteFileAsync(asset.StorageKey);
+    }
+
+    public async Task<MediaItemDto> SetFilmPosterAsync(Guid filmId, Stream content, long length, CancellationToken ct)
+    {
+        var film = await db.Films.FirstOrDefaultAsync(f => f.Id == filmId, ct)
+            ?? throw new NotFoundException(nameof(Film), filmId);
+
+        EnsureDirectorOf(film.DirectorId);
+
+        var oldPoster = film.PosterId is { } oldId
+            ? await db.MediaAssets.FirstOrDefaultAsync(m => m.Id == oldId, ct)
+            : null;
+
+        var asset = await ValidateAndStoreAsync(MediaKind.FilmPoster, null, content, length, ct);
+
+        db.MediaAssets.Add(asset);
+        film.PosterId = asset.Id;
+        if (oldPoster is not null)
+            db.MediaAssets.Remove(oldPoster);
+
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException)
+        {
+            await storage.DeleteAsync(asset.StorageKey, CancellationToken.None);
+            throw new ConflictException("The poster was changed at the same time. Try again.");
+        }
+
+        if (oldPoster is not null)
+        {
+            await cache.RemoveAssetAsync(oldPoster.Id, ct);
+            await TryDeleteFileAsync(oldPoster.StorageKey);
+        }
+
+        return asset.ToItemDto();
+    }
+
+    public async Task DeleteFilmPosterAsync(Guid filmId, CancellationToken ct)
+    {
+        var film = await db.Films.FirstOrDefaultAsync(f => f.Id == filmId, ct)
+            ?? throw new NotFoundException(nameof(Film), filmId);
+
+        currentUser.EnsureOwnerOrAdmin(film.DirectorId);
+
+        if (film.PosterId is not { } posterId)
+            return;
+
+        var poster = await db.MediaAssets.FirstOrDefaultAsync(m => m.Id == posterId, ct);
+
+        film.PosterId = null;
+        if (poster is not null)
+            db.MediaAssets.Remove(poster);
+
+        await db.SaveChangesAsync(ct);
+
+        if (poster is not null)
+        {
+            await cache.RemoveAssetAsync(poster.Id, ct);
+            await TryDeleteFileAsync(poster.StorageKey);
+        }
+    }
+
+    public async Task<MediaItemDto> AddConceptArtAsync(Guid roleId, string? caption, Stream content, long length, CancellationToken ct)
+    {
+        var directorId = await db.FilmRoles.AsNoTracking()
+            .Where(r => r.Id == roleId)
+            .Select(r => (Guid?)r.Film.DirectorId)
+            .FirstOrDefaultAsync(ct)
+            ?? throw new NotFoundException(nameof(FilmRole), roleId);
+
+        EnsureDirectorOf(directorId);
+
+        var limit = MediaRules.MaxCount(MediaKind.RoleConceptArt);
+        var count = await db.MediaAssets.CountAsync(m => m.FilmRoleId == roleId, ct);
+        if (count >= limit)
+            throw new ConflictException($"A role can have at most {limit} concept art pictures. Delete one first.");
+
+        var asset = await ValidateAndStoreAsync(MediaKind.RoleConceptArt, caption, content, length, ct);
+        asset.FilmRoleId = roleId;
+
+        db.MediaAssets.Add(asset);
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch
+        {
+            await storage.DeleteAsync(asset.StorageKey, CancellationToken.None);
+            throw;
+        }
+
+        return asset.ToItemDto();
+    }
+
+    public async Task DeleteConceptArtAsync(Guid roleId, Guid mediaId, CancellationToken ct)
+    {
+        var asset = await db.MediaAssets.FirstOrDefaultAsync(m => m.Id == mediaId && m.FilmRoleId == roleId, ct)
+            ?? throw new NotFoundException("Concept art", mediaId);
+
+        // Concept art postavlja režiser filma, pa je on i vlasnik slike
+        currentUser.EnsureOwnerOrAdmin(asset.OwnerId);
 
         db.MediaAssets.Remove(asset);
         await db.SaveChangesAsync(ct);
@@ -244,6 +361,15 @@ public class MediaService(
         if (text is { Length: > 140 })
             throw new BadRequestException("The caption is too long (max 140 characters).");
 
+        // Poster i concept art se isecaju na svoj oblik; na disk ide obrađena slika, ne original
+        if (MediaRules.Shape(kind) is { } shape)
+        {
+            var processed = images.CropToShape(content, shape);
+            content = new MemoryStream(processed.Content);
+            type = new DetectedType(processed.ContentType, processed.Extension, false);
+            length = processed.Content.Length;
+        }
+
         var userId = currentUser.Id;
         var asset = new MediaAsset
         {
@@ -287,6 +413,13 @@ public class MediaService(
         return new MediaFile(stream, meta.ContentType, meta.AssetId, meta.CreatedAt);
     }
 
+    // Slike filma postavlja samo njegov režiser (admin ih može samo ukloniti)
+    private void EnsureDirectorOf(Guid directorId)
+    {
+        if (currentUser.Id != directorId)
+            throw new ForbiddenException("Only the film's director can add its pictures.");
+    }
+
     private void EnsureCanViewProfilePicture(Guid ownerId, ParticipantRole ownerRole)
     {
         if (currentUser.IsAdmin() || currentUser.Id == ownerId)
@@ -314,9 +447,6 @@ public class MediaService(
 
         throw new ForbiddenException("You do not have access to this portfolio.");
     }
-
-    private static MediaItemDto ToItemDto(MediaAsset a) =>
-        new(a.Id, a.Kind, a.Caption, a.ContentType, a.SizeBytes, a.CreatedAt, $"/api/media/{a.Id}");
 
     private async Task TryDeleteFileAsync(string key)
     {

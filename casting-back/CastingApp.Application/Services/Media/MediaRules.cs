@@ -1,4 +1,5 @@
 using CastingApp.Domain.Enums;
+using CastingApp.Application.Abstractions;
 
 namespace CastingApp.Application.Services.Media;
 
@@ -27,13 +28,13 @@ internal static class MediaRules
         _ => 10 * mb
     };
 
-    // Koliko stavki jedne vrste nalog sme da ima (profilna slika se zamenjuje, pa je 1)
     public static int MaxCount(MediaKind kind) => kind switch
     {
         MediaKind.Headshot => 5,
         MediaKind.FullBody => 5,
         MediaKind.ProductionStill => 10,
         MediaKind.Showreel => 3,
+        MediaKind.RoleConceptArt => 5,
         _ => 1
     };
 
@@ -41,10 +42,19 @@ internal static class MediaRules
     {
         MediaKind.ProfilePicture => "profile-pictures",
         MediaKind.Showreel => "showreels",
+        MediaKind.FilmPoster => "posters",
+        MediaKind.RoleConceptArt => "concept-art",
         _ => "photos"
     };
 
-    // Tip određujemo po prvim bajtovima fajla, ne po imenu ni po zaglavlju koje šalje klijent
+    public static ImageShape? Shape(MediaKind kind) => kind switch
+    {
+        MediaKind.ProfilePicture => new ImageShape(1000, 1000),
+        MediaKind.FilmPoster => new ImageShape(1000, 1500),
+        MediaKind.RoleConceptArt => new ImageShape(1200, 1600),
+        _ => null
+    };
+
     public static DetectedType? Detect(ReadOnlySpan<byte> b)
     {
         if (b.Length >= 3 && b[0] == 0xFF && b[1] == 0xD8 && b[2] == 0xFF)

@@ -1,31 +1,32 @@
 using CastingApp.Application.Abstractions;
 using CastingApp.Application.Common;
 using CastingApp.Application.DTOs.Films;
+using CastingApp.Application.Services.Media;
 using CastingApp.Domain.Entities;
 using CastingApp.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace CastingApp.Application.Services.Films;
 
-public class FilmService(IAppDbContext db, ICurrentUser currentUser) : IFilmService
+public class FilmService(IAppDbContext db, ICurrentUser currentUser, IMediaStorage storage) : IFilmService
 {
     public async Task<IReadOnlyList<FilmSummaryDto>> ListAsync(FilmStatus? status, CancellationToken ct)
     {
         var query = db.Films.AsNoTracking();
-        if (status is not null)
-            query = query.Where(f => f.Status == status);
+        if (status is not null) query = query.Where(f => f.Status == status);
 
         return await query
             .OrderByDescending(f => f.CreatedAt)
             .Select(f => new FilmSummaryDto(
-                f.Id, f.DirectorId, f.Title, f.ContentRating, f.ReleaseYear, f.Status, f.CreatedAt, f.Roles.Count))
+                f.Id, f.DirectorId, f.Title, f.ContentRating, f.ReleaseYear, f.Status, f.CreatedAt, f.Roles.Count,
+                MediaUrls.Media(f.PosterId)))
             .ToListAsync(ct);
     }
 
     public async Task<FilmDto> GetAsync(Guid id, CancellationToken ct)
     {
         var film = await db.Films.AsNoTracking()
-            .Include(f => f.Roles)
+            .Include(f => f.Roles).ThenInclude(r => r.ConceptArt)
             .FirstOrDefaultAsync(f => f.Id == id, ct)
             ?? throw new NotFoundException(nameof(Film), id);
 
@@ -34,7 +35,7 @@ public class FilmService(IAppDbContext db, ICurrentUser currentUser) : IFilmServ
 
     public async Task<FilmDto> CreateAsync(CreateFilmRequest request, CancellationToken ct)
     {
-        var directorId = currentUser.Id;   // reziser je prijavljeni korisnik, ne vrednost iz tela zahteva
+        var directorId = currentUser.Id;   
         if (!await db.Directors.AnyAsync(d => d.ParticipantId == directorId, ct))
             throw new NotFoundException(nameof(Director), directorId);
 
@@ -55,7 +56,7 @@ public class FilmService(IAppDbContext db, ICurrentUser currentUser) : IFilmServ
     public async Task<FilmDto> UpdateAsync(Guid id, UpdateFilmRequest request, CancellationToken ct)
     {
         var film = await db.Films
-            .Include(f => f.Roles)
+            .Include(f => f.Roles).ThenInclude(r => r.ConceptArt)
             .FirstOrDefaultAsync(f => f.Id == id, ct)
             ?? throw new NotFoundException(nameof(Film), id);
 
@@ -73,12 +74,11 @@ public class FilmService(IAppDbContext db, ICurrentUser currentUser) : IFilmServ
 
     public async Task DeleteAsync(Guid id, CancellationToken ct)
     {
-        var film = await db.Films.FirstOrDefaultAsync(f => f.Id == id, ct)
-            ?? throw new NotFoundException(nameof(Film), id);
-
+        var film = await db.Films.FirstOrDefaultAsync(f => f.Id == id, ct) ?? throw new NotFoundException(nameof(Film), id);
         currentUser.EnsureOwnerOrAdmin(film.DirectorId);
 
-        db.Films.Remove(film);       // uloge briše baza (ON DELETE CASCADE)
+        var files = await FilmRemoval.RemoveAsync(db, film, ct);   
         await db.SaveChangesAsync(ct);
+        await storage.TryDeleteAsync(files);
     }
 }

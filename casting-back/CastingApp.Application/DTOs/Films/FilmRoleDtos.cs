@@ -1,3 +1,4 @@
+using CastingApp.Application.DTOs.Media;
 using System.ComponentModel.DataAnnotations;
 using CastingApp.Domain.Enums;
 
@@ -7,6 +8,7 @@ public record FilmRoleDto(
     Guid Id,
     Guid FilmId,
     string Name,
+    string? Description,
     int? AgeMin,
     int? AgeMax,
     int? HeightMin,
@@ -16,10 +18,12 @@ public record FilmRoleDto(
     string? Gender,
     string? Origin,
     FilmRoleStatus Status,
-    int RowVersion);
+    int RowVersion,
+    IReadOnlyList<MediaItemDto> ConceptArt);
 
 public record CreateFilmRoleRequest(
     [StringLength(200)] string Name,
+    [StringLength(2000)] string? Description,
     [Range(0, 120)] int? AgeMin,
     [Range(0, 120)] int? AgeMax,
     [Range(0, 300)] int? HeightMin,
@@ -35,6 +39,7 @@ public record CreateFilmRoleRequest(
 
 public record UpdateFilmRoleRequest(
     [StringLength(200)] string Name,
+    [StringLength(2000)] string? Description,
     [Range(0, 120)] int? AgeMin,
     [Range(0, 120)] int? AgeMax,
     [Range(0, 300)] int? HeightMin,

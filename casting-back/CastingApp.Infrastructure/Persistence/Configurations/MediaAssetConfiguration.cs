@@ -8,9 +8,8 @@ public class MediaAssetConfiguration : IEntityTypeConfiguration<MediaAsset>
 {
     public void Configure(EntityTypeBuilder<MediaAsset> e)
     {
-        e.ToTable("media_asset", t => t.HasCheckConstraint(
-            "ck_media_asset_kind",
-            "kind IN ('ProfilePicture','Headshot','FullBody','ProductionStill','Showreel')"));
+        e.ToTable("media_asset", t => t.HasCheckConstraint("ck_media_asset_kind",
+            "kind IN ('ProfilePicture','Headshot','FullBody','ProductionStill','Showreel','FilmPoster','RoleConceptArt')"));
         e.HasKey(m => m.Id);
         e.Property(m => m.Kind).HasConversion<string>().HasMaxLength(30);
         e.Property(m => m.Caption).HasMaxLength(140);
@@ -21,5 +20,7 @@ public class MediaAssetConfiguration : IEntityTypeConfiguration<MediaAsset>
         e.HasOne<Participant>().WithMany().HasForeignKey(m => m.OwnerId).OnDelete(DeleteBehavior.Cascade);
         
         e.HasMany<Participant>().WithOne().HasForeignKey(p => p.ProfilePictureId).OnDelete(DeleteBehavior.SetNull);
+        
+        e.HasMany<Film>().WithOne().HasForeignKey(f => f.PosterId).OnDelete(DeleteBehavior.SetNull);
     }
 }
