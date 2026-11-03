@@ -9,7 +9,9 @@ import type {
   ForceLogoutResult,
   TimelinePoint,
   AdminDirector,
-  AdminFilm
+  AdminFilm,
+  AdminAction,
+  AuditEntry,
 } from '@/types/admin'
 import type { PagedResult } from '@/types/api'
 import type { SignUpRole } from '@/types/participant'
@@ -42,6 +44,15 @@ export type DirectorListQuery = {
   search?: string
   hasProduction?: boolean
   hasFilms?: boolean
+  page: number
+  pageSize: number
+}
+
+export type AuditListQuery = {
+  search?: string
+  actions?: readonly AdminAction[]
+  targetId?: string
+  from?: string
   page: number
   pageSize: number
 }
@@ -81,8 +92,10 @@ export const adminApi = {
   getFilm: (id: string) => request<AdminFilmDetail>(filmPath(id)),
 
   deleteFilm: (id: string, reason: string) => request<void>(withQuery(filmPath(id), { reason }), { method: 'DELETE' }),
-  
+
   listDirectors: (query: DirectorListQuery) => request<PagedResult<AdminDirector>>(withQuery('/api/admin/directors', query)),
-  
+
   getDirectorFilms: (id: string) => request<AdminFilm[]>(`${directorPath(id)}/films`),
+
+  listAudit: (query: AuditListQuery) => request<PagedResult<AuditEntry>>(withQuery('/api/admin/audit', query)),
 }

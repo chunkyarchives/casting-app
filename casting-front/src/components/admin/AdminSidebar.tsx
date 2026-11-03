@@ -1,4 +1,4 @@
-import { ChartBarLineIcon, Film01Icon, UserMultiple02Icon } from '@hugeicons/core-free-icons'
+import { ChartBarLineIcon, Film01Icon, UserMultiple02Icon, CommandLineIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react'
 import { Link, useMatch } from 'react-router'
 import { SignOutButton } from '@/components/auth/SignOutButton'
@@ -24,6 +24,7 @@ const navItems: NavItem[] = [
   { path: paths.adminStatistics, label: 'Statistics', icon: ChartBarLineIcon },
   { path: paths.adminAccounts, label: 'Accounts', icon: UserMultiple02Icon },
   { path: paths.adminProductions, label: 'Productions', icon: Film01Icon },
+  { path: paths.adminAuditLogs, label: 'Audit logs', icon: CommandLineIcon }
 ]
 
 export function AdminSidebar() {

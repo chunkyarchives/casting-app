@@ -146,3 +146,28 @@ export type AdminDirector = {
   filmCount: number
   createdAt: string
 }
+
+export const adminActions = [
+  'LockAccount',
+  'UnlockAccount',
+  'ForceLogout',
+  'DeleteAccount',
+  'RegenerateCrewCode',
+  'RemoveCrewMember',
+  'DeleteCrew',
+  'DeleteFilm',
+  'DeleteConversation',
+] as const
+export type AdminAction = (typeof adminActions)[number]
+
+export type AuditEntry = {
+  id: string
+  adminId: string
+  adminEmail: string
+  action: AdminAction
+  targetType: string
+  targetId: string
+  targetLabel: string
+  reason: string | null
+  createdAt: string
+}

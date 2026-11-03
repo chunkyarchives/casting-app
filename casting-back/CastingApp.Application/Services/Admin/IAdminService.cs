@@ -23,7 +23,7 @@ public interface IAdminService
     Task DeleteCrewAsync(Guid id, string reason, CancellationToken ct);
     Task<PagedResult<AdminConversationDto>> ListConversationsAsync(Guid? participantId, int page, int pageSize, CancellationToken ct);
     Task DeleteConversationAsync(Guid id, string reason, CancellationToken ct);
-    Task<PagedResult<AuditEntryDto>> ListAuditAsync(AdminAction? action, Guid? targetId, int page, int pageSize, CancellationToken ct);
+    Task<PagedResult<AuditEntryDto>> ListAuditAsync(AuditListFilter filter, int page, int pageSize, CancellationToken ct);
     Task<AdminFilmDetailDto> GetFilmAsync(Guid id, CancellationToken ct);
     Task<PagedResult<AdminDirectorDto>> ListDirectorsAsync(DirectorListFilter filter, int page, int pageSize, CancellationToken ct);
     Task<IReadOnlyList<AdminFilmDto>> ListDirectorFilmsAsync(Guid directorId, CancellationToken ct);

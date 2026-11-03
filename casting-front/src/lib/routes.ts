@@ -8,7 +8,8 @@ export const paths = {
   admin: '/admin',
   adminStatistics: '/admin/statistics',
   adminAccounts: '/admin/accounts',
-  adminProductions: '/admin/productions'
+  adminProductions: '/admin/productions',
+  adminAuditLogs: '/admin/audit-logs'
 } as const
 
 const roleHomePaths: Record<ParticipantRole, string> = {

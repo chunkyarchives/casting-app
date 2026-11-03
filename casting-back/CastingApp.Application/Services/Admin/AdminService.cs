@@ -593,17 +593,28 @@ public class AdminService(IAppDbContext db, ICurrentUser currentUser, IMediaStor
         db.Conversations.Remove(conversation);
         await db.SaveChangesAsync(ct);
     }
-    public async Task<PagedResult<AuditEntryDto>> ListAuditAsync(
-        AdminAction? action, Guid? targetId, int page, int pageSize, CancellationToken ct)
+   
+    public async Task<PagedResult<AuditEntryDto>> ListAuditAsync(AuditListFilter filter, int page, int pageSize, CancellationToken ct)
     {
         EnsureAdmin();
 
         var query = db.AdminAudit.AsNoTracking();
 
-        if (action is { } a)
-            query = query.Where(x => x.Action == a);
-        if (targetId is { } t)
-            query = query.Where(x => x.TargetId == t);
+        if (filter.Actions.Count > 0)
+            query = query.Where(x => filter.Actions.Contains(x.Action));
+        if (filter.TargetId is { } targetId)
+            query = query.Where(x => x.TargetId == targetId);
+
+        if (filter.From is { } from)
+            query = query.Where(x => x.CreatedAt > from);
+
+        if (!string.IsNullOrWhiteSpace(filter.Search))
+        {
+            var term = filter.Search.Trim().ToLower();
+            query = query.Where(x => x.AdminEmail.ToLower().Contains(term)
+                || x.TargetLabel.ToLower().Contains(term)
+                || (x.Reason != null && x.Reason.ToLower().Contains(term)));
+        }
 
         var total = await query.CountAsync(ct);
         var items = await query
@@ -611,8 +622,7 @@ public class AdminService(IAppDbContext db, ICurrentUser currentUser, IMediaStor
             .ThenBy(x => x.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .Select(x => new AuditEntryDto(
-                x.Id, x.AdminId, x.AdminEmail, x.Action, x.TargetType, x.TargetId, x.TargetLabel, x.Reason, x.CreatedAt))
+            .Select(x => new AuditEntryDto(x.Id, x.AdminId, x.AdminEmail, x.Action, x.TargetType, x.TargetId, x.TargetLabel, x.Reason, x.CreatedAt))
             .ToListAsync(ct);
 
         return new PagedResult<AuditEntryDto>(items, page, pageSize, total);

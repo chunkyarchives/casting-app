@@ -1,13 +1,10 @@
 import { Fragment, useState } from 'react'
-import { ArrowDown01Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
 import { siteMemberCount, type ProductionRow } from '@/components/admin/productions/production-rows'
 import { LoadError } from '@/components/common/states/LoadError'
 import { NoResults } from '@/components/common/states/NoResults'
+import { ExpandToggle, ExpandedPanel } from '@/components/common/list/ExpandableRow'
 import { SkeletonRows } from '@/components/common/list/SkeletonRows'
 import { TableMessageRow } from '@/components/common/list/TableMessageRow'
-import { Button } from '@/components/ui/button'
-import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
 import {
   Table,
   TableBody,
@@ -63,31 +60,17 @@ export function CrewsTable({ rows, stale, revision, onOpenRow, onOpenFilm }: Pro
                   <TableCell className="text-center tabular-nums">{formatCount(siteMemberCount(row))}</TableCell>
                   <TableCell className="text-center tabular-nums">{formatCount(row.filmCount)}</TableCell>
                   <TableCell className="text-right" onClick={(event) => event.stopPropagation()}>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      aria-expanded={expanded}
-                      aria-label={`${expanded ? 'Hide' : 'Show'} films of ${name}`}
-                      onClick={() => setExpandedId(expanded ? null : row.directorId)}
-                    >
-                      <HugeiconsIcon
-                        icon={ArrowDown01Icon}
-                        strokeWidth={2}
-                        className={cn('transition-transform duration-200', expanded && 'rotate-180')}
-                      />
-                    </Button>
+                    <ExpandToggle
+                      expanded={expanded}
+                      label={`${expanded ? 'Hide' : 'Show'} films of ${name}`}
+                      onToggle={() => setExpandedId(expanded ? null : row.directorId)}
+                    />
                   </TableCell>
                 </TableRow>
 
-                <TableRow className="border-0 hover:bg-transparent">
-                  <TableCell colSpan={columnCount} className="p-0 whitespace-normal">
-                    <Collapsible open={expanded}>
-                      <CollapsibleContent className="h-(--collapsible-panel-height) overflow-hidden transition-[height] duration-200 ease-out data-ending-style:h-0 data-starting-style:h-0">
-                        <CrewFilmsPanel row={row} revision={revision} onOpenFilm={onOpenFilm} />
-                      </CollapsibleContent>
-                    </Collapsible>
-                  </TableCell>
-                </TableRow>
+                <ExpandedPanel columnCount={columnCount} open={expanded}>
+                  <CrewFilmsPanel row={row} revision={revision} onOpenFilm={onOpenFilm} />
+                </ExpandedPanel>
               </Fragment>
             )
           })

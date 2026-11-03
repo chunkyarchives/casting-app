@@ -142,10 +142,12 @@ public class AdminController(IAdminService admin) : ControllerBase
 
     [HttpGet("audit")]
     public async Task<ActionResult<PagedResult<AuditEntryDto>>> Audit(
-        [FromQuery] AdminAction? action,
+        [FromQuery] string? search,
+        [FromQuery] AdminAction[]? actions,
         [FromQuery] Guid? targetId,
+        [FromQuery] DateTimeOffset? from,
         [FromQuery, Range(1, int.MaxValue)] int page = 1,
         [FromQuery, Range(1, 100)] int pageSize = 20,
         CancellationToken ct = default)
-        => Ok(await admin.ListAuditAsync(action, targetId, page, pageSize, ct));
+        => Ok(await admin.ListAuditAsync(new AuditListFilter(search, actions ?? [], targetId, from?.UtcDateTime), page, pageSize, ct));
 }

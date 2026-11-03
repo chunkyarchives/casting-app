@@ -11,6 +11,9 @@ import AdminLayout from '@/layouts/AdminLayout'
 import Statistics from '@/pages/admin/Statistics'
 import Accounts from '@/pages/admin/Accounts'
 import Productions from '@/pages/admin/Productions'
+import { lazy } from 'react'
+
+const AuditLogs = lazy(() => import('@/pages/admin/AuditLogs'))
 
 export default function App() {
   return (  
@@ -37,6 +40,7 @@ export default function App() {
           <Route path={paths.adminStatistics} element={<Statistics />} />
           <Route path={paths.adminAccounts} element={<Accounts />} />
           <Route path={paths.adminProductions} element={<Productions />} />
+          <Route path={paths.adminAuditLogs} element={<AuditLogs />} />
         </Route>
       </Route>
 

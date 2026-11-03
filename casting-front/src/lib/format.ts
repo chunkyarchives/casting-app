@@ -1,3 +1,5 @@
+import { format } from 'date-fns'
+
 const countFormat = new Intl.NumberFormat('en')
 const percentFormat = new Intl.NumberFormat('en', { style: 'percent', maximumFractionDigits: 0 })
 const sizeFormat = new Intl.NumberFormat('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -55,3 +57,6 @@ const dateTimeFormat = new Intl.DateTimeFormat('en', {
 
 export const formatDate = (value: string | Date) => dateFormat.format(new Date(value))
 export const formatDateTime = (value: string | Date) => dateTimeFormat.format(new Date(value))
+
+// "2026-11-03 14:02:11"
+export const formatLogTime = (value: string | Date) => format(new Date(value), 'yyyy-MM-dd HH:mm:ss')

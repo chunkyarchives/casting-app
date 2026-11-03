@@ -132,3 +132,5 @@ public record AdminDirectorDto(
     bool HasProduction,
     int FilmCount,
     DateTime CreatedAt);
+
+public record AuditListFilter(string? Search, IReadOnlyCollection<AdminAction> Actions, Guid? TargetId, DateTime? From);
