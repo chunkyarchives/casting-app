@@ -7,5 +7,8 @@ public enum AdminAction
     ForceLogout,
     DeleteAccount,
     DeleteFilm,
-    DeleteConversation
+    DeleteConversation,
+    DeleteCrew,
+    RemoveCrewMember,
+    RegenerateCrewCode
 }

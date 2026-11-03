@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using CastingApp.Application.Abstractions;
 using CastingApp.Application.Common;
 using CastingApp.Application.DTOs.Crews;
@@ -9,9 +8,6 @@ namespace CastingApp.Application.Services.Crews;
 
 public class CrewService(IAppDbContext db, ICurrentUser currentUser) : ICrewService
 {
-    private const string codeAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    private const int codeLength = 6;
-
     public async Task<IReadOnlyList<CrewSummaryDto>> ListAsync(Guid? directorId, CancellationToken ct)
     {
         var query = db.Crews.AsNoTracking();
@@ -54,7 +50,7 @@ public class CrewService(IAppDbContext db, ICurrentUser currentUser) : ICrewServ
         {
             DirectorId = directorId,
             ProductionName = request.ProductionName.Trim(),
-            ProductionCode = await GenerateUniqueCodeAsync(ct)
+            ProductionCode = await ProductionCodes.GenerateUniqueAsync(db, ct)
         };
         db.Crews.Add(crew);
 
@@ -89,7 +85,7 @@ public class CrewService(IAppDbContext db, ICurrentUser currentUser) : ICrewServ
 
         currentUser.EnsureOwnerOrAdmin(crew.DirectorId);
 
-        crew.ProductionCode = await GenerateUniqueCodeAsync(ct);
+        crew.ProductionCode = await ProductionCodes.GenerateUniqueAsync(db, ct);
         await db.SaveChangesAsync(ct);
         return await GetAsync(id, ct);
     }
@@ -152,17 +148,5 @@ public class CrewService(IAppDbContext db, ICurrentUser currentUser) : ICrewServ
 
         db.CrewMemberships.Remove(membership);
         await db.SaveChangesAsync(ct);
-    }
-
-    private async Task<string> GenerateUniqueCodeAsync(CancellationToken ct)
-    {
-        for (var attempt = 0; attempt < 5; attempt++)
-        {
-            var code = RandomNumberGenerator.GetString(codeAlphabet, codeLength);
-            if (!await db.Crews.AnyAsync(c => c.ProductionCode == code, ct))
-                return code;
-        }
-
-        throw new ConflictException("Could not generate a unique production code. Try again.");
     }
 }

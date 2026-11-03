@@ -10,7 +10,7 @@ public class AdminAuditEntryConfiguration : IEntityTypeConfiguration<AdminAuditE
     {
         e.ToTable("admin_audit", t => t.HasCheckConstraint(
             "ck_admin_audit_action",
-            "action IN ('LockAccount','UnlockAccount','ForceLogout','DeleteAccount','DeleteFilm','DeleteConversation')"));
+            "action IN ('LockAccount','UnlockAccount','ForceLogout','DeleteAccount','DeleteFilm','DeleteConversation','DeleteCrew','RemoveCrewMember','RegenerateCrewCode')"));        
         e.HasKey(a => a.Id);
         e.Property(a => a.AdminEmail).HasMaxLength(256).IsRequired();
         e.Property(a => a.Action).HasConversion<string>().HasMaxLength(30);

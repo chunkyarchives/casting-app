@@ -21,6 +21,7 @@ import { adminApi } from '@/lib/api/admin'
 import { apiErrorMessage } from '@/lib/api/errors'
 import { formatCount, formatDate, formatDateTime } from '@/lib/format'
 import { roleLabels } from '@/lib/roles'
+import { cn } from '@/lib/utils'
 import type { AdminAccount, AdminAccountDetail } from '@/types/admin'
 
 type Props = {
@@ -105,7 +106,7 @@ function DetailGroups({ account }: { account: AdminAccountDetail }) {
             <DetailRow label="Locked until">
               {account.lockedUntil ? formatDateTime(account.lockedUntil) : 'Until an admin unlocks it'}
             </DetailRow>
-            <DetailRow label="Reason">{account.lockReason ?? '—'}</DetailRow>
+            <DetailRow label="Reason" stacked>{account.lockReason ?? '—'}</DetailRow>
           </>
         )}
       </DetailGroup>
@@ -175,11 +176,17 @@ function DetailGroup({ title, children }: { title: string; children: ReactNode }
   )
 }
 
-function DetailRow({ label, children }: { label: string; children: ReactNode }) {
+type DetailRowProps = {
+  label: string
+  stacked?: boolean
+  children: ReactNode
+}
+
+function DetailRow({ label, stacked, children }: DetailRowProps) {
   return (
     <>
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd className="text-right">{children}</dd>
+      <dt className={cn('text-muted-foreground', stacked && 'col-span-2')}>{label}</dt>
+      <dd className={cn(stacked ? 'col-span-2 whitespace-pre-line' : 'text-right')}>{children}</dd>
     </>
   )
 }

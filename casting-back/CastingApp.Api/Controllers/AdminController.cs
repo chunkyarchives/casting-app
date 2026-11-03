@@ -77,6 +77,39 @@ public class AdminController(IAdminService admin) : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("crews")]
+    public async Task<ActionResult<PagedResult<AdminCrewDto>>> ListCrews(
+        [FromQuery] string? search,
+        [FromQuery] bool? hasFilms,
+        [FromQuery] bool? hasMembers,
+        [FromQuery, Range(1, int.MaxValue)] int page = 1,
+        [FromQuery, Range(1, 100)] int pageSize = 20,
+        CancellationToken ct = default)
+        => Ok(await admin.ListCrewsAsync(new CrewListFilter(search, hasFilms, hasMembers), page, pageSize, ct));
+
+    [HttpGet("crews/{id:guid}")]
+    public async Task<ActionResult<AdminCrewDetailDto>> GetCrew(Guid id, CancellationToken ct)
+        => Ok(await admin.GetCrewAsync(id, ct));
+
+    [HttpPost("crews/{id:guid}/regenerate-code")]
+    public async Task<ActionResult<CrewCodeResult>> RegenerateCrewCode(
+        Guid id, [FromQuery, StringLength(500)] string? reason, CancellationToken ct)
+        => Ok(await admin.RegenerateCrewCodeAsync(id, reason, ct));
+
+    [HttpDelete("crews/{id:guid}/members/{castingDirectorId:guid}")]
+    public async Task<IActionResult> RemoveCrewMember(Guid id, Guid castingDirectorId, [FromQuery, StringLength(500, MinimumLength = 3)] string reason, CancellationToken ct)
+    {
+        await admin.RemoveCrewMemberAsync(id, castingDirectorId, reason, ct);
+        return NoContent();
+    }
+
+    [HttpDelete("crews/{id:guid}")]
+    public async Task<IActionResult> DeleteCrew(Guid id, [FromQuery, StringLength(500, MinimumLength = 3)] string reason, CancellationToken ct)
+    {
+        await admin.DeleteCrewAsync(id, reason, ct);
+        return NoContent();
+    }
+
     [HttpGet("conversations")]
     public async Task<ActionResult<PagedResult<AdminConversationDto>>> ListConversations(
         [FromQuery] Guid? participantId,

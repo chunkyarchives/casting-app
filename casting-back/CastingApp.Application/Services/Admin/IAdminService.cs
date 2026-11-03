@@ -16,6 +16,11 @@ public interface IAdminService
     Task DeleteAccountAsync(Guid id, string reason, CancellationToken ct);
     Task<PagedResult<AdminFilmDto>> ListFilmsAsync(string? search, FilmStatus? status, int page, int pageSize, CancellationToken ct);
     Task DeleteFilmAsync(Guid id, string reason, CancellationToken ct);
+    Task<PagedResult<AdminCrewDto>> ListCrewsAsync(CrewListFilter filter, int page, int pageSize, CancellationToken ct);
+    Task<AdminCrewDetailDto> GetCrewAsync(Guid id, CancellationToken ct);
+    Task<CrewCodeResult> RegenerateCrewCodeAsync(Guid id, string? reason, CancellationToken ct);
+    Task RemoveCrewMemberAsync(Guid crewId, Guid castingDirectorId, string reason, CancellationToken ct);
+    Task DeleteCrewAsync(Guid id, string reason, CancellationToken ct);
     Task<PagedResult<AdminConversationDto>> ListConversationsAsync(Guid? participantId, int page, int pageSize, CancellationToken ct);
     Task DeleteConversationAsync(Guid id, string reason, CancellationToken ct);
     Task<PagedResult<AuditEntryDto>> ListAuditAsync(AdminAction? action, Guid? targetId, int page, int pageSize, CancellationToken ct);

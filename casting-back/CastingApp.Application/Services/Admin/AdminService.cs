@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using CastingApp.Application.DTOs.Films;
 using CastingApp.Application.Services.Films;
 using CastingApp.Application.Services.Media;
+using CastingApp.Application.Services.Crews;
 
 namespace CastingApp.Application.Services.Admin;
 
@@ -133,8 +134,7 @@ public class AdminService(IAppDbContext db, ICurrentUser currentUser, IMediaStor
         var now = DateTimeOffset.UtcNow;
         var nowUtc = now.UtcDateTime;
 
-        var user = await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id, ct)
-            ?? throw new NotFoundException(nameof(Participant), id);
+        var user = await db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id, ct) ?? throw new NotFoundException(nameof(Participant), id);
 
         var locked = user.LockoutEnabled && user.LockoutEnd is { } end && end > now;
         DateTimeOffset? lockedUntil = locked && user.LockoutEnd != DateTimeOffset.MaxValue ? user.LockoutEnd : null;
@@ -289,8 +289,7 @@ public class AdminService(IAppDbContext db, ICurrentUser currentUser, IMediaStor
         if (!string.IsNullOrWhiteSpace(search))
         {
             var term = search.Trim().ToLower();
-            query = query.Where(f =>
-                f.Title.ToLower().Contains(term)
+            query = query.Where(f => f.Title.ToLower().Contains(term)
                 || (f.Director.Participant.FirstName + " " + f.Director.Participant.LastName).ToLower().Contains(term));
         }
 
@@ -359,6 +358,151 @@ public class AdminService(IAppDbContext db, ICurrentUser currentUser, IMediaStor
         var files = await FilmRemoval.RemoveAsync(db, film, ct);
         await db.SaveChangesAsync(ct);
         await storage.TryDeleteAsync(files);
+    }
+
+    public async Task<PagedResult<AdminCrewDto>> ListCrewsAsync(CrewListFilter filter, int page, int pageSize, CancellationToken ct)
+    {
+        EnsureAdmin();
+        var query = db.Crews.AsNoTracking();
+
+        if (filter.HasFilms is { } hasFilms)
+            query = hasFilms
+                ? query.Where(c => db.Films.Any(f => f.DirectorId == c.DirectorId))
+                : query.Where(c => !db.Films.Any(f => f.DirectorId == c.DirectorId));
+
+        if (filter.HasMembers is { } hasMembers)
+            query = hasMembers
+                ? query.Where(c => c.Memberships.Any())
+                : query.Where(c => !c.Memberships.Any());
+
+        if (!string.IsNullOrWhiteSpace(filter.Search))
+        {
+            var term = filter.Search.Trim().ToLower();
+            query = query.Where(c => c.ProductionName.ToLower().Contains(term)
+                || c.ProductionCode.ToLower().Contains(term)
+                || (c.Director.Participant.FirstName + " " + c.Director.Participant.LastName).ToLower().Contains(term));
+        }
+
+        var total = await query.CountAsync(ct);
+        var items = await query
+            .OrderBy(c => c.ProductionName)
+            .ThenBy(c => c.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(c => new AdminCrewDto(
+                c.Id,
+                c.ProductionName,
+                c.ProductionCode,
+                c.DirectorId,
+                c.Director.Participant.FirstName + " " + c.Director.Participant.LastName,
+                c.Memberships.Count,
+                db.Films.Count(f => f.DirectorId == c.DirectorId),
+                c.CreatedAt))
+            .ToListAsync(ct);
+
+        return new PagedResult<AdminCrewDto>(items, page, pageSize, total);
+    }
+
+    public async Task<AdminCrewDetailDto> GetCrewAsync(Guid id, CancellationToken ct)
+    {
+        EnsureAdmin();
+
+        var crew = await db.Crews.AsNoTracking()
+            .Where(c => c.Id == id)
+            .Select(c => new
+            {
+                c.Id,
+                c.ProductionName,
+                c.ProductionCode,
+                c.CreatedAt,
+                c.DirectorId,
+                DirectorName = c.Director.Participant.FirstName + " " + c.Director.Participant.LastName,
+                DirectorEmail = c.Director.Participant.Email ?? string.Empty,
+                Members = c.Memberships
+                    .OrderBy(m => m.JoinedAt)
+                    .Select(m => new AdminCrewMemberDto(
+                        m.CastingDirectorId,
+                        m.CastingDirector.Participant.FirstName,
+                        m.CastingDirector.Participant.LastName,
+                        m.CastingDirector.Participant.Email ?? string.Empty,
+                        m.JoinedAt))
+                    .ToList()
+            })
+            .FirstOrDefaultAsync(ct)
+            ?? throw new NotFoundException(nameof(Crew), id);
+
+        var films = await db.Films.AsNoTracking()
+            .Where(f => f.DirectorId == crew.DirectorId)
+            .OrderByDescending(f => f.CreatedAt)
+            .ThenBy(f => f.Id)
+            .Select(f => new AdminFilmDto(
+                f.Id,
+                f.Title,
+                f.Status,
+                f.DirectorId,
+                crew.DirectorName,
+                f.Roles.Count,
+                f.CreatedAt,
+                MediaUrls.Media(f.PosterId)))
+            .ToListAsync(ct);
+
+        return new AdminCrewDetailDto(
+            crew.Id,
+            crew.ProductionName,
+            crew.ProductionCode,
+            crew.CreatedAt,
+            crew.DirectorId,
+            crew.DirectorName,
+            crew.DirectorEmail,
+            crew.Members,
+            films);
+    }
+
+    public async Task<CrewCodeResult> RegenerateCrewCodeAsync(Guid id, string? reason, CancellationToken ct)
+    {
+        EnsureAdmin();
+
+        var crew = await db.Crews.FirstOrDefaultAsync(c => c.Id == id, ct)
+            ?? throw new NotFoundException(nameof(Crew), id);
+
+        crew.ProductionCode = await ProductionCodes.GenerateUniqueAsync(db, ct);
+        await AddAuditAsync(AdminAction.RegenerateCrewCode, "Crew", id, crew.ProductionName, reason, ct);
+
+        await db.SaveChangesAsync(ct);
+        return new CrewCodeResult(crew.ProductionCode);
+    }
+
+    public async Task RemoveCrewMemberAsync(Guid crewId, Guid castingDirectorId, string reason, CancellationToken ct)
+    {
+        EnsureAdmin();
+
+        var membership = await db.CrewMemberships
+            .FirstOrDefaultAsync(m => m.CrewId == crewId && m.CastingDirectorId == castingDirectorId, ct)
+            ?? throw new NotFoundException("Crew member", castingDirectorId);
+
+        var label = await db.CrewMemberships.AsNoTracking()
+            .Where(m => m.Id == membership.Id)
+            .Select(m => m.Crew.ProductionName + " / "
+                         + m.CastingDirector.Participant.FirstName + " " + m.CastingDirector.Participant.LastName)
+            .FirstAsync(ct);
+
+        await AddAuditAsync(AdminAction.RemoveCrewMember, "Crew", crewId, label, reason, ct);
+
+        db.CrewMemberships.Remove(membership);
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task DeleteCrewAsync(Guid id, string reason, CancellationToken ct)
+    {
+        EnsureAdmin();
+
+        var crew = await db.Crews.FirstOrDefaultAsync(c => c.Id == id, ct)
+            ?? throw new NotFoundException(nameof(Crew), id);
+
+        await AddAuditAsync(AdminAction.DeleteCrew, "Crew", id, crew.ProductionName, reason, ct);
+
+        db.Crews.Remove(crew);
+        await db.SaveChangesAsync(ct);
     }
 
     public async Task<PagedResult<AdminConversationDto>> ListConversationsAsync(

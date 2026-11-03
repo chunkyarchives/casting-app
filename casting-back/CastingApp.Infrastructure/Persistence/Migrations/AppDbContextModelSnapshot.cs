@@ -129,7 +129,7 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
 
                     b.ToTable("admin_audit", null, t =>
                         {
-                            t.HasCheckConstraint("ck_admin_audit_action", "action IN ('LockAccount','UnlockAccount','ForceLogout','DeleteAccount','DeleteFilm','DeleteConversation')");
+                            t.HasCheckConstraint("ck_admin_audit_action", "action IN ('LockAccount','UnlockAccount','ForceLogout','DeleteAccount','DeleteFilm','DeleteConversation','DeleteCrew','RemoveCrewMember','RegenerateCrewCode')");
                         });
                 });
 

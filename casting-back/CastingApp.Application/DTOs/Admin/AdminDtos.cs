@@ -96,3 +96,30 @@ public record AccountListFilter(
     IReadOnlyCollection<ParticipantRole> Roles,
     bool? Locked,
     bool? ProfileComplete);
+
+public record CrewListFilter(string? Search, bool? HasFilms, bool? HasMembers);
+
+public record AdminCrewDto(
+    Guid Id,
+    string ProductionName,
+    string ProductionCode,
+    Guid DirectorId,
+    string DirectorName,
+    int MemberCount,
+    int FilmCount,            
+    DateTime CreatedAt);
+
+public record AdminCrewMemberDto(Guid CastingDirectorId, string FirstName, string LastName, string Email, DateTime JoinedAt);
+
+public record AdminCrewDetailDto(
+    Guid Id,
+    string ProductionName,
+    string ProductionCode,
+    DateTime CreatedAt,
+    Guid DirectorId,
+    string DirectorName,
+    string DirectorEmail,
+    IReadOnlyList<AdminCrewMemberDto> Members,
+    IReadOnlyList<AdminFilmDto> Films);
+
+public record CrewCodeResult(string ProductionCode);
