@@ -1,5 +1,5 @@
-import { ChartBarLineIcon, UserMultiple02Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
+import { ChartBarLineIcon, Film01Icon, UserMultiple02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react'
 import { Link, useMatch } from 'react-router'
 import { SignOutButton } from '@/components/auth/SignOutButton'
 import {
@@ -10,14 +10,23 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem
+  SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { paths } from '@/lib/routes'
 
-export function AdminSidebar() {
-  const onStatistics = useMatch(paths.adminStatistics) !== null
-  const onAccounts = useMatch(paths.adminAccounts) !== null
+type NavItem = {
+  path: string
+  label: string
+  icon: IconSvgElement
+}
 
+const navItems: NavItem[] = [
+  { path: paths.adminStatistics, label: 'Statistics', icon: ChartBarLineIcon },
+  { path: paths.adminAccounts, label: 'Accounts', icon: UserMultiple02Icon },
+  { path: paths.adminProductions, label: 'Productions', icon: Film01Icon },
+]
+
+export function AdminSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
@@ -27,18 +36,9 @@ export function AdminSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton isActive={onStatistics} render={<Link to={paths.adminStatistics} />}>
-                <HugeiconsIcon icon={ChartBarLineIcon} strokeWidth={2} />
-                <span>Statistics</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton isActive={onAccounts} render={<Link to={paths.adminAccounts} />}>
-                <HugeiconsIcon icon={UserMultiple02Icon} strokeWidth={2} />
-                <span>Accounts</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            {navItems.map((item) => (
+              <NavLink key={item.path} item={item} />
+            ))}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
@@ -47,5 +47,18 @@ export function AdminSidebar() {
         <SignOutButton />
       </SidebarFooter>
     </Sidebar>
+  )
+}
+
+function NavLink({ item: { path, label, icon } }: { item: NavItem }) {
+  const active = useMatch(path) !== null
+
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton isActive={active} render={<Link to={path} />}>
+        <HugeiconsIcon icon={icon} strokeWidth={2} />
+        <span>{label}</span>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
   )
 }

@@ -1,3 +1,4 @@
+import type { Film, FilmStatus } from '@/types/film'
 import type { ParticipantRole } from '@/types/participant'
 
 export type AccountStats = {
@@ -76,4 +77,72 @@ export type AdminAccountDetail = AdminAccount & {
 
 export type ForceLogoutResult = {
   sessionsEnded: number
+}
+
+export type AdminFilm = {
+  id: string
+  title: string
+  status: FilmStatus
+  directorId: string
+  directorName: string
+  roleCount: number
+  createdAt: string
+  posterUrl: string | null
+}
+
+export type RoleApplicationCounts = {
+  roleId: string
+  proposed: number
+  accepted: number
+  rejected: number
+}
+
+export type AdminFilmDetail = {
+  film: Film
+  directorName: string
+  applications: RoleApplicationCounts[]
+}
+
+export type AdminCrew = {
+  id: string
+  productionName: string
+  productionCode: string
+  directorId: string
+  directorName: string
+  memberCount: number
+  filmCount: number
+  createdAt: string
+}
+
+export type AdminCrewMember = {
+  castingDirectorId: string
+  firstName: string
+  lastName: string
+  email: string
+  joinedAt: string
+}
+
+export type AdminCrewDetail = {
+  id: string
+  productionName: string
+  productionCode: string
+  createdAt: string
+  directorId: string
+  directorName: string
+  directorEmail: string
+  members: AdminCrewMember[]
+  films: AdminFilm[]
+}
+
+export type CrewCodeResult = {
+  productionCode: string
+}
+
+export type AdminDirector = {
+  id: string
+  name: string
+  email: string
+  hasProduction: boolean
+  filmCount: number
+  createdAt: string
 }

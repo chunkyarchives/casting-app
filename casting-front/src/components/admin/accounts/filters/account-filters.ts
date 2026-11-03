@@ -1,4 +1,6 @@
+import type { FilterCodec } from '@/hooks/useListFilters'
 import type { AccountListQuery } from '@/lib/api/admin'
+import { onlyOneChecked, parsePage, pickKnown } from '@/lib/list-filters'
 import { signUpRoles, type SignUpRole } from '@/types/participant'
 
 export const accountStatuses = ['active', 'locked'] as const
@@ -15,7 +17,7 @@ export type AccountFilters = {
   page: number
 }
 
-export const accountsPageSize = 20
+const accountsPageSize = 20
 
 const urlKeys = {
   search: 'q',
@@ -25,22 +27,17 @@ const urlKeys = {
   page: 'page',
 } as const
 
-const pickKnown = <T extends string>(known: readonly T[], values: string[]) =>
-  known.filter((value) => values.includes(value))
-
-export function parseAccountFilters(params: URLSearchParams): AccountFilters {
-  const page = Number(params.get(urlKeys.page))
-
+function parse(params: URLSearchParams): AccountFilters {
   return {
     search: params.get(urlKeys.search) ?? '',
     roles: pickKnown(signUpRoles, params.getAll(urlKeys.role)),
     statuses: pickKnown(accountStatuses, params.getAll(urlKeys.status)),
     profiles: pickKnown(profileStates, params.getAll(urlKeys.profile)),
-    page: Number.isInteger(page) && page > 1 ? page : 1,
+    page: parsePage(params.get(urlKeys.page)),
   }
 }
 
-export function toSearchParams(filters: AccountFilters): URLSearchParams {
+function toSearchParams(filters: AccountFilters): URLSearchParams {
   const params = new URLSearchParams()
 
   if (filters.search) params.set(urlKeys.search, filters.search)
@@ -52,8 +49,7 @@ export function toSearchParams(filters: AccountFilters): URLSearchParams {
   return params
 }
 
-const onlyOneChecked = <T extends string>(checked: T[], yes: T): boolean | undefined =>
-  checked.length === 1 ? checked[0] === yes : undefined
+export const accountFilterCodec: FilterCodec<AccountFilters> = { parse, toSearchParams }
 
 export const toAccountListQuery = (filters: AccountFilters): AccountListQuery => ({
   search: filters.search.trim() || undefined,

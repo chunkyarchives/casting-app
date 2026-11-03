@@ -110,6 +110,20 @@ public class AdminController(IAdminService admin) : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("directors")]
+    public async Task<ActionResult<PagedResult<AdminDirectorDto>>> ListDirectors(
+        [FromQuery] string? search,
+        [FromQuery] bool? hasProduction,
+        [FromQuery] bool? hasFilms,
+        [FromQuery, Range(1, int.MaxValue)] int page = 1,
+        [FromQuery, Range(1, 100)] int pageSize = 20,
+        CancellationToken ct = default)
+        => Ok(await admin.ListDirectorsAsync(new DirectorListFilter(search, hasProduction, hasFilms), page, pageSize, ct));
+
+    [HttpGet("directors/{id:guid}/films")]
+    public async Task<ActionResult<IReadOnlyList<AdminFilmDto>>> ListDirectorFilms(Guid id, CancellationToken ct)
+        => Ok(await admin.ListDirectorFilmsAsync(id, ct));
+
     [HttpGet("conversations")]
     public async Task<ActionResult<PagedResult<AdminConversationDto>>> ListConversations(
         [FromQuery] Guid? participantId,

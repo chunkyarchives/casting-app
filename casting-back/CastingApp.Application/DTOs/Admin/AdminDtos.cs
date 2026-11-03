@@ -123,3 +123,12 @@ public record AdminCrewDetailDto(
     IReadOnlyList<AdminFilmDto> Films);
 
 public record CrewCodeResult(string ProductionCode);
+
+public record DirectorListFilter(string? Search, bool? HasProduction, bool? HasFilms);
+public record AdminDirectorDto(
+    Guid Id,
+    string Name,
+    string Email,
+    bool HasProduction,
+    int FilmCount,
+    DateTime CreatedAt);

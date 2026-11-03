@@ -1,56 +1,47 @@
 import { useState } from 'react'
-import { Navigate } from 'react-router'
-import { toast } from 'sonner'
+import { toast } from '@/components/ui/toast'
 import { AdminWrap } from '@/components/admin/AdminWrap'
 import { SectionHeader } from '@/components/admin/SectionHeader'
-import { AccountActionDialog, type ActionTarget } from '@/components/admin/accounts/dialog/AccountActionDialog'
-import { AccountDetailsSheet } from '@/components/admin/accounts/details/AccountDetailsSheet'
-import { AccountFilterGroups } from '@/components/admin/accounts/filters/AccountFilterGroups'
-import { AccountSearch } from '@/components/admin/accounts/filters/AccountSearch'
-import { AccountsTable } from '@/components/admin/accounts/table/AccountsTable'
 import type { AccountAction } from '@/components/admin/accounts/account-actions'
-import {
-  accountsPageSize,
-  toAccountListQuery,
-  toSearchParams,
-} from '@/components/admin/accounts/filters/account-filters'
-import { useAccountFilters } from '@/components/admin/accounts/hooks/useAccountFilters'
-import { ListPagination } from '@/components/common/ListPagination'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Skeleton } from '@/components/ui/skeleton'
+import { AccountDetailsSheet } from '@/components/admin/accounts/details/AccountDetailsSheet'
+import { AccountActionDialog, type ActionTarget } from '@/components/admin/accounts/dialog/AccountActionDialog'
+import { AccountFilterGroups } from '@/components/admin/accounts/filters/AccountFilterGroups'
+import { accountFilterCodec } from '@/components/admin/accounts/filters/account-filters'
+import { accountsListQuery } from '@/components/admin/accounts/accounts-list'
+import { AccountsTable, AccountsTableError, AccountsTableSkeleton } from '@/components/admin/accounts/table/AccountsTable'
+import { PagedList } from '@/components/common/list/PagedList'
+import { SearchField } from '@/components/common/list/SearchField'
 import { useApiQuery } from '@/hooks/useApiQuery'
-import { adminApi } from '@/lib/api/admin'
-import { apiErrorMessage } from '@/lib/api/errors'
+import { useListFilters } from '@/hooks/useListFilters'
+import { useOverlay } from '@/hooks/useOverlay'
 import { formatCount } from '@/lib/format'
 import type { AdminAccount } from '@/types/admin'
 
-type Overlay<T> = { open: boolean; value: T }
-
 export default function Accounts() {
-  const { filters, setFilters, setPage, clearFilters } = useAccountFilters()
-  const query = toAccountListQuery(filters)
-  const accounts = useApiQuery(`admin-accounts-${JSON.stringify(query)}`, () => adminApi.listAccounts(query), {
-    keepPreviousData: true,
-  })
+  const { filters, setFilters, setPage, clearFilters } = useListFilters(accountFilterCodec)
+  const list = accountsListQuery(filters)
+  const accounts = useApiQuery(list.key, list.load, { keepPreviousData: true })
 
-  const [details, setDetails] = useState<Overlay<AdminAccount | null>>({ open: false, value: null })
-  const [dialog, setDialog] = useState<Overlay<ActionTarget | null>>({ open: false, value: null })
-  const [detailsRevision, setDetailsRevision] = useState(0)
+  const details = useOverlay<AdminAccount>()
+  const dialog = useOverlay<ActionTarget>()
+
+  const [revision, setRevision] = useState(0)
 
   const handleAction = (action: AccountAction, account: AdminAccount) => {
-    if (action === 'details') setDetails({ open: true, value: account })
-    else setDialog({ open: true, value: { action, account } })
+    if (action === 'details') details.show(account)
+    else dialog.show({ action, account })
   }
 
   const handleDone = (message: string) => {
-    toast.success(message)
-    setDialog((current) => ({ ...current, open: false }))
+    toast.add({ title: message, type: 'success' })
+    dialog.setOpen(false)
     accounts.reload()
-    if (dialog.value?.action === 'delete') setDetails((current) => ({ ...current, open: false }))
-    else setDetailsRevision((revision) => revision + 1)
+
+    if (dialog.value?.action === 'delete') details.setOpen(false)
+    else setRevision((current) => current + 1)
   }
 
-  const hrefFor = (page: number) => `?${toSearchParams({ ...filters, page })}`
+  const hrefFor = (page: number) => `?${accountFilterCodec.toSearchParams({ ...filters, page })}`
 
   return (
     <AdminWrap>
@@ -63,28 +54,22 @@ export default function Accounts() {
         />
 
         <div className="flex flex-col gap-6">
-          <AccountSearch value={filters.search} onChange={(search) => setFilters({ search }, { replace: true })} />
+          <SearchField
+            value={filters.search}
+            onChange={(search) => setFilters({ search }, { replace: true })}
+            placeholder="Search by name or e-mail"
+            label="Search accounts"
+          />
           <AccountFilterGroups filters={filters} onChange={setFilters} onClear={clearFilters} />
 
-          {accounts.status === 'loading' && <Skeleton className="h-96 w-full" />}
+          {accounts.status === 'loading' && <AccountsTableSkeleton />}
 
-          {accounts.status === 'error' && (
-            <Alert variant="destructive">
-              <AlertTitle>Accounts could not be loaded</AlertTitle>
-              <AlertDescription>{apiErrorMessage(accounts.error)}</AlertDescription>
-            </Alert>
-          )}
+          {accounts.status === 'error' && <AccountsTableError error={accounts.error} onRetry={accounts.reload} />}
 
           {accounts.status === 'success' && (
-            <AccountsResult
-              accounts={accounts.data.items}
-              totalCount={accounts.data.totalCount}
-              page={filters.page}
-              stale={accounts.stale}
-              hrefFor={hrefFor}
-              onPageChange={setPage}
-              onAction={handleAction}
-            />
+            <PagedList page={filters.page} result={accounts.data} hrefFor={hrefFor} onPageChange={setPage}>
+              <AccountsTable accounts={accounts.data.items} stale={accounts.stale} onAction={handleAction} />
+            </PagedList>
           )}
         </div>
       </section>
@@ -92,48 +77,16 @@ export default function Accounts() {
       <AccountDetailsSheet
         account={details.value}
         open={details.open}
-        onOpenChange={(open) => setDetails((current) => ({ ...current, open }))}
-        revision={detailsRevision}
+        onOpenChange={details.setOpen}
+        revision={revision}
         onAction={handleAction}
       />
       <AccountActionDialog
         target={dialog.value}
         open={dialog.open}
-        onOpenChange={(open) => setDialog((current) => ({ ...current, open }))}
+        onOpenChange={dialog.setOpen}
         onDone={handleDone}
       />
     </AdminWrap>
-  )
-}
-
-type AccountsResultProps = {
-  accounts: AdminAccount[]
-  totalCount: number
-  page: number
-  stale: boolean
-  hrefFor: (page: number) => string
-  onPageChange: (page: number) => void
-  onAction: (action: AccountAction, account: AdminAccount) => void
-}
-
-function AccountsResult({ accounts, totalCount, page, stale, hrefFor, onPageChange, onAction }: AccountsResultProps) {
-  const pageCount = Math.max(1, Math.ceil(totalCount / accountsPageSize))
-
-  if (page > pageCount) return <Navigate to={hrefFor(pageCount)} replace />
-
-  const first = (page - 1) * accountsPageSize + 1
-  const last = first + accounts.length - 1
-
-  return (
-    <>
-      <AccountsTable accounts={accounts} stale={stale} onAction={onAction} />
-
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <p className="text-sm text-muted-foreground tabular-nums">
-          {totalCount > 0 && `${formatCount(first)}–${formatCount(last)} of ${formatCount(totalCount)}`}
-        </p>
-        <ListPagination page={page} pageCount={pageCount} hrefFor={hrefFor} onPageChange={onPageChange} />
-      </div>
-    </>
   )
 }

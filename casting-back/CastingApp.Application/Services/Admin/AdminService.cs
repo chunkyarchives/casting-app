@@ -431,20 +431,7 @@ public class AdminService(IAppDbContext db, ICurrentUser currentUser, IMediaStor
             .FirstOrDefaultAsync(ct)
             ?? throw new NotFoundException(nameof(Crew), id);
 
-        var films = await db.Films.AsNoTracking()
-            .Where(f => f.DirectorId == crew.DirectorId)
-            .OrderByDescending(f => f.CreatedAt)
-            .ThenBy(f => f.Id)
-            .Select(f => new AdminFilmDto(
-                f.Id,
-                f.Title,
-                f.Status,
-                f.DirectorId,
-                crew.DirectorName,
-                f.Roles.Count,
-                f.CreatedAt,
-                MediaUrls.Media(f.PosterId)))
-            .ToListAsync(ct);
+        var films = await DirectorFilmsAsync(crew.DirectorId, crew.DirectorName, ct);
 
         return new AdminCrewDetailDto(
             crew.Id,
@@ -503,6 +490,60 @@ public class AdminService(IAppDbContext db, ICurrentUser currentUser, IMediaStor
 
         db.Crews.Remove(crew);
         await db.SaveChangesAsync(ct);
+    }
+
+        public async Task<PagedResult<AdminDirectorDto>> ListDirectorsAsync(DirectorListFilter filter, int page, int pageSize, CancellationToken ct)
+    {
+        EnsureAdmin();
+        var query = db.Directors.AsNoTracking();
+
+        if (filter.HasProduction is { } hasProduction)
+            query = hasProduction
+                ? query.Where(d => db.Crews.Any(c => c.DirectorId == d.ParticipantId))
+                : query.Where(d => !db.Crews.Any(c => c.DirectorId == d.ParticipantId));
+
+        if (filter.HasFilms is { } hasFilms)
+            query = hasFilms
+                ? query.Where(d => db.Films.Any(f => f.DirectorId == d.ParticipantId))
+                : query.Where(d => !db.Films.Any(f => f.DirectorId == d.ParticipantId));
+
+        if (!string.IsNullOrWhiteSpace(filter.Search))
+        {
+            var term = filter.Search.Trim().ToLower();
+            query = query.Where(d => (d.Participant.FirstName + " " + d.Participant.LastName).ToLower().Contains(term)
+                || (d.Participant.Email != null && d.Participant.Email.ToLower().Contains(term)));
+        }
+
+        var total = await query.CountAsync(ct);
+        var items = await query
+            .OrderBy(d => d.Participant.LastName)
+            .ThenBy(d => d.Participant.FirstName)
+            .ThenBy(d => d.ParticipantId)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(d => new AdminDirectorDto(
+                d.ParticipantId,
+                d.Participant.FirstName + " " + d.Participant.LastName,
+                d.Participant.Email ?? string.Empty,
+                db.Crews.Any(c => c.DirectorId == d.ParticipantId),
+                db.Films.Count(f => f.DirectorId == d.ParticipantId),
+                d.Participant.CreatedAt))
+            .ToListAsync(ct);
+
+        return new PagedResult<AdminDirectorDto>(items, page, pageSize, total);
+    }
+
+    public async Task<IReadOnlyList<AdminFilmDto>> ListDirectorFilmsAsync(Guid directorId, CancellationToken ct)
+    {
+        EnsureAdmin();
+
+        var directorName = await db.Directors.AsNoTracking()
+            .Where(d => d.ParticipantId == directorId)
+            .Select(d => d.Participant.FirstName + " " + d.Participant.LastName)
+            .FirstOrDefaultAsync(ct)
+            ?? throw new NotFoundException(nameof(Director), directorId);
+
+        return await DirectorFilmsAsync(directorId, directorName, ct);
     }
 
     public async Task<PagedResult<AdminConversationDto>> ListConversationsAsync(
@@ -661,4 +702,19 @@ public class AdminService(IAppDbContext db, ICurrentUser currentUser, IMediaStor
         try { await storage.DeleteAsync(key, CancellationToken.None); }
         catch {}
     }
+
+    private async Task<List<AdminFilmDto>> DirectorFilmsAsync(Guid directorId, string directorName, CancellationToken ct) => await db.Films.AsNoTracking()
+            .Where(f => f.DirectorId == directorId)
+            .OrderByDescending(f => f.CreatedAt)
+            .ThenBy(f => f.Id)
+            .Select(f => new AdminFilmDto(
+                f.Id,
+                f.Title,
+                f.Status,
+                f.DirectorId,
+                directorName,
+                f.Roles.Count,
+                f.CreatedAt,
+                MediaUrls.Media(f.PosterId)))
+            .ToListAsync(ct);
 }

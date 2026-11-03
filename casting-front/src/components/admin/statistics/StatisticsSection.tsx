@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { CountUp } from '@/components/common/CountUp'
+import { CountUp } from '@/components/common/display/CountUp'
 import { SectionHeader } from '../SectionHeader'
 import { statisticsSectionTitles, type StatisticsSectionId } from './sections'
 

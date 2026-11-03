@@ -8,11 +8,10 @@ import {
   applicationPies,
   filmPies,
 } from '@/components/admin/statistics/boreks/stat-pies'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { LoadError } from '@/components/common/states/LoadError'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useApiQuery } from '@/hooks/useApiQuery'
 import { adminApi } from '@/lib/api/admin'
-import { apiErrorMessage } from '@/lib/api/errors'
 import { AdminWrap } from '@/components/admin/AdminWrap'
 
 export default function Statistics() {
@@ -29,10 +28,7 @@ export default function Statistics() {
       {stats.status === 'loading' && <Skeleton className="h-72 w-full" />}
 
       {stats.status === 'error' && (
-        <Alert variant="destructive">
-          <AlertTitle>Statistics could not be loaded</AlertTitle>
-          <AlertDescription>{apiErrorMessage(stats.error)}</AlertDescription>
-        </Alert>
+        <LoadError title="Statistics could not be loaded" error={stats.error} onRetry={stats.reload} />
       )}
 
       {stats.status === 'success' && (

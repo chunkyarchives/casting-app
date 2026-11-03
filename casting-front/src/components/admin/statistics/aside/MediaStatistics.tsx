@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { File01Icon } from '@hugeicons/core-free-icons'
 import { Switch } from '@/components/ui/switch'
-import { ByteSizeValue } from '@/components/common/ByteSizeValue'
+import { ByteSizeValue } from '@/components/common/display/ByteSizeValue'
 import { formatCount, type ByteUnit } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { MediaStats } from '@/types/admin'

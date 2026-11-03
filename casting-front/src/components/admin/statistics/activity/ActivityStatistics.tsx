@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useApiQuery } from '@/hooks/useApiQuery'
 import { adminApi } from '@/lib/api/admin'
-import { apiErrorMessage } from '@/lib/api/errors'
+import { LoadError } from '@/components/common/states/LoadError'
 import type { TimelinePoint } from '@/types/admin'
 import {
   activityMetrics,
@@ -73,7 +73,7 @@ export function ActivityStatistics() {
       {timeline.status === 'loading' && <Skeleton className="h-96 w-full" />}
 
       {timeline.status === 'error' && (
-        <p className="text-sm text-destructive">{apiErrorMessage(timeline.error)}</p>
+        <LoadError title="Activity could not be loaded" error={timeline.error} onRetry={timeline.reload} />
       )}
 
       {timeline.status === 'success' && (

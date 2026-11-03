@@ -1,4 +1,4 @@
-import { CountUp } from '@/components/common/CountUp'
+import { CountUp } from '@/components/common/display/CountUp'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { formatChange, formatShortDate } from '@/lib/format'
 import { cn } from '@/lib/utils'

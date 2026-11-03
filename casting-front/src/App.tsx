@@ -10,6 +10,7 @@ import Settings from '@/pages/settings/Settings'
 import AdminLayout from '@/layouts/AdminLayout'
 import Statistics from '@/pages/admin/Statistics'
 import Accounts from '@/pages/admin/Accounts'
+import Productions from '@/pages/admin/Productions'
 
 export default function App() {
   return (  
@@ -35,6 +36,7 @@ export default function App() {
           <Route index element={<Navigate to={paths.adminStatistics} replace />} />
           <Route path={paths.adminStatistics} element={<Statistics />} />
           <Route path={paths.adminAccounts} element={<Accounts />} />
+          <Route path={paths.adminProductions} element={<Productions />} />
         </Route>
       </Route>
 

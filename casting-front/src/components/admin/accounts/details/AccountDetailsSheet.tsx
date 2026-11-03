@@ -1,12 +1,13 @@
-import type { ReactNode } from 'react'
 import { Delete02Icon, Logout01Icon, SquareLock02Icon, SquareUnlock02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { fullName, type ConfirmedAction } from '@/components/admin/accounts/account-actions'
-import { ByteSizeValue } from '@/components/common/ByteSizeValue'
-import { CloseProfileAvatar } from '@/components/common/CloseProfileAvatar'
+import { ByteSizeValue } from '@/components/common/display/ByteSizeValue'
+import { CloseProfileAvatar } from '@/components/common/media/CloseProfileAvatar'
+import { DetailGroup, DetailGroupsSkeleton, DetailRow } from '@/components/common/display/DetailList'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { LoadError } from '@/components/common/states/LoadError'
 import {
   Sheet,
   SheetContent,
@@ -18,10 +19,8 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { useApiQuery } from '@/hooks/useApiQuery'
 import { adminApi } from '@/lib/api/admin'
-import { apiErrorMessage } from '@/lib/api/errors'
 import { formatCount, formatDate, formatDateTime } from '@/lib/format'
 import { roleLabels } from '@/lib/roles'
-import { cn } from '@/lib/utils'
 import type { AdminAccount, AdminAccountDetail } from '@/types/admin'
 
 type Props = {
@@ -35,7 +34,7 @@ type Props = {
 export function AccountDetailsSheet({ account, open, onOpenChange, revision, onAction }: Props) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full overflow-y-auto sm:max-w-md">
+      <SheetContent className="overflow-y-auto">
         {account && <AccountDetails key={account.id} account={account} revision={revision} onAction={onAction} />}
       </SheetContent>
     </Sheet>
@@ -47,11 +46,10 @@ type AccountDetailsProps = Pick<Props, 'revision' | 'onAction'> & {
 }
 
 function AccountDetails({ account, revision, onAction }: AccountDetailsProps) {
-  const details = useApiQuery(
-    `admin-account-${account.id}-${revision}`,
-    () => adminApi.getAccount(account.id),
-    { keepPreviousData: true },
-  )
+  const details = useApiQuery(`admin-account-${account.id}`, () => adminApi.getAccount(account.id), 
+  {
+    refresh: revision
+  })
   const name = fullName(account)
 
   return (
@@ -68,9 +66,13 @@ function AccountDetails({ account, revision, onAction }: AccountDetailsProps) {
         </div>
       </SheetHeader>
 
-      {details.status === 'loading' && <Skeleton className="mx-4 h-96" />}
+      {details.status === 'loading' && (
+        <div className="flex flex-col gap-6 px-6 pb-6">
+          <DetailGroupsSkeleton rowCounts={[3, 1, 2, 5]} />
+        </div>
+      )}
       {details.status === 'error' && (
-        <p className="px-4 text-sm text-destructive">{apiErrorMessage(details.error)}</p>
+        <LoadError title="Account could not be loaded" error={details.error} onRetry={details.reload} className="p-6" />
       )}
       {details.status === 'success' && (
         <>
@@ -84,7 +86,7 @@ function AccountDetails({ account, revision, onAction }: AccountDetailsProps) {
 
 function DetailGroups({ account }: { account: AdminAccountDetail }) {
   return (
-    <div className="flex flex-col gap-6 px-4 pb-6">
+    <div className="flex flex-col gap-6 px-6 pb-6">
       <DetailGroup title="Account">
         <DetailRow label="Role">{roleLabels[account.role]}</DetailRow>
         <DetailRow label="Registered">{formatDateTime(account.createdAt)}</DetailRow>
@@ -106,7 +108,9 @@ function DetailGroups({ account }: { account: AdminAccountDetail }) {
             <DetailRow label="Locked until">
               {account.lockedUntil ? formatDateTime(account.lockedUntil) : 'Until an admin unlocks it'}
             </DetailRow>
-            <DetailRow label="Reason" stacked>{account.lockReason ?? '—'}</DetailRow>
+            <DetailRow label="Reason:" stacked>
+              {account.lockReason ?? '-'}
+            </DetailRow>
           </>
         )}
       </DetailGroup>
@@ -164,29 +168,5 @@ function AccountActionButtons({ account, onAction }: AccountActionButtonsProps) 
         Delete account
       </Button>
     </SheetFooter>
-  )
-}
-
-function DetailGroup({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="flex flex-col gap-3 text-sm">
-      <h3 className="font-medium">{title}</h3>
-      <dl className="grid grid-cols-[auto_1fr] gap-x-8 gap-y-2">{children}</dl>
-    </section>
-  )
-}
-
-type DetailRowProps = {
-  label: string
-  stacked?: boolean
-  children: ReactNode
-}
-
-function DetailRow({ label, stacked, children }: DetailRowProps) {
-  return (
-    <>
-      <dt className={cn('text-muted-foreground', stacked && 'col-span-2')}>{label}</dt>
-      <dd className={cn(stacked ? 'col-span-2 whitespace-pre-line' : 'text-right')}>{children}</dd>
-    </>
   )
 }

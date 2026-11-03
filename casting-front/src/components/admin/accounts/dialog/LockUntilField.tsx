@@ -8,21 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { formatDate } from '@/lib/format'
-
-export type LockUntil =
-  | { kind: 'untilUnlocked' }
-  | { kind: 'until'; date: Date | undefined; time: string }
-
-export const defaultLockUntil: LockUntil = { kind: 'untilUnlocked' }
-
-export function lockEnd(lockUntil: LockUntil): Date | undefined {
-  if (lockUntil.kind === 'untilUnlocked' || !lockUntil.date) return undefined
-
-  const [hours, minutes] = lockUntil.time.split(':').map(Number)
-  const end = new Date(lockUntil.date)
-  end.setHours(hours, minutes, 0, 0)
-  return end
-}
+import { defaultLockUntil, type LockUntil } from './lock-until'
 
 type Props = {
   value: LockUntil
