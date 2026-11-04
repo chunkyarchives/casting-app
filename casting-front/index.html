@@ -5,6 +5,9 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>casting-front</title>
+    <script>
+      if (location.pathname.startsWith('/admin')) document.documentElement.className = 'admin-light'
+    </script>
   </head>
   <body>
     <div id="root"></div>

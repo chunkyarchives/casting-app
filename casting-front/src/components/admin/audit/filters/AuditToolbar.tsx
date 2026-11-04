@@ -1,14 +1,18 @@
+import { Fragment } from 'react'
 import { Cancel01Icon, UnavailableIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { FilterMenu } from '@/components/common/list/FilterMenu'
+import { FilterBar } from '@/components/common/list/FilterBar'
+import { FilterMenu, FilterMenuGroup } from '@/components/common/list/FilterMenu'
 import { SearchField } from '@/components/common/list/SearchField'
 import { Button } from '@/components/ui/button'
+import { DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { formatDateTime } from '@/lib/format'
 import { actionGroups } from '../audit-actions'
-import { hasAuditFilters, type AuditFilters } from './audit-filters'
+import type { AuditFilters } from './audit-filters'
 
 type Props = {
   filters: AuditFilters
+  canClear: boolean
   targetLabel?: string
   clearedAt: string | null
   onChange: (changes: Partial<Omit<AuditFilters, 'page'>>, options?: { replace?: boolean }) => void
@@ -19,6 +23,7 @@ type Props = {
 
 export function AuditToolbar({
   filters,
+  canClear,
   targetLabel,
   clearedAt,
   onChange,
@@ -27,34 +32,45 @@ export function AuditToolbar({
   onRestoreLog,
 }: Props) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <FilterBar
+      canClear={canClear}
+      onClear={onClearFilters}
+      end={
+        <Button variant="outline" onClick={onClearLog}>
+          <HugeiconsIcon icon={UnavailableIcon} strokeWidth={2} data-icon="inline-start" />
+          Clear log
+        </Button>
+      }
+    >
       <SearchField
         value={filters.search}
         onChange={(search) => onChange({ search }, { replace: true })}
         placeholder="Search by admin, target or reason"
         label="Search audit logs"
-        className="mx-0 max-w-80"
       />
-      <FilterMenu
-        label="Actions"
-        groups={actionGroups}
-        checked={filters.actions}
-        onCheckedChange={(actions) => onChange({ actions })}
-      />
+      <FilterMenu label="Actions" activeCount={filters.actions.length}>
+        {actionGroups.map((group, index) => (
+          <Fragment key={group.label}>
+            {index > 0 && <DropdownMenuSeparator />}
+            <FilterMenuGroup
+              label={group.label}
+              options={group.options}
+              checked={filters.actions}
+              onCheckedChange={(actions) => onChange({ actions })}
+            />
+          </Fragment>
+        ))}
+      </FilterMenu>
 
       {filters.target && (
-        <RemovableChip label="Target" value={targetLabel ?? filters.target.slice(0, 8)} onRemove={() => onChange({ target: '' })} />
+        <RemovableChip
+          label="Target"
+          value={targetLabel ?? filters.target.slice(0, 8)}
+          onRemove={() => onChange({ target: '' })}
+        />
       )}
       {clearedAt && <RemovableChip label="After" value={formatDateTime(clearedAt)} onRemove={onRestoreLog} />}
-
-      <Button variant="ghost" disabled={!hasAuditFilters(filters)} onClick={onClearFilters}>
-        Clear filters
-      </Button>
-      <Button variant="outline" className="ml-auto" onClick={onClearLog}>
-        <HugeiconsIcon icon={UnavailableIcon} strokeWidth={2} data-icon="inline-start" />
-        Clear log
-      </Button>
-    </div>
+    </FilterBar>
   )
 }
 

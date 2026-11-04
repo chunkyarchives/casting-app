@@ -1,4 +1,4 @@
-import type { OptionGroup } from '@/components/common/list/FilterMenu'
+import type { Option } from '@/components/common/list/FilterMenu'
 import type { AdminAction } from '@/types/admin'
 
 export type ActionTone = 'danger' | 'warning' | 'success' | 'info'
@@ -27,7 +27,7 @@ const groupedActions: { label: string; actions: AdminAction[] }[] = [
   { label: 'Content', actions: ['DeleteFilm', 'DeleteConversation'] },
 ]
 
-export const actionGroups: OptionGroup<AdminAction>[] = groupedActions.map(({ label, actions }) => ({
+export const actionGroups: { label: string; options: Option<AdminAction>[] }[] = groupedActions.map(({ label, actions }) => ({
   label,
   options: actions.map((value) => ({ value, label: auditActions[value].label })),
 }))

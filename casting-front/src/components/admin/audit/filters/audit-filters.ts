@@ -45,9 +45,6 @@ function toSearchParams(filters: AuditFilters): URLSearchParams {
 
 export const auditFilterCodec: FilterCodec<AuditFilters> = { parse, toSearchParams }
 
-export const hasAuditFilters = (filters: AuditFilters) =>
-  filters.search !== '' || filters.actions.length > 0 || filters.target !== ''
-
 export const toAuditListQuery = (filters: AuditFilters, clearedAt: string | null): AuditListQuery => ({
   search: filters.search.trim() || undefined,
   actions: filters.actions,

@@ -5,12 +5,11 @@ import { SectionHeader } from '@/components/admin/SectionHeader'
 import type { AccountAction } from '@/components/admin/accounts/account-actions'
 import { AccountDetailsSheet } from '@/components/admin/accounts/details/AccountDetailsSheet'
 import { AccountActionDialog, type ActionTarget } from '@/components/admin/accounts/dialog/AccountActionDialog'
-import { AccountFilterGroups } from '@/components/admin/accounts/filters/AccountFilterGroups'
+import { AccountToolbar } from '@/components/admin/accounts/filters/AccountToolbar'
 import { accountFilterCodec } from '@/components/admin/accounts/filters/account-filters'
 import { accountsListQuery } from '@/components/admin/accounts/accounts-list'
 import { AccountsTable, AccountsTableError, AccountsTableSkeleton } from '@/components/admin/accounts/table/AccountsTable'
 import { PagedList } from '@/components/common/list/PagedList'
-import { SearchField } from '@/components/common/list/SearchField'
 import { useApiQuery } from '@/hooks/useApiQuery'
 import { useListFilters } from '@/hooks/useListFilters'
 import { useOverlay } from '@/hooks/useOverlay'
@@ -18,7 +17,7 @@ import { formatCount } from '@/lib/format'
 import type { AdminAccount } from '@/types/admin'
 
 export default function Accounts() {
-  const { filters, setFilters, setPage, clearFilters } = useListFilters(accountFilterCodec)
+  const { filters, hasFilters, setFilters, setPage, clearFilters } = useListFilters(accountFilterCodec)
   const list = accountsListQuery(filters)
   const accounts = useApiQuery(list.key, list.load, { keepPreviousData: true })
 
@@ -54,13 +53,7 @@ export default function Accounts() {
         />
 
         <div className="flex flex-col gap-6">
-          <SearchField
-            value={filters.search}
-            onChange={(search) => setFilters({ search }, { replace: true })}
-            placeholder="Search by name or e-mail"
-            label="Search accounts"
-          />
-          <AccountFilterGroups filters={filters} onChange={setFilters} onClear={clearFilters} />
+          <AccountToolbar filters={filters} canClear={hasFilters} onChange={setFilters} onClear={clearFilters} />
 
           {accounts.status === 'loading' && <AccountsTableSkeleton />}
 

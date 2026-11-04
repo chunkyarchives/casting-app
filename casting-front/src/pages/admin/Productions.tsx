@@ -4,13 +4,12 @@ import { ReasonDialog } from '@/components/admin/ReasonDialog'
 import { SectionHeader } from '@/components/admin/SectionHeader'
 import { CrewSheet } from '@/components/admin/productions/crew/CrewSheet'
 import { FilmSheet } from '@/components/admin/productions/film/FilmSheet'
-import { CrewFilterGroups } from '@/components/admin/productions/filters/CrewFilterGroups'
+import { CrewToolbar } from '@/components/admin/productions/filters/CrewToolbar'
 import { crewFilterCodec } from '@/components/admin/productions/filters/crew-filters'
 import { describeAction, type ProductionAction } from '@/components/admin/productions/production-actions'
 import { productionsListQuery, type ProductionRow } from '@/components/admin/productions/production-rows'
 import { CrewsTable, CrewsTableError, CrewsTableSkeleton } from '@/components/admin/productions/table/CrewsTable'
 import { PagedList } from '@/components/common/list/PagedList'
-import { SearchField } from '@/components/common/list/SearchField'
 import { toast } from '@/components/ui/toast'
 import { useApiQuery } from '@/hooks/useApiQuery'
 import { useListFilters } from '@/hooks/useListFilters'
@@ -19,7 +18,7 @@ import { formatCount } from '@/lib/format'
 import type { AdminFilm } from '@/types/admin'
 
 export default function Productions() {
-  const { filters, setFilters, setPage, clearFilters } = useListFilters(crewFilterCodec)
+  const { filters, hasFilters, setFilters, setPage, clearFilters } = useListFilters(crewFilterCodec)
   const list = productionsListQuery(filters)
   const rows = useApiQuery(list.key, list.load, { keepPreviousData: true })
 
@@ -52,13 +51,7 @@ export default function Productions() {
         />
 
         <div className="flex flex-col gap-6">
-          <SearchField
-            value={filters.search}
-            onChange={(search) => setFilters({ search }, { replace: true })}
-            placeholder={filters.nonProd ? 'Search by director name or e-mail' : 'Search by name, code or director'}
-            label="Search productions"
-          />
-          <CrewFilterGroups filters={filters} onChange={setFilters} onClear={clearFilters} />
+          <CrewToolbar filters={filters} canClear={hasFilters} onChange={setFilters} onClear={clearFilters} />
 
           {rows.status === 'loading' && <CrewsTableSkeleton />}
 

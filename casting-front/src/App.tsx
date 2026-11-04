@@ -1,9 +1,11 @@
 import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import { RequireRole } from '@/components/auth/RequireRole'
+import { PageLoader } from '@/components/common/states/PageLoader'
 import PublicLayout from '@/layouts/PublicLayout'
 import { paths, roleSettingsPath } from '@/lib/routes'
 import Landing from '@/pages/Landing'
+import { adminPages } from '@/pages/admin/admin-pages'
 
 const ActorDashboard = lazy(() => import('@/pages/actor/ActorDashboard'))
 const DirectorDashboard = lazy(() => import('@/pages/director/DirectorDashboard'))
@@ -11,14 +13,14 @@ const CastingDirectorDashboard = lazy(() => import('@/pages/casting-director/Cas
 const Settings = lazy(() => import('@/pages/settings/Settings'))
 
 const AdminLayout = lazy(() => import('@/layouts/AdminLayout'))
-const Statistics = lazy(() => import('@/pages/admin/Statistics'))
-const Accounts = lazy(() => import('@/pages/admin/Accounts'))
-const Productions = lazy(() => import('@/pages/admin/Productions'))
-const AuditLogs = lazy(() => import('@/pages/admin/AuditLogs'))
+const Statistics = lazy(adminPages.statistics)
+const Accounts = lazy(adminPages.accounts)
+const Productions = lazy(adminPages.productions)
+const AuditLogs = lazy(adminPages.auditLogs)
 
 export default function App() {
   return (
-    <Suspense>
+    <Suspense fallback={<PageLoader className="min-h-svh" />}>
       <Routes>
         <Route element={<PublicLayout />}>
           <Route index element={<Landing />} />

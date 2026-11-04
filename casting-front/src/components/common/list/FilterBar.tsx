@@ -1,25 +1,21 @@
 import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 
 type Props = {
   children: ReactNode
+  canClear: boolean
   onClear: () => void
+  end?: ReactNode
 }
 
-export function FilterBar({ children, onClear }: Props) {
+export function FilterBar({ children, canClear, onClear, end }: Props) {
   return (
-    <div className="@container">
-      <div className="flex flex-col items-start gap-4 @4xl:flex-row @4xl:flex-wrap @4xl:items-end @4xl:gap-x-8">
-        {children}
-        <Button variant="ghost" size="sm" className="@4xl:ml-auto" onClick={onClear}>
-          Clear filters
-        </Button>
-      </div>
+    <div className="flex flex-wrap items-center gap-2">
+      {children}
+      <Button variant="ghost" disabled={!canClear} onClick={onClear}>
+        Clear filters
+      </Button>
+      {end && <div className="ml-auto flex items-center gap-2">{end}</div>}
     </div>
   )
-}
-
-export function FilterSeparator() {
-  return <Separator orientation="vertical" className="hidden @4xl:block" />
 }

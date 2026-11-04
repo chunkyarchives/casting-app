@@ -18,5 +18,7 @@ export function useListFilters<T extends ListFilters>({ parse, toSearchParams }:
 
   const clearFilters = () => setParams(new URLSearchParams())
 
-  return { filters, setFilters, setPage, clearFilters }
+  const hasFilters = toSearchParams({ ...filters, page: 1 }).toString() !== ''
+
+  return { filters, hasFilters, setFilters, setPage, clearFilters }
 }

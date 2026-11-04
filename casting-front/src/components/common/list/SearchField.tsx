@@ -2,7 +2,6 @@ import { useEffect, useEffectEvent, useState } from 'react'
 import { Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
-import { cn } from '@/lib/utils'
 
 // const searchDelayMs = 0;
 
@@ -11,10 +10,9 @@ type Props = {
   onChange: (value: string) => void
   placeholder: string
   label: string
-  className?: string
 }
 
-export function SearchField({ value, onChange, placeholder, label, className }: Props) {
+export function SearchField({ value, onChange, placeholder, label }: Props) {
   const [text, setText] = useState(value)
   const [syncedValue, setSyncedValue] = useState(value)
 
@@ -33,7 +31,7 @@ export function SearchField({ value, onChange, placeholder, label, className }: 
   }, [text])
 
   return (
-    <InputGroup className={cn('mx-auto w-full max-w-md', className)}>
+    <InputGroup className="w-full max-w-80">
       <InputGroupInput
         type="search"
         value={text}

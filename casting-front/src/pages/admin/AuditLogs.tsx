@@ -4,7 +4,7 @@ import { SectionHeader } from '@/components/admin/SectionHeader'
 import { auditListQuery } from '@/components/admin/audit/audit-list'
 import { readClearedAt, saveClearedAt } from '@/components/admin/audit/cleared-log'
 import { AuditToolbar } from '@/components/admin/audit/filters/AuditToolbar'
-import { auditFilterCodec, hasAuditFilters } from '@/components/admin/audit/filters/audit-filters'
+import { auditFilterCodec } from '@/components/admin/audit/filters/audit-filters'
 import { AuditEmpty } from '@/components/admin/audit/table/AuditEmpty'
 import { AuditTable, AuditTableError, AuditTableSkeleton } from '@/components/admin/audit/table/AuditTable'
 import { PagedList } from '@/components/common/list/PagedList'
@@ -13,7 +13,7 @@ import { useListFilters } from '@/hooks/useListFilters'
 import { formatCount } from '@/lib/format'
 
 export default function AuditLogs() {
-  const { filters, setFilters, setPage, clearFilters } = useListFilters(auditFilterCodec)
+  const { filters, hasFilters, setFilters, setPage, clearFilters } = useListFilters(auditFilterCodec)
   const [clearedAt, setClearedAt] = useState(readClearedAt)
   const list = auditListQuery(filters, clearedAt)
   const entries = useApiQuery(list.key, list.load, { keepPreviousData: true })
@@ -44,6 +44,7 @@ export default function AuditLogs() {
         <div className="flex flex-col gap-6">
           <AuditToolbar
             filters={filters}
+            canClear={hasFilters}
             targetLabel={targetLabel}
             clearedAt={clearedAt}
             onChange={setFilters}
@@ -63,7 +64,7 @@ export default function AuditLogs() {
                 stale={entries.stale}
                 empty={
                   <AuditEmpty
-                    filtered={hasAuditFilters(filters)}
+                    filtered={hasFilters}
                     clearedAt={clearedAt}
                     onRestoreLog={() => changeClearedAt(null)}
                   />
