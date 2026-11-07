@@ -37,6 +37,8 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@custom-variant slot-active (&:is([data-active], :hover, :focus-within, :has([data-popup-open])));
+
 /* Theme: default (light) */
 :root {
   --background: oklch(1 0 0);

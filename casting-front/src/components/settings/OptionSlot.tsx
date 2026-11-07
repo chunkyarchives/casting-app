@@ -2,6 +2,8 @@ import { useEffect, useEffectEvent, useState, type FocusEvent, type PointerEvent
 import { ArrowLeft01Icon, ArrowRight01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Button } from '@/components/ui/button'
+import { slotClassName } from './slot-styles'
+import { cn } from '@/lib/utils'
 
 type Props<T> = {
   label: string
@@ -65,7 +67,7 @@ export function OptionSlot<T>({ label, options, value, getLabel, onChange, onAct
       onPointerLeave={handlePointerLeave}
       onFocus={handleFocus}
       onBlur={handleBlur}
-      className="group/slot grid h-11 grid-cols-2 items-center border-l-2 border-transparent px-4 text-sm font-medium text-muted-foreground transition-colors data-active:border-primary data-active:bg-linear-to-r data-active:from-accent data-active:to-accent/40 data-active:text-foreground"
+      className={cn(slotClassName, 'grid h-11 grid-cols-2 items-center px-4')}   
     >
       <span className="truncate">{label}</span>
 

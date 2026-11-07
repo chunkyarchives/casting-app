@@ -9,6 +9,7 @@ type SessionContextValue = {
   signIn: (request: SignInRequest) => Promise<CurrentParticipant>
   signUp: (request: SignUpRequest) => Promise<CurrentParticipant>
   signOut: () => Promise<void>
+  refresh: () => Promise<void>
 }
 
 export const SessionContext = createContext<SessionContextValue | null>(null)

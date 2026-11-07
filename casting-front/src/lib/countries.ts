@@ -10,3 +10,7 @@ export const countries: Country[] = flagIconsCountries
 const namesByCode = new Map(countries.map((country) => [country.code, country.name]))
 
 export const countryName = (code: string) => namesByCode.get(code.toUpperCase()) ?? code
+
+export const isCountryCode = (code: string) => namesByCode.has(code.toUpperCase())
+
+export const findCountry = (code: string | null) => code ? (countries.find((country) => country.code === code.toUpperCase()) ?? null) : null

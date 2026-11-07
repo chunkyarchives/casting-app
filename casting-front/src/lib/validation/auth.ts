@@ -1,7 +1,7 @@
 import * as z from 'zod'
 import { signUpRoles } from '@/types/participant'
 
-const nameChars = /^[\p{L}\p{M}][\p{L}\p{M}'’. -]*$/u
+export const nameChars = /^[\p{L}\p{M}][\p{L}\p{M}'’. -]*$/u
 
 const specialChar = /[^a-zA-Z0-9]/
 

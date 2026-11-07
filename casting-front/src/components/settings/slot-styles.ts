@@ -1,0 +1,1 @@
+export const slotClassName = 'group/slot border-l-2 border-transparent text-sm font-medium text-muted-foreground transition-colors slot-active:border-primary slot-active:bg-linear-to-r slot-active:from-accent slot-active:to-accent/40 slot-active:text-foreground'

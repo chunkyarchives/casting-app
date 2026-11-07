@@ -1,4 +1,4 @@
-import type { CurrentParticipant, SignInRequest, SignUpRequest } from '@/types/participant'
+import type { CurrentParticipant, SignInRequest, SignUpRequest, UpdateNameRequest } from '@/types/participant'
 import { request } from './http'
 
 export const authApi = {
@@ -19,5 +19,9 @@ export const authApi = {
   signOut: () =>
     request<void>('/api/auth/logout', { method: 'POST', refreshOnUnauthorized: false }),
 
-  getMe: () => request<CurrentParticipant>('/api/auth/me'),
+  getMe: () => 
+    request<CurrentParticipant>('/api/auth/me'),
+
+  updateName: (body: UpdateNameRequest) =>
+    request<CurrentParticipant>('/api/auth/me/name', { method: 'PUT', body }),
 }

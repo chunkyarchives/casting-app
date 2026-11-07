@@ -60,8 +60,8 @@ async function send(path: string, method: HttpMethod, body: unknown): Promise<Re
     return await fetch(`${apiBaseUrl}${path}`, {
       method,
       credentials: 'include', 
-      headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
-      body: body === undefined ? undefined : JSON.stringify(body),
+      headers: body === undefined || body instanceof FormData ? undefined : { 'Content-Type': 'application/json' },
+      body: body === undefined ? undefined : body instanceof FormData ? body : JSON.stringify(body),
     })
   } catch {
     throw new ApiError({

@@ -27,3 +27,8 @@ export type SignUpRequest = {
   password: string 
   role: ParticipantRole
 }
+
+export type UpdateNameRequest = {
+  firstName: string
+  lastName: string
+}

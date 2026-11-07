@@ -52,7 +52,7 @@ export default function App() {
                 </Route>
               <Route path="settings">
                   <Route index element={<Navigate to="account" replace />} />
-                  <Route path="account" element={<AccountSettings />} />
+                  <Route path="account" element={<AccountSettings role="Actor" />} />
                   <Route path="theme" element={<ThemeSettings />} />
               </Route>
             </Route>

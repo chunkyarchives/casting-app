@@ -41,14 +41,16 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     try {
       await authApi.signOut()
-    } catch {
-      // Clear the local session even when the server can't be reached
-    }
+    } catch {}
     setParticipant(null)
   }
 
+  const refresh = async () => {
+    setParticipant(await authApi.getMe())
+  }
+
   return (
-    <SessionContext value={{ status, participant, signIn, signUp, signOut }}>
+    <SessionContext value={{ status, participant, signIn, signUp, signOut, refresh }}>
       {children}
     </SessionContext>
   )
