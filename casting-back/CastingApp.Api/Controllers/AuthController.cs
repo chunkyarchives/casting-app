@@ -76,4 +76,8 @@ public class AuthController(IAuthService auth, ISessionService sessions, IWebHos
         var refresh = await sessions.StartAsync(result.Me.Id, ct);
         AuthCookie.Append(Response, env, new AccessToken(result.Token, result.ExpiresAt), refresh);
     }
+    
+    [HttpPut("me/name")]
+    [Authorize]
+    public async Task<ActionResult<MeDto>> UpdateName(UpdateNameRequest request) => Ok(await auth.UpdateNameAsync(request));
 }

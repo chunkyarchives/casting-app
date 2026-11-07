@@ -4,7 +4,6 @@ import { RequireRole } from '@/components/auth/RequireRole'
 import { PageLoader } from '@/components/common/states/PageLoader'
 import PublicLayout from '@/layouts/PublicLayout'
 import ThemeLayout from '@/layouts/ThemeLayout'
-import { themes } from '@/lib/themes'
 import { paths, roleSettingsPath } from '@/lib/routes'
 import Landing from '@/pages/Landing'
 import { adminPages } from '@/pages/admin/admin-pages'
@@ -13,13 +12,13 @@ import { RequireCompleteProfile } from '@/components/auth/RequireCompleteProfile
 
 import { actorNav } from '@/components/dashboard/dashboard-nav'
 import { actorPages, preloadActorPages } from '@/pages/actor/actor-pages'
-import { dashboardPages } from '@/pages/dashboard-pages'
+import { dashboardPages } from '@/pages/dashboard/dashboard-pages'
 
 const Welcome = lazy(dashboardPages.welcome)
 
 const DirectorDashboard = lazy(() => import('@/pages/director/DirectorDashboard'))
 const CastingDirectorDashboard = lazy(() => import('@/pages/casting-director/CastingDirectorDashboard'))
-const Settings = lazy(() => import('@/pages/settings/Settings'))
+const Settings = lazy(() => import('@/pages/dashboard/settings/Settings'))
 
 const AdminLayout = lazy(() => import('@/layouts/AdminLayout'))
 const Statistics = lazy(adminPages.statistics)

@@ -1,5 +1,5 @@
 import { preloadPages } from '@/lib/preload'
-import { dashboardPages } from '@/pages/dashboard-pages'
+import { dashboardPages } from '@/pages/dashboard/dashboard-pages'
 
 export const actorPages = {
   portfolio: () => import('./Portfolio'),

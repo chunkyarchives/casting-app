@@ -1,5 +1,5 @@
 import { useMatch, useNavigate } from 'react-router'
-import { useCurrentParticipant } from '@/components/auth/useCurrentParticipant'
+import { useCurrentParticipant } from '@/components/auth/hooks/useCurrentParticipant'
 import { Alert, AlertAction, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { roleSettingsPath } from '@/lib/routes'

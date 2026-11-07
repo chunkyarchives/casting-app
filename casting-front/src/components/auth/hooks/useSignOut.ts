@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useSession } from './session/session-context'
+import { useSession } from '../session/session-context'
 
 export function useSignOut() {
   const { signOut } = useSession()

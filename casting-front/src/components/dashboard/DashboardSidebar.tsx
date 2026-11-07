@@ -1,7 +1,7 @@
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Link, useMatch } from 'react-router'
 import { SignOutButton } from '@/components/auth/SignOutButton'
-import { useCurrentParticipant } from '@/components/auth/useCurrentParticipant'
+import { useCurrentParticipant } from '@/components/auth/hooks/useCurrentParticipant'
 import { showProfileRequired } from '@/components/profile/profile-required'
 import {
   Sidebar,

@@ -81,6 +81,20 @@ public class AuthService(
         return user.ToMeDto();
     }
 
+    public async Task<MeDto> UpdateNameAsync(UpdateNameRequest request)
+    {
+        var user = await WithRoleProfileAsync(currentUser.Id) ?? throw new UnauthorizedException("The account no longer exists.");
+
+        user.FirstName = request.FirstName.Trim();
+        user.LastName = request.LastName.Trim();
+
+        var result = await users.UpdateAsync(user);
+        if (!result.Succeeded)
+            throw new BadRequestException(string.Join(" ", result.Errors.Select(e => e.Description)));
+
+        return user.ToMeDto();
+    }
+
     private AuthResult CreateResult(Participant participant)
     {
         var token = tokens.CreateToken(participant);

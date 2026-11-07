@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from 'react-router'
 import { roleSettingsPath } from '@/lib/routes'
-import { useCurrentParticipant } from './useCurrentParticipant'
+import { useCurrentParticipant } from './hooks/useCurrentParticipant'
 
 export function RequireCompleteProfile() {
   const participant = useCurrentParticipant()

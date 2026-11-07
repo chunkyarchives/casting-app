@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { useCurrentParticipant } from '@/components/auth/useCurrentParticipant'
+import { useCurrentParticipant } from '@/components/auth/hooks/useCurrentParticipant'
 import { buttonVariants } from '@/components/ui/button'
 import { roleDescriptions, roleLabels } from '@/lib/roles'
 import { roleSettingsPath } from '@/lib/routes'

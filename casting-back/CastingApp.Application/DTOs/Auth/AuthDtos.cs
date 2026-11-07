@@ -23,6 +23,8 @@ public record RegisterRequest(
 
 public record LoginRequest([Required, StringLength(256)] string Email,[Required, StringLength(100)] string Password);
 
+public record UpdateNameRequest([Required, StringLength(100)] string FirstName,[Required, StringLength(100)] string LastName);
+
 // ProfileComplete: false dok korisnik ne popuni obavezne podatke.
 // Origin: kod zemlje porekla ("RS") za glumca i režisera; null dok ga ne izaberu, i za ostale uloge
 public record MeDto(
