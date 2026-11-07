@@ -9,18 +9,18 @@ import { useGoToRoleHome } from '../hooks/useGoToRoleHome'
 import { useSignIn } from '../hooks/useSignIn'
 import { AuthTextField } from './AuthTextField'
 import { signInFormId } from './form-ids'
+import { ProfileAvatar } from '@/components/common/media/ProfileAvatar'
 
 type Props = {
   onPendingChange: (pending: boolean) => void
-  onSuccess: () => void
 }
 
-export function SignInForm({ onPendingChange, onSuccess }: Props) {
+export function SignInForm({ onPendingChange }: Props) {
   const {
     control,
     handleSubmit,
     setError,
-    formState: { errors },
+    formState: { errors, isSubmitting, isSubmitSuccessful },
   } = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: '', password: '' },
@@ -35,18 +35,19 @@ export function SignInForm({ onPendingChange, onSuccess }: Props) {
     onPendingChange(true)
     try {
       await signIn(values)
-      onSuccess()
     } catch (error) {
       setError('root.server', { message: authErrorMessage(error) })
+      onPendingChange(false)
     }
-    onPendingChange(false)
   }
 
   const continueAsParticipant = () => {
     if (!participant) return
+    onPendingChange(true)
     goToRoleHome(participant.role)
-    onSuccess()
   }
+
+  const signingIn = isSubmitting || isSubmitSuccessful
 
   return (
     <form id={signInFormId} noValidate onSubmit={handleSubmit(onSubmit)}>
@@ -70,12 +71,12 @@ export function SignInForm({ onPendingChange, onSuccess }: Props) {
 
         <FieldError>{errors.root?.server?.message}</FieldError>
 
-        {participant && (
+        {participant && !signingIn && (
           <>
             <FieldSeparator>or</FieldSeparator>
-            {/* TODO: avatar from participant.profilePictureUrl */}
-            <Button type="button" variant="outline" onClick={continueAsParticipant}>
-              Continue as {participant.firstName}
+              <Button type="button" variant="outline" onClick={continueAsParticipant}>
+                <ProfileAvatar participantId={participant.id} className="size-6" />
+                  Continue as {participant.firstName}
             </Button>
           </>
         )}

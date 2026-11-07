@@ -14,7 +14,7 @@ type ToggleProps = {
 
 export function ExpandToggle({ expanded, label, onToggle }: ToggleProps) {
   return (
-    <Button variant="ghost" size="icon-sm" aria-expanded={expanded} aria-label={label} onClick={onToggle}>
+    <Button variant="ghost" size="icon-sm" className="cursor-pointer" aria-expanded={expanded} aria-label={label} onClick={onToggle}>
       <HugeiconsIcon
         icon={ArrowDown01Icon}
         strokeWidth={2}

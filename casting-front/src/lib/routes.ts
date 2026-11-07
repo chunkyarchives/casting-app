@@ -20,4 +20,5 @@ const roleHomePaths: Record<ParticipantRole, string> = {
 }
 
 export const roleHomePath = (role: ParticipantRole) => roleHomePaths[role]
-export const roleSettingsPath = (role: ParticipantRole) => `${roleHomePath(role)}/settings`
+export const rolePath = (role: ParticipantRole, page: string) => `${roleHomePath(role)}/${page}`
+export const roleSettingsPath = (role: ParticipantRole) => rolePath(role, 'settings')

@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router'
+import { useMatch, useNavigate } from 'react-router'
 import { useCurrentParticipant } from '@/components/auth/useCurrentParticipant'
 import { Alert, AlertAction, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -11,8 +11,11 @@ type Props = {
 export function CompleteProfileNotice({ className }: Props) {
   const participant = useCurrentParticipant()
   const navigate = useNavigate()
+  const settingsPath = participant ? roleSettingsPath(participant.role) : ''
 
-  if (!participant || participant.profileComplete) return null
+  const inSettings = useMatch({ path: settingsPath, end: false }) !== null
+
+  if (!participant || participant.profileComplete || inSettings) return null
 
   return (
     <Alert className={className}>
@@ -22,7 +25,7 @@ export function CompleteProfileNotice({ className }: Props) {
         <Button
           size="xs"
           className="bg-foreground text-background hover:bg-foreground/90"
-          onClick={() => navigate(roleSettingsPath(participant.role))}
+          onClick={() => navigate(settingsPath)}
         >
           Settings
         </Button>

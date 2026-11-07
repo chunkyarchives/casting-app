@@ -29,7 +29,6 @@ type Props = {
 export function AuthDrawer({ open, onOpenChange, tab, onTabChange }: Props) {
   const [pending, setPending] = useState(false)
   const texts = tabTexts[tab]
-  const close = () => onOpenChange(false)
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange} swipeDirection="right">
@@ -54,15 +53,15 @@ export function AuthDrawer({ open, onOpenChange, tab, onTabChange }: Props) {
           </TabsList>
 
           <TabsContent value="sign-in" className="-mx-1 flex-1 overflow-y-auto px-1">
-            <SignInForm onPendingChange={setPending} onSuccess={close} />
+            <SignInForm onPendingChange={setPending}/>
           </TabsContent>
           <TabsContent value="sign-up" className="-mx-1 flex-1 overflow-y-auto px-1">
-            <SignUpForm onPendingChange={setPending} onSuccess={close} />
+            <SignUpForm onPendingChange={setPending}/>
           </TabsContent>
         </Tabs>
 
         <DrawerFooter className="flex-row gap-2">
-          <Button variant="outline" className="flex-1" onClick={close}>
+          <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
             Close
           </Button>
           <Button type="submit" form={texts.formId} disabled={pending} className="flex-1">

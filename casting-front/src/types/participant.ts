@@ -12,6 +12,7 @@ export type CurrentParticipant = {
   role: ParticipantRole
   profileComplete: boolean
   profilePictureUrl: string | null
+  origin: string | null
 }
 
 export type SignInRequest = {

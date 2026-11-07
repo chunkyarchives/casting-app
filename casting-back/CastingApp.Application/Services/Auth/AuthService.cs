@@ -71,13 +71,12 @@ public class AuthService(
         }
 
         await users.ResetAccessFailedCountAsync(user);
-        return CreateResult(user);
+        return CreateResult(await WithRoleProfileAsync(user.Id) ?? user);
     }
 
     public async Task<MeDto> GetMeAsync()
     {
-        var user = await users.FindByIdAsync(currentUser.Id.ToString())
-            ?? throw new UnauthorizedException("The account no longer exists.");
+        var user = await WithRoleProfileAsync(currentUser.Id) ?? throw new UnauthorizedException("The account no longer exists.");
 
         return user.ToMeDto();
     }
@@ -87,6 +86,12 @@ public class AuthService(
         var token = tokens.CreateToken(participant);
         return new AuthResult(participant.ToMeDto(), token.Value, token.ExpiresAt);
     }
+    
+    private Task<Participant?> WithRoleProfileAsync(Guid id) =>
+        users.Users
+            .Include(u => u.Actor)
+            .Include(u => u.Director)
+            .FirstOrDefaultAsync(u => u.Id == id);
 
     private static UnauthorizedException InvalidCredentials() => new("Invalid email or password.");
 }

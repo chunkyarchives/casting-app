@@ -137,7 +137,8 @@
   --sidebar-foreground: oklch(0.986 0.002 67.8);
   --sidebar-primary: oklch(0.637 0.237 25.331);
   --sidebar-primary-foreground: oklch(0.971 0.013 17.38);
-  --sidebar-accent: oklch(0.268 0.011 36.5);
+  --sidebar-accent: oklch(0.28 0.055 16);
+  /*--sidebar-accent: oklch(0.268 0.011 36.5);*/
   --sidebar-accent-foreground: oklch(0.986 0.002 67.8);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.547 0.021 43.1);
@@ -317,6 +318,11 @@
     user-select: none;
     min-height: 100svh;
     margin: 0 auto; 
+  }
+
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
   }
 
   /* Root: mobile */

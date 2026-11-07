@@ -30,10 +30,9 @@ const roleOptions: { value: SignUpRole; label: string; description: string }[] =
 
 type Props = {
   onPendingChange: (pending: boolean) => void
-  onSuccess: () => void
 }
 
-export function SignUpForm({ onPendingChange, onSuccess }: Props) {
+export function SignUpForm({ onPendingChange }: Props) {
   const {
     control,
     handleSubmit,
@@ -49,17 +48,16 @@ export function SignUpForm({ onPendingChange, onSuccess }: Props) {
 
   const onSubmit = async ({ fullName, email, password, role }: SignUpValues) => {
     const { firstName, lastName } = splitFullName(fullName)
-    
+
     onPendingChange(true)
     try {
       await signUp({ firstName, lastName, email: email.toLowerCase(), password, role })
-      onSuccess()
     } catch (error) {
       for (const { field, message } of signUpErrors(error)) {
         setError(field, { message })
       }
+      onPendingChange(false)
     }
-    onPendingChange(false)
   }
 
   return (

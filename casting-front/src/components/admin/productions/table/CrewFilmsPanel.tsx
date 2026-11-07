@@ -72,7 +72,7 @@ function FilmCard({ film, onOpen }: { film: AdminFilm; onOpen: () => void }) {
     <button
       type="button"
       onClick={onOpen}
-      className="group flex w-28 flex-col gap-2 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/30"
+      className="group flex w-28 cursor-pointer flex-col gap-2 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
     >
       <FilmPoster posterUrl={film.posterUrl} className="w-full ring-gray-300 transition-shadow duration-175 group-hover:ring-4" />
       <span className="flex flex-col gap-0.5">
