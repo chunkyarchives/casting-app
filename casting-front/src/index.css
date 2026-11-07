@@ -297,6 +297,16 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  /* The strip on a toast that shows how long it stays up (components/ui/toast.tsx) */
+  --animate-toast-timer: toast-timer linear forwards;
+  @keyframes toast-timer {
+    from {
+      transform: scaleX(1);
+    }
+    to {
+      transform: scaleX(0);
+    }
+  }
 }
 
 /* Base styles */
@@ -305,17 +315,21 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground select-none;
   }
   html {
     @apply font-sans;
     font-size: 112.5%;
     scrollbar-gutter: stable;
   }
-
+  input,
+  textarea,
+  [contenteditable='true'] {
+    @apply select-text;
+  }
   /* Root: desktop */
   #root {
-    user-select: none;
+    /*user-select: none;*/
     min-height: 100svh;
     margin: 0 auto; 
   }

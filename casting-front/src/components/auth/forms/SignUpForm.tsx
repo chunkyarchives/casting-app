@@ -9,22 +9,23 @@ import { signUpErrors } from './auth-errors'
 import { useSignUp } from '../hooks/useSignUp'
 import { AuthTextField } from './AuthTextField'
 import { signUpFormId } from './form-ids'
+import { roleDescriptions } from '@/lib/roles'
 
 const roleOptions: { value: SignUpRole; label: string; description: string }[] = [
   {
     value: 'Actor',
     label: 'Actor',
-    description: 'Build your profile and get matched to film roles.',
+    description: roleDescriptions.Actor,
   },
   {
     value: 'Director',
     label: 'Director',
-    description: 'Create films, open roles and make the final casting decisions.',
+    description: roleDescriptions.Director,
   },
   {
     value: 'CastingDirector',
     label: 'Casting Director',
-    description: "Join a director's crew and match actors to roles.",
+    description: roleDescriptions.CastingDirector,
   }
 ]
 

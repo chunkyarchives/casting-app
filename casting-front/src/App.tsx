@@ -15,6 +15,8 @@ import { actorNav } from '@/components/dashboard/dashboard-nav'
 import { actorPages, preloadActorPages } from '@/pages/actor/actor-pages'
 import { dashboardPages } from '@/pages/dashboard-pages'
 
+const Welcome = lazy(dashboardPages.welcome)
+
 const DirectorDashboard = lazy(() => import('@/pages/director/DirectorDashboard'))
 const CastingDirectorDashboard = lazy(() => import('@/pages/casting-director/CastingDirectorDashboard'))
 const Settings = lazy(() => import('@/pages/settings/Settings'))
@@ -36,23 +38,23 @@ export default function App() {
   return (
     <Suspense fallback={<PageLoader className="min-h-svh" />}>
       <Routes>
-        <Route element={<ThemeLayout theme={themes.site} />}>
+        <Route element={<ThemeLayout />}>
           <Route element={<PublicLayout />}>
             <Route index element={<Landing />} />
           </Route>
 
           <Route element={<RequireRole role="Actor" />}>
             <Route path={paths.actor} element={<DashboardLayout items={actorNav} preload={preloadActorPages} />}>
-              <Route element={<RequireCompleteProfile />}>
-                <Route index element={<Navigate to="portfolio" replace />} />
-                <Route path="portfolio" element={<ActorPortfolio />} />
-                <Route path="roles" element={<ActorRoles />} />
-                <Route path="chat" element={<Chat />} />
-              </Route>
+              <Route index element={<Welcome role="Actor" />} />
+                <Route element={<RequireCompleteProfile />}>
+                  <Route path="portfolio" element={<ActorPortfolio />} />
+                  <Route path="roles" element={<ActorRoles />} />
+                  <Route path="chat" element={<Chat />} />
+                </Route>
               <Route path="settings">
-                <Route index element={<Navigate to="account" replace />} />
-                <Route path="account" element={<AccountSettings />} />
-                <Route path="theme" element={<ThemeSettings />} />
+                  <Route index element={<Navigate to="account" replace />} />
+                  <Route path="account" element={<AccountSettings />} />
+                  <Route path="theme" element={<ThemeSettings />} />
               </Route>
             </Route>
           </Route>

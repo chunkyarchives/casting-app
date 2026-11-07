@@ -1,13 +1,7 @@
 import { useLayoutEffect } from 'react'
-import { themes, type Theme } from '@/lib/themes'
 
-export function useRootTheme(theme: Theme) {
+export function useRootTheme(className: string | null) {
   useLayoutEffect(() => {
-    const root = document.documentElement
-
-    root.className = theme
-    return () => {
-      root.className = themes.site
-    }
-  }, [theme])
+    if (className !== null) document.documentElement.className = className
+  }, [className])
 }

@@ -6,7 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>casting-front</title>
     <script>
-      if (location.pathname.startsWith('/admin')) document.documentElement.className = 'admin-light'
+      try {
+        var bootTheme = location.pathname.startsWith('/admin') ? 'admin-light' : localStorage.getItem('casting-app.theme')
+        if (bootTheme) document.documentElement.className = bootTheme
+      } catch {}
     </script>
   </head>
   <body>

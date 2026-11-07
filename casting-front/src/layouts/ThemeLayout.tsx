@@ -1,12 +1,20 @@
+import { useEffect } from 'react'
 import { Outlet } from 'react-router'
+import { useSession } from '@/components/auth/session/session-context'
 import { useRootTheme } from '@/hooks/useRootTheme'
-import type { Theme } from '@/lib/themes'
+import { useSiteTheme } from '@/hooks/useSiteTheme'
+import { rememberBootTheme } from '@/lib/theme-preference'
 
-type Props = {
-  theme: Theme
-}
+export default function ThemeLayout() {
+  const { status } = useSession()
+  const [theme] = useSiteTheme()
 
-export default function ThemeLayout({ theme }: Props) {
-  useRootTheme(theme)
+  const className = status === 'ready' ? theme.className : null
+
+  useRootTheme(className)
+  useEffect(() => {
+    if (className !== null) rememberBootTheme(className)
+  }, [className])
+
   return <Outlet />
 }

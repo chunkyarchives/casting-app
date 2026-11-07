@@ -20,10 +20,7 @@ function ToastViewport({ className, ...props }: ToastPrimitive.Viewport.Props) {
   return (
     <ToastPrimitive.Viewport
       data-slot="toast-viewport"
-      className={cn(
-        "data-[type=error]:border-destructive/50", "pointer-events-none fixed inset-x-4 bottom-4 z-50 mx-auto w-auto max-w-sm outline-none sm:right-4 sm:left-auto sm:mx-0 sm:w-full",
-        className
-      )}
+      className={"pointer-events-none fixed inset-x-4 bottom-4 z-50 mx-auto w-auto max-w-md outline-none sm:right-4 sm:left-auto sm:mx-0 sm:w-full"}             
       {...props}
     />
   )
@@ -34,7 +31,8 @@ function Toast({ className, ...props }: ToastPrimitive.Root.Props) {
     <ToastPrimitive.Root
       data-slot="toast"
       className={cn(
-        "group/toast pointer-events-auto absolute right-0 bottom-0 z-[calc(1000-var(--toast-index))] w-full origin-bottom rounded-2xl border bg-popover text-popover-foreground shadow-lg will-change-transform outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
+        "group/toast pointer-events-auto absolute right-0 bottom-0 z-[calc(1000-var(--toast-index))] w-full origin-bottom rounded-2xl border-2 bg-popover text-popover-foreground shadow-lg will-change-transform outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
+        "data-[type=error]:border-destructive/70",
         "[--gap:0.75rem] [--height:var(--toast-frontmost-height,var(--toast-height))] [--offset-y:calc(var(--toast-offset-y)*-1+calc(var(--toast-index)*var(--gap)*-1)+var(--toast-swipe-movement-y))] [--peek:0.75rem] [--scale:calc(max(0,1-(var(--toast-index)*0.1)))] [--shrink:calc(1-var(--scale))]",
         "h-(--height) [transform:translateX(var(--toast-swipe-movement-x))_translateY(calc(var(--toast-swipe-movement-y)-(var(--toast-index)*var(--peek))-(var(--shrink)*var(--height))))_scale(var(--scale))] [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1),opacity_500ms,height_150ms]",
         "after:absolute after:top-full after:left-0 after:h-[calc(var(--gap)+1px)] after:w-full after:content-['']",
@@ -61,7 +59,7 @@ function ToastContent({ className, ...props }: ToastPrimitive.Content.Props) {
     <ToastPrimitive.Content
       data-slot="toast-content"
       className={cn(
-        "flex h-full items-center gap-3 overflow-hidden p-4 transition-opacity duration-250 ease-[cubic-bezier(0.22,1,0.36,1)] data-behind:opacity-0 data-expanded:opacity-100",
+        "relative flex h-full items-center gap-3 overflow-hidden rounded-[inherit] px-4 py-3 transition-opacity duration-250 ease-[cubic-bezier(0.22,1,0.36,1)] data-behind:opacity-0 data-expanded:opacity-100",
         className
       )}
       {...props}
@@ -178,11 +176,45 @@ function ToastIcon({ type }: { type: string | undefined }) {
   )
 }
 
-function ToastList() {
-  const { toasts } = ToastPrimitive.useToastManager()
+type ToastTimerProps = {
+  timeout: number
+  updateKey: number | undefined
+}
+
+function ToastTimer({ timeout, updateKey }: ToastTimerProps) {
+  const stopped = timeout === 0
+  const [run, setRun] = React.useState({ updateKey, duration: timeout })
+
+  if (!stopped && updateKey !== run.updateKey) {
+    setRun({ updateKey, duration: timeout })
+  }
+
+  if (run.duration <= 0) {
+    return null
+  }
+
+  return (
+    <span
+      key={run.updateKey}
+      aria-hidden="true"
+      data-slot="toast-timer"
+      style={{ animationDuration: `${run.duration}ms` }}
+      className={cn(
+        "absolute inset-x-0 bottom-0 h-1 origin-left animate-toast-timer bg-primary group-data-[type=error]/toast:bg-destructive group-data-expanded/toast:[animation-play-state:paused]",
+        stopped && "[animation-play-state:paused]"
+      )}
+    />
+  )
+}
+
+function ToastList({ timeout }: { timeout: number }) {
+  const { toasts, update } = ToastPrimitive.useToastManager()
+  const keepOpen = (toastItem: ToastPrimitive.Root.ToastObject) => {
+    if (toastItem.timeout !== 0) update(toastItem.id, { timeout: 0 })
+  }
 
   return toasts.map((toastItem) => (
-    <Toast key={toastItem.id} toast={toastItem}>
+    <Toast key={toastItem.id} toast={toastItem} onMouseEnter={() => keepOpen(toastItem)}>
       <ToastContent>
         <ToastIcon type={toastItem.type} />
         <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -191,6 +223,10 @@ function ToastList() {
         </div>
         <ToastAction />
         <ToastClose />
+        <ToastTimer
+          timeout={toastItem.type === "loading" ? 0 : (toastItem.timeout ?? timeout)}
+          updateKey={toastItem.updateKey}
+        />
       </ToastContent>
     </Toast>
   ))
@@ -199,14 +235,15 @@ function ToastList() {
 function Toaster({
   children,
   toastManager = toast,
+  timeout = 3000,
   ...props
 }: ToastPrimitive.Provider.Props) {
   return (
-    <ToastProvider toastManager={toastManager} {...props}>
+    <ToastProvider toastManager={toastManager} timeout={timeout} {...props}>
       {children}
       <ToastPortal>
         <ToastViewport>
-          <ToastList />
+          <ToastList timeout={timeout}/>
         </ToastViewport>
       </ToastPortal>
     </ToastProvider>

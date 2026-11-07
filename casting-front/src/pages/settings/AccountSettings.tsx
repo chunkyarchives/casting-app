@@ -1,5 +1,6 @@
-import { DashboardPage } from '@/components/dashboard/DashboardPage'
+import { UserCircleIcon } from '@hugeicons/core-free-icons'
+import { SettingsScreen } from '@/components/settings/SettingsScreen'
 
 export default function AccountSettings() {
-  return <DashboardPage title="AccountSettings" description="" />
+  return <SettingsScreen title="Your account" icon={UserCircleIcon} />
 }

@@ -66,7 +66,7 @@ export function ImageZoom({ src, alt, label, caption, disabled = false, classNam
             'data-starting-style:[clip-path:inset(50%_0)] data-ending-style:[clip-path:inset(50%_0)]',
           )}
         >
-          <figure className="flex flex-col items-center gap-3">
+          <figure className="flex cursor-zoom-out flex-col items-center gap-3" onClick={() => setOpen(false)}>
             <img
               src={src}
               alt={alt}
