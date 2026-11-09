@@ -1,10 +1,10 @@
-import type { QuerySpec } from '@/hooks/useApiQuery'
+import { prefetchQuery, type QuerySpec } from '@/hooks/useApiQuery'
 import type { FilterCodec } from '@/hooks/useListFilters'
 import { publicApi } from '@/lib/api/public'
 import { parsePage, pickKnown } from '@/lib/list-filters'
 import type { PagedResult } from '@/types/api'
 import { signUpRoles, type SignUpRole } from '@/types/participant'
-import type { PublicFilm, PublicPerson } from '@/types/public'
+import type { PublicFilm, PublicPerson, PublicRole } from '@/types/public'
 
 export type FilmFilters = {
   search: string
@@ -16,6 +16,7 @@ export type PeopleFilters = FilmFilters & {
 }
 
 const pageSize = 12
+const popularRolesLimit = 12
 
 const urlKeys = {
   search: 'q',
@@ -58,4 +59,16 @@ export function filmsQuery(filters: FilmFilters): QuerySpec<PagedResult<PublicFi
 export function peopleQuery(filters: PeopleFilters): QuerySpec<PagedResult<PublicPerson>> {
   const query = { search: filters.search.trim() || undefined, role: filters.role ?? undefined, page: filters.page, pageSize }
   return { key: `public-people-${JSON.stringify(query)}`, load: () => publicApi.people(query) }
+}
+
+export function popularRolesQuery(): QuerySpec<PublicRole[]> {
+  return { key: `public-popular-roles-${popularRolesLimit}`, load: () => publicApi.popularRoles(popularRolesLimit) }
+}
+
+const noFilters = new URLSearchParams()
+
+export function prefetchPublicLists() {
+  prefetchQuery(filmsQuery(filmFilterCodec.parse(noFilters)))
+  prefetchQuery(popularRolesQuery())
+  prefetchQuery(peopleQuery(peopleFilterCodec.parse(noFilters)))
 }

@@ -1,22 +1,17 @@
 import { MaskTheater01Icon } from '@hugeicons/core-free-icons'
-import { useAuthDrawer } from '@/components/auth/drawer/auth-context'
-import { useCurrentParticipant } from '@/components/auth/hooks/useCurrentParticipant'
 import { EmptyMessage } from '@/components/common/states/EmptyMessage'
 import { LoadError } from '@/components/common/states/LoadError'
 import { CardGrid, CardGridSkeleton } from '@/components/public/CardGrid'
 import { PublicPage } from '@/components/public/PublicPage'
 import { RoleCard } from '@/components/public/RoleCard'
-import { Button } from '@/components/ui/button'
+import { popularRolesQuery } from '@/components/public/public-lists'
 import { useApiQuery } from '@/hooks/useApiQuery'
-import { publicApi } from '@/lib/api/public'
 
-const popularRolesLimit = 12
 const gridClassName = 'md:grid-cols-2 lg:grid-cols-3'
 
 export default function Roles() {
-  const participant = useCurrentParticipant()
-  const { openAuth } = useAuthDrawer()
-  const roles = useApiQuery('public-popular-roles', () => publicApi.popularRoles(popularRolesLimit))
+  const query = popularRolesQuery()
+  const roles = useApiQuery(query.key, query.load)
 
   return (
     <PublicPage title="Roles" description="The open roles with the most applications right now.">
@@ -42,18 +37,6 @@ export default function Roles() {
             </li>
           ))}
         </CardGrid>
-      )}
-
-      {!participant && (
-        <aside className="flex flex-col items-start gap-4 rounded-xl border bg-card p-6 sm:flex-row sm:items-center">
-          <div className="flex flex-1 flex-col gap-1">
-            <h2 className="text-lg font-bold">Want one of these roles?</h2>
-            <p className="text-sm text-muted-foreground">Make a free actor profile and apply in a few minutes.</p>
-          </div>
-          <Button size="lg" onClick={() => openAuth('sign-up')}>
-            Get started
-          </Button>
-        </aside>
       )}
     </PublicPage>
   )

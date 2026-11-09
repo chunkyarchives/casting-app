@@ -6,10 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>casting-front</title>
     <script>
+      var bootTheme = 'dark new-dark-cinema'
       try {
-        var bootTheme = location.pathname.startsWith('/admin') ? 'admin-light' : localStorage.getItem('casting-app.theme')
-        if (bootTheme) document.documentElement.className = bootTheme
+        var path = location.pathname
+        if (path.startsWith('/admin')) bootTheme = 'admin-light'
+        else if (/^\/(actor|director|casting-director)(\/|$)/.test(path)) bootTheme = localStorage.getItem('casting-app.theme') || bootTheme
       } catch {}
+      document.documentElement.className = bootTheme
     </script>
   </head>
   <body>

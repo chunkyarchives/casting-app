@@ -25,3 +25,7 @@ const roleHomePaths: Record<ParticipantRole, string> = {
 export const roleHomePath = (role: ParticipantRole) => roleHomePaths[role]
 export const rolePath = (role: ParticipantRole, page: string) => `${roleHomePath(role)}/${page}`
 export const roleSettingsPath = (role: ParticipantRole) => rolePath(role, 'settings')
+
+const dashboardRoots = [paths.actor, paths.director, paths.castingDirector]
+
+export const isDashboardPath = (pathname: string) => dashboardRoots.some((root) => pathname === root || pathname.startsWith(`${root}/`))

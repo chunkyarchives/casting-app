@@ -207,21 +207,11 @@ function ToastTimer({ timeout, updateKey }: ToastTimerProps) {
   )
 }
 
-const arrivedToasts = new WeakSet<Element>()
-
-function markArrived(event: React.TransitionEvent<HTMLDivElement>) {
-  if (event.target === event.currentTarget) arrivedToasts.add(event.currentTarget)
-}
-
 function ToastList({ timeout }: { timeout: number }) {
-  const { toasts, update } = ToastPrimitive.useToastManager()
-  const keepOpen = (toastItem: ToastPrimitive.Root.ToastObject, element: Element) => {
-    if (toastItem.timeout === 0 || !arrivedToasts.has(element)) return
-    update(toastItem.id, { timeout: 0 })
-  }
+  const { toasts } = ToastPrimitive.useToastManager()
 
   return toasts.map((toastItem) => (
-    <Toast key={toastItem.id} toast={toastItem} onTransitionEnd={markArrived} onPointerMove={(event) => keepOpen(toastItem, event.currentTarget)}>
+    <Toast key={toastItem.id} toast={toastItem}>
       <ToastContent>
         <ToastIcon type={toastItem.type} />
         <div className="flex min-w-0 flex-1 flex-col gap-1">

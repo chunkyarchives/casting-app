@@ -33,6 +33,13 @@ const performative: SiteTheme = {
   className: 'dark performative',
 }
 
+const rennt: SiteTheme = {
+  id: 'rennt',
+  name: 'Rennt',
+  description: "Lola's reds, sage green and dusty Berlin browns. Videogamey, retro, running for your life vibes.",
+  className: 'dark rennt',
+}
+
 const wizz: SiteTheme = {
   id: 'wizz',
   name: 'Wizz',
@@ -40,7 +47,7 @@ const wizz: SiteTheme = {
   className: 'wizz',
 }
 
-export const siteThemes = [newDarkCinema, defaultDark, classic, performative, wizz].sort((a, b) =>
+export const siteThemes = [newDarkCinema, defaultDark, classic, performative, rennt, wizz].sort((a, b) =>
   a.name.localeCompare(b.name),
 )
 

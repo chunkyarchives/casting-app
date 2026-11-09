@@ -16,6 +16,7 @@ namespace CastingApp.Api.Controllers;
 [Route("api")]
 public class MediaController(IMediaService media) : ControllerBase
 {
+    private const string PublicMediaCache = "public, max-age=3600";
     private const long ShowreelRequestLimit = 210L * 1024 * 1024;
 
     [HttpPut("me/profile-picture")]
@@ -40,12 +41,12 @@ public class MediaController(IMediaService media) : ControllerBase
     [HttpGet("public/people/{id:guid}/picture")]
     [AllowAnonymous]
     public async Task<IActionResult> GetPublicProfilePicture(Guid id, CancellationToken ct)
-        => ToFile(await media.GetPublicProfilePictureAsync(id, ct));
+        => ToFile(await media.GetPublicProfilePictureAsync(id, ct), PublicMediaCache);
 
     [HttpGet("public/films/{id:guid}/poster")]
     [AllowAnonymous]
     public async Task<IActionResult> GetPublicPoster(Guid id, CancellationToken ct)
-        => ToFile(await media.GetPublicPosterAsync(id, ct));
+        => ToFile(await media.GetPublicPosterAsync(id, ct), PublicMediaCache);
 
     [HttpPost("me/photos")]
     [Authorize(Roles = AppRoles.Actor)]
@@ -136,9 +137,9 @@ public class MediaController(IMediaService media) : ControllerBase
         return NoContent();
     }
 
-    private IActionResult ToFile(MediaFile file)
+    private IActionResult ToFile(MediaFile file, string cacheControl = "private, no-cache")
     {
-        Response.Headers.CacheControl = "private, no-cache";   // privatno, ali uz proveru ETag-a (304 ako se nije promenilo)
+        Response.Headers.CacheControl = cacheControl;   // privatno, ali uz proveru ETag-a (304 ako se nije promenilo)
         Response.Headers.XContentTypeOptions = "nosniff";
 
         var lastModified = new DateTimeOffset(DateTime.SpecifyKind(file.CreatedAtUtc, DateTimeKind.Utc));

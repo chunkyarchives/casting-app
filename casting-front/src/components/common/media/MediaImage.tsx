@@ -13,6 +13,9 @@ type Props = {
 export function MediaImage({ src, alt, className, fallback }: Props) {
   const [result, setResult] = useState<{ src: string; status: Status } | null>(null)
   const status: Status = result?.src === src ? result.status : 'loading'
+  const showIfCached = (image: HTMLImageElement | null) => {
+    if (status === 'loading' && image?.complete && image.naturalWidth > 0) setResult({ src, status: 'loaded' })
+  }
 
   return (
     <div className={cn('overflow-hidden bg-muted', status === 'loading' && 'animate-pulse', className)}>
@@ -20,6 +23,7 @@ export function MediaImage({ src, alt, className, fallback }: Props) {
         fallback
       ) : (
         <img
+          ref={showIfCached}
           src={src}
           alt={alt}
           loading="lazy"

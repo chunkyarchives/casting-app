@@ -38,16 +38,23 @@ export type QuerySpec<T> = {
   load: () => Promise<T>
 }
 
-const prefetching = new Set<string>()
+const inflight = new Map<string, Promise<unknown>>()
+
+function loadOnce<T>(key: string, load: () => Promise<T>) {
+  const running = inflight.get(key) as Promise<T> | undefined
+  if (running) return running
+
+  const next = load().finally(() => inflight.delete(key))
+  inflight.set(key, next)
+  return next
+}
 
 export function prefetchQuery<T>({ key, load }: QuerySpec<T>) {
-  if (cache.has(key) || prefetching.has(key)) return
+  if (cache.has(key) || inflight.has(key)) return
 
-  prefetching.add(key)
-  load()
+  loadOnce(key, load)
     .then((data) => remember(key, data))
     .catch(() => {})
-    .finally(() => prefetching.delete(key))
 }
 
 export function useApiQuery<T>(key: string, load: () => Promise<T>, options: Options = {}): QueryResult<T> {
@@ -58,15 +65,16 @@ export function useApiQuery<T>(key: string, load: () => Promise<T>, options: Opt
 
   useEffect(() => {
     let ignore = false
+    const loading = revision === 0 ? loadOnce(key, () => runLoad()) : runLoad()
 
-    runLoad().then(
+    loading.then(
       (data) => {
         remember(key, data)
         if (!ignore) setSettled({ key, state: { status: 'success', data } })
       },
       (error: unknown) => {
         if (!ignore) setSettled({ key, state: { status: 'error', error } })
-      },
+      }
     )
 
     return () => {
