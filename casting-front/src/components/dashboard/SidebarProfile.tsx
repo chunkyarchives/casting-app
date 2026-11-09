@@ -17,7 +17,7 @@ export function SidebarProfile({ participant }: { participant: CurrentParticipan
           <p className={`${textLine} text-sm font-medium`}>
             {participant.firstName} {participant.lastName}
           </p>
-          <p className={`${textLine} text-xs text-muted-foreground`}>{participant.email}</p>
+          <p className={`${textLine} text-xs text-sidebar-foreground/60`}>{participant.email}</p>
         </div>
       </div>
     </div>

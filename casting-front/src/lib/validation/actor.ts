@@ -1,27 +1,11 @@
-import { format } from 'date-fns'
 import * as z from 'zod'
-import { isCountryCode } from '@/lib/countries'
-import { nameChars } from './auth'
-
-export const genders = ['Male', 'Female'] as const
+import { bioField, originField, personFields } from './profile'
 
 export const heightRange = { min: 50, max: 260 }
 export const weightRange = { min: 20, max: 500 }
-export const bioMaxLength = 4000
 export const maxLinks = 10
 export const maxRoleInterests = 20
 export const roleInterestMaxLength = 50
-export const earliestBirthDate = '1900-01-01'
-
-export const todayIso = () => format(new Date(), 'yyyy-MM-dd')
-
-const personName = (field: string) =>
-  z
-    .string()
-    .trim()
-    .min(1, `Enter your ${field}`)
-    .max(100, `Your ${field} is too long`)
-    .regex(nameChars, 'Use letters, spaces, apostrophes, hyphens and dots only')
 
 const isHttpUrl = (value: string) => {
   try {
@@ -32,28 +16,20 @@ const isHttpUrl = (value: string) => {
   }
 }
 
-export const actorProfileSchema = z.object({
-  firstName: personName('first name'),
-  lastName: personName('last name'),
-  dateOfBirth: z
-    .string()
+const measurement = (range: { min: number; max: number }, what: string, unit: string) =>
+  z
+    .number()
+    .int('Enter a whole number')
+    .min(range.min, `Enter a ${what} between ${range.min} and ${range.max} ${unit}`)
+    .max(range.max, `Enter a ${what} between ${range.min} and ${range.max} ${unit}`)
     .nullable()
-    .refine((date) => date === null || (date >= earliestBirthDate && date <= todayIso()), 'Pick a date between 1900 and today'),
-  height: z
-    .number()
-    .int('Enter a whole number')
-    .min(heightRange.min, `Enter a height between ${heightRange.min} and ${heightRange.max} cm`)
-    .max(heightRange.max, `Enter a height between ${heightRange.min} and ${heightRange.max} cm`)
-    .nullable(),
-  weight: z
-    .number()
-    .int('Enter a whole number')
-    .min(weightRange.min, `Enter a weight between ${weightRange.min} and ${weightRange.max} kg`)
-    .max(weightRange.max, `Enter a weight between ${weightRange.min} and ${weightRange.max} kg`)
-    .nullable(),
-  origin: z.string().nullable().refine((code) => code === null || isCountryCode(code), 'Pick a country from the list'),
-  gender: z.enum(genders).nullable(),
-  bio: z.string().max(bioMaxLength, 'Your bio is too long'),
+
+export const actorProfileSchema = z.object({
+  ...personFields,
+  origin: originField,
+  bio: bioField,
+  height: measurement(heightRange, 'height', 'cm'),
+  weight: measurement(weightRange, 'weight', 'kg'),
   links: z
     .array(
       z.object({

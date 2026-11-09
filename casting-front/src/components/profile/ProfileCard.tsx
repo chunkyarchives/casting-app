@@ -74,9 +74,9 @@ export function ProfileCard({ participantId, pictureUrl, name, email, origin, bi
             {origin ? countryName(origin) : 'No origin yet'}
           </span>
         )}
-        {facts.map((fact) => (
+        {facts.map((fact, index) => (
           <Fragment key={fact}>
-            <Separator orientation="vertical" className="h-4 self-center" />
+            {(origin !== undefined || index > 0) && <Separator orientation="vertical" className="h-4 self-center" />}
             <span className="text-muted-foreground">{fact}</span>
           </Fragment>
         ))}

@@ -24,10 +24,9 @@ import { acceptedImageTypes, imageShapes } from '@/lib/media-shapes'
 type Props = {
   hasPicture: boolean
   required: boolean
-  onHint: (hint: string | null) => void
 }
 
-export function ProfilePictureRow({ hasPicture, required, onHint }: Props) {
+export function ProfilePictureRow({ hasPicture, required }: Props) {
   const { refresh } = useSession()
   const input = useRef<HTMLInputElement>(null)
   const [image, setImage] = useState<string | null>(null)
@@ -83,7 +82,6 @@ export function ProfilePictureRow({ hasPicture, required, onHint }: Props) {
       label="Profile picture"
       hint="Shown on your profile and next to your name everywhere. It changes right away, without Save."
       missing={required && !hasPicture}
-      onHint={onHint}
     >
       <div className="flex gap-2 *:flex-1">
         <Button type="button" variant="outline" disabled={pending} onClick={() => input.current?.click()}>

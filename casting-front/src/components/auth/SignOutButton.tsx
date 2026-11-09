@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useSignOut } from './hooks/useSignOut'
 
+const sidebarColors = 'border-sidebar-border bg-transparent text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground dark:bg-transparent dark:hover:bg-sidebar-accent'
+
 type Props = {
   compact?: boolean
 }
@@ -16,7 +18,16 @@ export function SignOutButton({ compact = false }: Props) {
     return (
       <Tooltip>
         <TooltipTrigger
-          render={<Button variant="outline" size="icon-sm" aria-label={label} disabled={pending} onClick={signOut} />}
+          render={
+            <Button
+              variant="outline"
+              size="icon-sm"
+              aria-label={label}
+              disabled={pending}
+              onClick={signOut}
+              className={sidebarColors}
+            />
+          }
         >
           <HugeiconsIcon icon={Logout01Icon} strokeWidth={2} />
         </TooltipTrigger>
@@ -26,7 +37,7 @@ export function SignOutButton({ compact = false }: Props) {
   }
 
   return (
-    <Button variant="outline" disabled={pending} onClick={signOut}>
+    <Button variant="outline" disabled={pending} onClick={signOut} className={sidebarColors}>
       {label}
     </Button>
   )

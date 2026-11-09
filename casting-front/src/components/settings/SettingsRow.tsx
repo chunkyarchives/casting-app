@@ -1,5 +1,6 @@
-import type { FocusEvent, PointerEvent, ReactNode } from 'react'
+import { use, type FocusEvent, type PointerEvent, type ReactNode } from 'react'
 import { cn } from '@/lib/utils'
+import { SettingsHintContext } from './settings-hint'
 import { slotClassName } from './slot-styles'
 
 type Props = {
@@ -8,11 +9,12 @@ type Props = {
   missing?: boolean
   error?: string
   align?: 'center' | 'start'
-  onHint: (hint: string | null) => void
   children: ReactNode
 }
 
-export function SettingsRow({ label, hint, missing = false, error, align = 'center', onHint, children }: Props) {
+export function SettingsRow({ label, hint, missing = false, error, align = 'center', children }: Props) {
+  const onHint = use(SettingsHintContext)
+  
   const handlePointerLeave = (event: PointerEvent<HTMLDivElement>) => {
     if (!event.currentTarget.contains(document.activeElement)) onHint(null)
   }

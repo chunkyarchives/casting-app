@@ -1,24 +1,18 @@
 import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
+import { RequireCompleteProfile } from '@/components/auth/RequireCompleteProfile'
 import { RequireRole } from '@/components/auth/RequireRole'
 import { PageLoader } from '@/components/common/states/PageLoader'
+import { actorNav, castingDirectorNav, directorNav } from '@/components/dashboard/dashboard-nav'
 import PublicLayout from '@/layouts/PublicLayout'
 import ThemeLayout from '@/layouts/ThemeLayout'
-import { paths, roleSettingsPath } from '@/lib/routes'
+import { paths } from '@/lib/routes'
 import Landing from '@/pages/Landing'
-import { adminPages } from '@/pages/admin/admin-pages'
-
-import { RequireCompleteProfile } from '@/components/auth/RequireCompleteProfile'
-
-import { actorNav } from '@/components/dashboard/dashboard-nav'
 import { actorPages, preloadActorPages } from '@/pages/actor/actor-pages'
+import { adminPages } from '@/pages/admin/admin-pages'
+import { castingDirectorPages, preloadCastingDirectorPages } from '@/pages/casting-director/casting-director-pages'
 import { dashboardPages } from '@/pages/dashboard/dashboard-pages'
-
-const Welcome = lazy(dashboardPages.welcome)
-
-const DirectorDashboard = lazy(() => import('@/pages/director/DirectorDashboard'))
-const CastingDirectorDashboard = lazy(() => import('@/pages/casting-director/CastingDirectorDashboard'))
-const Settings = lazy(() => import('@/pages/dashboard/settings/Settings'))
+import { directorPages, preloadDirectorPages } from '@/pages/director/director-pages'
 
 const AdminLayout = lazy(() => import('@/layouts/AdminLayout'))
 const Statistics = lazy(adminPages.statistics)
@@ -27,11 +21,21 @@ const Productions = lazy(adminPages.productions)
 const AuditLogs = lazy(adminPages.auditLogs)
 
 const DashboardLayout = lazy(() => import('@/layouts/DashboardLayout'))
+const Welcome = lazy(dashboardPages.welcome)
 const Chat = lazy(dashboardPages.chat)
 const AccountSettings = lazy(dashboardPages.accountSettings)
 const ThemeSettings = lazy(dashboardPages.themeSettings)
+
 const ActorPortfolio = lazy(actorPages.portfolio)
 const ActorRoles = lazy(actorPages.roles)
+
+const DirectorFilms = lazy(directorPages.films)
+const DirectorCrew = lazy(directorPages.crew)
+const DirectorApplications = lazy(directorPages.applications)
+
+const CastingDirectorCrew = lazy(castingDirectorPages.crew)
+const CastingDirectorRoles = lazy(castingDirectorPages.roles)
+const CastingDirectorProposals = lazy(castingDirectorPages.proposals)
 
 export default function App() {
   return (
@@ -45,27 +49,53 @@ export default function App() {
           <Route element={<RequireRole role="Actor" />}>
             <Route path={paths.actor} element={<DashboardLayout items={actorNav} preload={preloadActorPages} />}>
               <Route index element={<Welcome role="Actor" />} />
-                <Route element={<RequireCompleteProfile />}>
-                  <Route path="portfolio" element={<ActorPortfolio />} />
-                  <Route path="roles" element={<ActorRoles />} />
-                  <Route path="chat" element={<Chat />} />
-                </Route>
+              <Route element={<RequireCompleteProfile />}>
+                <Route path="portfolio" element={<ActorPortfolio />} />
+                <Route path="roles" element={<ActorRoles />} />
+                <Route path="chat" element={<Chat />} />
+              </Route>
               <Route path="settings">
-                  <Route index element={<Navigate to="account" replace />} />
-                  <Route path="account" element={<AccountSettings role="Actor" />} />
-                  <Route path="theme" element={<ThemeSettings />} />
+                <Route index element={<Navigate to="account" replace />} />
+                <Route path="account" element={<AccountSettings role="Actor" />} />
+                <Route path="theme" element={<ThemeSettings />} />
               </Route>
             </Route>
           </Route>
 
           <Route element={<RequireRole role="Director" />}>
-            <Route path={paths.director} element={<DirectorDashboard />} />
-            <Route path={roleSettingsPath('Director')} element={<Settings />} />
+            <Route path={paths.director} element={<DashboardLayout items={directorNav} preload={preloadDirectorPages} />}>
+              <Route index element={<Welcome role="Director" />} />
+              <Route element={<RequireCompleteProfile />}>
+                <Route path="films" element={<DirectorFilms />} />
+                <Route path="crew" element={<DirectorCrew />} />
+                <Route path="applications" element={<DirectorApplications />} />
+                <Route path="chat" element={<Chat />} />
+              </Route>
+              <Route path="settings">
+                <Route index element={<Navigate to="account" replace />} />
+                <Route path="account" element={<AccountSettings role="Director" />} />
+                <Route path="theme" element={<ThemeSettings />} />
+              </Route>
+            </Route>
           </Route>
 
           <Route element={<RequireRole role="CastingDirector" />}>
-            <Route path={paths.castingDirector} element={<CastingDirectorDashboard />} />
-            <Route path={roleSettingsPath('CastingDirector')} element={<Settings />} />
+            <Route
+              path={paths.castingDirector}
+              element={<DashboardLayout items={castingDirectorNav} preload={preloadCastingDirectorPages} />}
+            >
+              <Route index element={<Welcome role="CastingDirector" />} />
+              <Route element={<RequireCompleteProfile />}>
+                <Route path="crew" element={<CastingDirectorCrew />} />
+                <Route path="roles" element={<CastingDirectorRoles />} />
+                <Route path="proposals" element={<CastingDirectorProposals />} />
+              </Route>
+              <Route path="settings">
+                <Route index element={<Navigate to="account" replace />} />
+                <Route path="account" element={<AccountSettings role="CastingDirector" />} />
+                <Route path="theme" element={<ThemeSettings />} />
+              </Route>
+            </Route>
           </Route>
         </Route>
 
