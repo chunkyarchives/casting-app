@@ -10,6 +10,8 @@ public interface IMediaService
     Task<ProfilePictureDto> SetProfilePictureAsync(Stream content, long length, CancellationToken ct);
     Task DeleteProfilePictureAsync(CancellationToken ct);
     Task<MediaFile> GetProfilePictureAsync(Guid participantId, CancellationToken ct);
+    Task<MediaFile> GetPublicProfilePictureAsync(Guid participantId, CancellationToken ct);
+    Task<MediaFile> GetPublicPosterAsync(Guid filmId, CancellationToken ct);
     Task<MediaItemDto> AddAsync(MediaKind kind, string? caption, Stream content, long length, CancellationToken ct);
     Task<IReadOnlyList<MediaItemDto>> ListAsync(Guid actorId, bool showreels, CancellationToken ct);
     Task<MediaFile> GetAsync(Guid mediaId, CancellationToken ct);

@@ -10,6 +10,8 @@ using CastingApp.Application.Services.RoleApplications;
 using CastingApp.Application.Services.Profiles;
 using CastingApp.Application.Services.Admin;
 using Microsoft.Extensions.DependencyInjection;
+using CastingApp.Application.Services.Accounts;
+using CastingApp.Application.Services.Public;
 
 namespace CastingApp.Application;
 
@@ -30,6 +32,8 @@ public static class DependencyInjection
         services.AddScoped<IRoleApplicationService, RoleApplicationService>();
         services.AddScoped<IProfileCompletionService, ProfileCompletionService>();
         services.AddScoped<IAdminService, AdminService>();
+        services.AddScoped<IAccountService, AccountService>();
+        services.AddScoped<IPublicService, PublicService>();
         return services;
     }
 }

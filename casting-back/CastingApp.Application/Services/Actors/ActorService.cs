@@ -80,10 +80,13 @@ public class ActorService(IAppDbContext db, ICurrentUser currentUser, IProfileCo
         ActorFilter filter, int page, int pageSize, CancellationToken ct)
     {
         var today = Today();
+        var now = DateTime.UtcNow;
+        
         var query = ApplyFilter(
             db.Actors.AsNoTracking().Where(a => a.Participant.ProfileCompletedAt != null),   // nepotpuni profili se ne prikazuju
             filter,
-            today);
+            today)
+            .Where(a => a.Participant.DeactivatedUntil == null || a.Participant.DeactivatedUntil <= now);
 
         var total = await query.CountAsync(ct);
         var actors = await query

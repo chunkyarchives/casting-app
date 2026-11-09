@@ -4,7 +4,7 @@ using CastingApp.Domain.Entities;
 
 namespace CastingApp.Application.DTOs.CastingDirectors;
 
-public record CastingDirectorSummaryDto(Guid Id, string FirstName, string LastName, string? Gender);
+public record CastingDirectorSummaryDto(Guid Id, string FirstName, string LastName, string? Gender, string? Origin);
 
 public record CastingDirectorDto(
     Guid Id,
@@ -12,11 +12,13 @@ public record CastingDirectorDto(
     string LastName,
     DateOnly? DateOfBirth,
     int? Age,
-    string? Gender);
+    string? Gender,
+    string? Origin);
 
 public record UpdateCastingDirectorRequest(
     DateOnly? DateOfBirth,
-    [StringLength(20)] string? Gender) : IValidatableObject
+    [StringLength(20)] string? Gender,
+    [StringLength(100)] string? Origin) : IValidatableObject
 {
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext) =>
         DateOfBirthRule.Validate(DateOfBirth);
@@ -25,9 +27,9 @@ public record UpdateCastingDirectorRequest(
 internal static class CastingDirectorMappings
 {
     public static CastingDirectorSummaryDto ToSummaryDto(this CastingDirector c) => new(
-        c.ParticipantId, c.Participant.FirstName, c.Participant.LastName, c.Gender);
+        c.ParticipantId, c.Participant.FirstName, c.Participant.LastName, c.Gender, c.Origin);
 
     public static CastingDirectorDto ToDto(this CastingDirector c, DateOnly today, bool includePrivate = false) => new(
         c.ParticipantId, c.Participant.FirstName, c.Participant.LastName,
-        includePrivate ? c.DateOfBirth : null, AgeCalculator.AgeOn(c.DateOfBirth, today), c.Gender);
+        includePrivate ? c.DateOfBirth : null, AgeCalculator.AgeOn(c.DateOfBirth, today), c.Gender, c.Origin);
 }

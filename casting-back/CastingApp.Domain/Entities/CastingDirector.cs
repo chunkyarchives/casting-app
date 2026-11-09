@@ -7,6 +7,7 @@ public class CastingDirector
 
     public DateOnly? DateOfBirth { get; set; }
     public string? Gender { get; set; }
+    public string? Origin { get; set; }
 
     public ICollection<CrewMembership> Memberships { get; set; } = [];
     public ICollection<RoleApplication> ProposedApplications { get; set; } = [];

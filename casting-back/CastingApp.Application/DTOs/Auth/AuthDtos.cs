@@ -28,8 +28,16 @@ public record UpdateNameRequest([Required, StringLength(100)] string FirstName,[
 // ProfileComplete: false dok korisnik ne popuni obavezne podatke.
 // Origin: kod zemlje porekla ("RS") za glumca i režisera; null dok ga ne izaberu, i za ostale uloge
 public record MeDto(
-    Guid Id, string Email, string FirstName, string LastName, ParticipantRole Role, bool ProfileComplete,
-    string? ProfilePictureUrl = null, string? Origin = null);
+    Guid Id,
+    string Email,
+    string FirstName,
+    string LastName,
+    ParticipantRole Role,
+    bool ProfileComplete,
+    string? ProfilePictureUrl = null, 
+    string? Origin = null,
+    bool IsProfilePublic = false
+);
 // Token ne ide klijentu u telu odgovora: kontroler ga stavlja u cookie
 public record AuthResult(MeDto Me, string Token, DateTime ExpiresAt);
 
@@ -39,5 +47,5 @@ internal static class AuthMappings
         p.Id, p.Email ?? string.Empty, p.FirstName, p.LastName, p.Role,
         p.Role == ParticipantRole.Admin || p.ProfileCompletedAt is not null,
         MediaUrls.ProfilePicture(p.Id, p.ProfilePictureId),
-        p.Actor?.Origin ?? p.Director?.Origin);
+        p.Actor?.Origin ?? p.Director?.Origin ?? p.CastingDirector?.Origin,p.IsProfilePublic);
 }

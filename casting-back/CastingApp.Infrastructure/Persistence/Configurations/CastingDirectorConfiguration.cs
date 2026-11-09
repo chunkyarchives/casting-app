@@ -14,5 +14,6 @@ public class CastingDirectorConfiguration : IEntityTypeConfiguration<CastingDire
             .HasForeignKey<CastingDirector>(c => c.ParticipantId).OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(c => c.Gender).HasMaxLength(20);
+        builder.Property(c => c.Origin).HasMaxLength(100);
     }
 }

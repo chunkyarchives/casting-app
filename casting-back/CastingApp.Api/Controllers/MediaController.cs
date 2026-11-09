@@ -37,6 +37,16 @@ public class MediaController(IMediaService media) : ControllerBase
     public async Task<IActionResult> GetProfilePicture(Guid id, CancellationToken ct)
         => ToFile(await media.GetProfilePictureAsync(id, ct));
 
+    [HttpGet("public/people/{id:guid}/picture")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetPublicProfilePicture(Guid id, CancellationToken ct)
+        => ToFile(await media.GetPublicProfilePictureAsync(id, ct));
+
+    [HttpGet("public/films/{id:guid}/poster")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetPublicPoster(Guid id, CancellationToken ct)
+        => ToFile(await media.GetPublicPosterAsync(id, ct));
+
     [HttpPost("me/photos")]
     [Authorize(Roles = AppRoles.Actor)]
     [EnableRateLimiting(RateLimitPolicies.Upload)]

@@ -5,6 +5,7 @@ using CastingApp.Domain.Entities;
 using CastingApp.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using CastingApp.Application.Services.Profiles;
+using CastingApp.Application.Services.Public;
 
 namespace CastingApp.Application.Services.Media;
 
@@ -82,6 +83,39 @@ public class MediaService(
             ?? throw new NotFoundException("Profile picture", participantId);
 
         EnsureCanViewProfilePicture(participantId, meta.OwnerRole!.Value);
+
+        return await OpenAsync(meta, ct);
+    }
+
+        public async Task<MediaFile> GetPublicProfilePictureAsync(Guid participantId, CancellationToken ct)
+    {
+        var visible = await db.Users.AsNoTracking()
+            .Where(u => u.Id == participantId)
+            .AnyAsync(PublicVisibility.IsPublicProfile(DateTime.UtcNow), ct);
+
+        if (!visible)
+            throw new NotFoundException("Profile picture", participantId);
+
+        var meta = await ProfilePictureMetaAsync(participantId, ct)
+            ?? throw new NotFoundException("Profile picture", participantId);
+
+        return await OpenAsync(meta, ct);
+    }
+
+    public async Task<MediaFile> GetPublicPosterAsync(Guid filmId, CancellationToken ct)
+    {
+        var posterId = await db.Films.AsNoTracking()
+            .Where(f => f.Id == filmId)
+            .Where(PublicVisibility.IsPublicFilm(DateTime.UtcNow))
+            .Select(f => f.PosterId)
+            .FirstOrDefaultAsync(ct);
+
+        if (posterId is not { } id)
+            throw new NotFoundException("Poster", filmId);
+
+        var meta = await cache.GetAsync(id, ct)
+            ?? await LoadMetaAsync(id, ct)
+            ?? throw new NotFoundException("Poster", filmId);
 
         return await OpenAsync(meta, ct);
     }

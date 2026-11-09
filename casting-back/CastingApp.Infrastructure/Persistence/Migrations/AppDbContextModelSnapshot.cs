@@ -148,6 +148,11 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("gender");
 
+                    b.Property<string>("Origin")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("origin");
+
                     b.HasKey("ParticipantId")
                         .HasName("pk_casting_director");
 
@@ -549,6 +554,10 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<DateTime?>("DeactivatedUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deactivated_until");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)")
@@ -563,6 +572,10 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("first_name");
+
+                    b.Property<bool>("IsProfilePublic")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_profile_public");
 
                     b.Property<string>("LastName")
                         .IsRequired()

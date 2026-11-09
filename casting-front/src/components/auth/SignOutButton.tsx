@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useSignOut } from './hooks/useSignOut'
 
-const sidebarColors = 'border-sidebar-border bg-transparent text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground dark:bg-transparent dark:hover:bg-sidebar-accent'
-
+const sidebarColors =
+  'border-sidebar-border bg-transparent text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground dark:bg-transparent dark:hover:bg-sidebar-accent'
 type Props = {
   compact?: boolean
 }

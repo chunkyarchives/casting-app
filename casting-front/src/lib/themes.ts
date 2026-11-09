@@ -19,7 +19,30 @@ const defaultDark: SiteTheme = {
   className: 'dark',
 }
 
-export const siteThemes = [newDarkCinema, defaultDark]
+const classic: SiteTheme = {
+  id: 'classic',
+  name: 'Classic',
+  description: 'The classic Actdition theme: white panels with black lines on a light gray background.',
+  className: 'classic',
+}
+
+const performative: SiteTheme = {
+  id: 'performative',
+  name: 'Performative',
+  description: 'The slate blue night of Letterboxd, with its green for actions and orange for highlights.',
+  className: 'dark performative',
+}
+
+const wizz: SiteTheme = {
+  id: 'wizz',
+  name: 'Wizz',
+  description: 'Wizz Air purple and magenta on a light page. One small bag included.',
+  className: 'wizz',
+}
+
+export const siteThemes = [newDarkCinema, defaultDark, classic, performative, wizz].sort((a, b) =>
+  a.name.localeCompare(b.name),
+)
 
 export const defaultSiteTheme = newDarkCinema
 

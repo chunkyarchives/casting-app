@@ -71,6 +71,13 @@ public class AuthService(
         }
 
         await users.ResetAccessFailedCountAsync(user);
+
+        if (user.DeactivatedUntil is not null)
+        {
+            user.DeactivatedUntil = null;
+            await users.UpdateAsync(user);
+        }
+
         return CreateResult(await WithRoleProfileAsync(user.Id) ?? user);
     }
 
@@ -105,6 +112,7 @@ public class AuthService(
         users.Users
             .Include(u => u.Actor)
             .Include(u => u.Director)
+            .Include(u => u.CastingDirector)
             .FirstOrDefaultAsync(u => u.Id == id);
 
     private static UnauthorizedException InvalidCredentials() => new("Invalid email or password.");

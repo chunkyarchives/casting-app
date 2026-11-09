@@ -11,7 +11,9 @@ public class DirectorService(IAppDbContext db, ICurrentUser currentUser, IProfil
 {
     public async Task<PagedResult<DirectorSummaryDto>> ListAsync(string? search, int page, int pageSize, CancellationToken ct)
     {
-        var query = db.Directors.AsNoTracking();
+        var now = DateTime.UtcNow;
+        var query = db.Directors.AsNoTracking().Where(d => d.Participant.DeactivatedUntil == null || d.Participant.DeactivatedUntil <= now);
+        
         if (!string.IsNullOrWhiteSpace(search))
         {
             var term = search.Trim().ToLower();

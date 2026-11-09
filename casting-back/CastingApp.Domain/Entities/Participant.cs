@@ -11,6 +11,8 @@ public class Participant : IdentityUser<Guid>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? ProfileCompletedAt { get; set; }
     public Guid? ProfilePictureId { get; set; }
+    public bool IsProfilePublic { get; set; }
+    public DateTime? DeactivatedUntil { get; set; }
     public Actor? Actor { get; set; }
     public Director? Director { get; set; }
     public CastingDirector? CastingDirector { get; set; }

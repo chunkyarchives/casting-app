@@ -11,7 +11,9 @@ public class CastingDirectorService(IAppDbContext db, ICurrentUser currentUser, 
 {
     public async Task<PagedResult<CastingDirectorSummaryDto>> ListAsync(string? search, int page, int pageSize, CancellationToken ct)
     {
-        var query = db.CastingDirectors.AsNoTracking();
+        var now = DateTime.UtcNow;
+        var query = db.CastingDirectors.AsNoTracking().Where(c => c.Participant.DeactivatedUntil == null || c.Participant.DeactivatedUntil <= now);
+        
         if (!string.IsNullOrWhiteSpace(search))
         {
             var term = search.Trim().ToLower();
@@ -52,6 +54,7 @@ public class CastingDirectorService(IAppDbContext db, ICurrentUser currentUser, 
 
         castingDirector.DateOfBirth = request.DateOfBirth;
         castingDirector.Gender = request.Gender;
+        castingDirector.Origin = request.Origin;
 
         await db.SaveChangesAsync(ct);
         await profileCompletion.RefreshAsync(id, ct);
