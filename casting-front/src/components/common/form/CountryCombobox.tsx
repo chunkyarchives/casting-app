@@ -11,6 +11,8 @@ import {
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/input-group'
 import { countries, findCountry, type Country } from '@/lib/countries'
 import { cn } from '@/lib/utils'
+import { useEffect } from 'react'
+import { warmFlagCache } from '@/lib/flags'
 
 type Props = {
   label: string
@@ -21,6 +23,8 @@ type Props = {
 }
 
 export function CountryCombobox({ label, value, onChange, invalid = false, align = 'start' }: Props) {
+  useEffect(warmFlagCache, [])
+  
   return (
     <Combobox
       items={countries}
@@ -45,7 +49,7 @@ export function CountryCombobox({ label, value, onChange, invalid = false, align
         />
         {value && (
           <InputGroupAddon align="inline-end">
-            <CountryFlag code={value} className="h-4" />
+            <CountryFlag code={value} decorative className="h-4" />
           </InputGroupAddon>
         )}
       </InputGroup>
@@ -54,7 +58,7 @@ export function CountryCombobox({ label, value, onChange, invalid = false, align
         <ComboboxList>
           {(country: Country) => (
             <ComboboxItem key={country.code} value={country}>
-              <CountryFlag code={country.code} className="h-3.5" />
+              <CountryFlag code={country.code} decorative className="h-3.5" />
               {country.name}
             </ComboboxItem>
           )}

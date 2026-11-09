@@ -15,7 +15,7 @@ export function SettingsFooter({ hint, defaultHint, dirty, saving, formId, onDis
     <div
       data-slot="settings-footer"
       className={cn(
-        'sticky bottom-0 z-10 -mx-6 mt-auto flex min-h-16 items-center gap-4 border-t bg-background/90 px-6 py-3 backdrop-blur sm:px-10',
+        'sticky bottom-0 z-10 -mx-6 mt-auto flex min-h-16 items-center gap-4 border-t bg-background/90 px-6 py-3 sm:px-10',
         !dirty && 'max-sm:hidden',
       )}
     >

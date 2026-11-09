@@ -70,7 +70,7 @@ export function ProfileCard({ participantId, pictureUrl, name, email, origin, bi
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t bg-muted/40 px-6 py-3 text-sm">
         {origin !== undefined && (
           <span className="flex items-center gap-2">
-            <CountryFlag code={origin} className="h-3.5" />
+            <CountryFlag code={origin} decorative className="h-3.5" />
             {origin ? countryName(origin) : 'No origin yet'}
           </span>
         )}
