@@ -16,19 +16,17 @@ export function PersonCard({ person }: { person: PublicPerson }) {
         <p className="text-xs text-muted-foreground">{roleLabels[person.role]}</p>
       </div>
 
-      {(person.origin || person.age !== null) && (
-        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-          {person.origin && (
-            <span className="flex items-center gap-1.5">
-              <CountryFlag code={person.origin} decorative className="h-3" />
-              {countryName(person.origin)}
-            </span>
-          )}
-          {person.age !== null && <span>{person.age} years</span>}
-        </div>
-      )}
+      <div className="flex min-h-5 flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+        {person.origin && (
+          <span className="flex items-center gap-1.5">
+            <CountryFlag code={person.origin} decorative className="h-3" />
+            {countryName(person.origin)}
+          </span>
+        )}
+        {person.age !== null && <span>{person.age} years</span>}
+      </div>
 
-      {person.bio && <p className="line-clamp-3 text-sm">{person.bio}</p>}
+      <p className="line-clamp-2 h-10 w-full text-sm">{person.bio}</p>
     </article>
   )
 }
