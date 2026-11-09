@@ -4,6 +4,7 @@ import { useSession } from '@/components/auth/session/session-context'
 import { useRootTheme } from '@/hooks/useRootTheme'
 import { useSiteTheme } from '@/hooks/useSiteTheme'
 import { rememberBootTheme } from '@/lib/theme-preference'
+import { Toaster } from '@/components/ui/toast'
 
 export default function ThemeLayout() {
   const { status } = useSession()
@@ -16,5 +17,10 @@ export default function ThemeLayout() {
     if (className !== null) rememberBootTheme(className)
   }, [className])
 
-  return <Outlet />
+  return (
+    <>
+      <Outlet />
+      <Toaster />
+    </>
+  )
 }

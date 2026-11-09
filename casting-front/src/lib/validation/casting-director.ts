@@ -1,6 +1,9 @@
 import * as z from 'zod'
-import { personFields } from './profile'
+import { originField, personFields } from './profile'
 
-export const castingDirectorProfileSchema = z.object(personFields)
+export const castingDirectorProfileSchema = z.object({
+  ...personFields,
+  origin: originField,
+})
 
 export type CastingDirectorProfileValues = z.infer<typeof castingDirectorProfileSchema>

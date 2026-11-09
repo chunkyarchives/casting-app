@@ -13,7 +13,11 @@ import { adminPages } from '@/pages/admin/admin-pages'
 import { castingDirectorPages, preloadCastingDirectorPages } from '@/pages/casting-director/casting-director-pages'
 import { dashboardPages } from '@/pages/dashboard/dashboard-pages'
 import { directorPages, preloadDirectorPages } from '@/pages/director/director-pages'
+import { publicPages } from '@/pages/public/public-pages'
 
+const Movies = lazy(publicPages.movies)
+const PopularRoles = lazy(publicPages.roles)
+const Network = lazy(publicPages.network)
 const AdminLayout = lazy(() => import('@/layouts/AdminLayout'))
 const Statistics = lazy(adminPages.statistics)
 const Accounts = lazy(adminPages.accounts)
@@ -25,6 +29,7 @@ const Welcome = lazy(dashboardPages.welcome)
 const Chat = lazy(dashboardPages.chat)
 const AccountSettings = lazy(dashboardPages.accountSettings)
 const ThemeSettings = lazy(dashboardPages.themeSettings)
+const PrivacySettings = lazy(dashboardPages.privacySettings)
 
 const ActorPortfolio = lazy(actorPages.portfolio)
 const ActorRoles = lazy(actorPages.roles)
@@ -44,6 +49,9 @@ export default function App() {
         <Route element={<ThemeLayout />}>
           <Route element={<PublicLayout />}>
             <Route index element={<Landing />} />
+            <Route path={paths.movies} element={<Movies />} />
+            <Route path={paths.roles} element={<PopularRoles />} />
+            <Route path={paths.network} element={<Network />} />
           </Route>
 
           <Route element={<RequireRole role="Actor" />}>
@@ -58,6 +66,7 @@ export default function App() {
                 <Route index element={<Navigate to="account" replace />} />
                 <Route path="account" element={<AccountSettings role="Actor" />} />
                 <Route path="theme" element={<ThemeSettings />} />
+                <Route path="privacy" element={<PrivacySettings />} />
               </Route>
             </Route>
           </Route>
@@ -75,6 +84,7 @@ export default function App() {
                 <Route index element={<Navigate to="account" replace />} />
                 <Route path="account" element={<AccountSettings role="Director" />} />
                 <Route path="theme" element={<ThemeSettings />} />
+                <Route path="privacy" element={<PrivacySettings />} />
               </Route>
             </Route>
           </Route>
@@ -94,6 +104,7 @@ export default function App() {
                 <Route index element={<Navigate to="account" replace />} />
                 <Route path="account" element={<AccountSettings role="CastingDirector" />} />
                 <Route path="theme" element={<ThemeSettings />} />
+                <Route path="privacy" element={<PrivacySettings />} />
               </Route>
             </Route>
           </Route>

@@ -13,6 +13,7 @@ export type CurrentParticipant = {
   profileComplete: boolean
   profilePictureUrl: string | null
   origin: string | null
+  isProfilePublic: boolean
 }
 
 export type SignInRequest = {

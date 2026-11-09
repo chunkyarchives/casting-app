@@ -11,6 +11,7 @@ import { useProfileForm } from '../form/useProfileForm'
 import { castingDirectorChecklist, castingDirectorFacts } from '../profile-summary'
 import { DateOfBirthRow } from '../rows/DateOfBirthRow'
 import { GenderRow } from '../rows/GenderRow'
+import { OriginRow } from '../rows/OriginRow'
 import { NameRow } from '../rows/NameRow'
 import { ProfilePictureRow } from '../rows/ProfilePictureRow'
 import { toCastingDirectorProfileValues, toUpdateCastingDirectorRequest } from './casting-director-form'
@@ -42,6 +43,7 @@ export function CastingDirectorProfileForm({ participant, castingDirector, onSav
           pictureUrl={participant.profilePictureUrl}
           name={`${participant.firstName} ${participant.lastName}`}
           email={participant.email}
+          origin={saved.origin}
           facts={castingDirectorFacts(saved)}
           checklist={castingDirectorChecklist(saved)}
         />
@@ -57,6 +59,7 @@ export function CastingDirectorProfileForm({ participant, castingDirector, onSav
       <SettingsGroup title="Details">
         <DateOfBirthRow />
         <GenderRow />
+        <OriginRow required={false} />
       </SettingsGroup>
     </ProfileForm>
   )

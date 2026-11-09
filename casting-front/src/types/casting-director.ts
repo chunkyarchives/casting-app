@@ -5,6 +5,7 @@ export type CastingDirector = {
   dateOfBirth: string | null
   age: number | null
   gender: string | null
+  origin: string | null
 }
 
-export type UpdateCastingDirectorRequest = Pick<CastingDirector, 'dateOfBirth' | 'gender'>
+export type UpdateCastingDirectorRequest = Pick<CastingDirector, 'dateOfBirth' | 'gender' | 'origin'>

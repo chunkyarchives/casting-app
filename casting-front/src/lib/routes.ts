@@ -9,7 +9,10 @@ export const paths = {
   adminStatistics: '/admin/statistics',
   adminAccounts: '/admin/accounts',
   adminProductions: '/admin/productions',
-  adminAuditLogs: '/admin/audit-logs'
+  adminAuditLogs: '/admin/audit-logs',
+  movies: '/movies',
+  roles: '/roles',
+  network: '/network',
 } as const
 
 const roleHomePaths: Record<ParticipantRole, string> = {

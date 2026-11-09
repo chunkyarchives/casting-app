@@ -8,6 +8,7 @@ import {
   UserCircleIcon,
   UserGroupIcon,
   UserSquareIcon,
+  SecurityLockIcon,
 } from '@hugeicons/core-free-icons'
 import type { IconSvgElement } from '@hugeicons/react'
 
@@ -39,4 +40,5 @@ export const castingDirectorNav: DashboardNavItem[] = [
 export const settingsNav: DashboardNavItem[] = [
   { page: 'settings/account', label: 'Account', icon: UserCircleIcon },
   { page: 'settings/theme', label: 'Theme', icon: PaintBoardIcon },
+  { page: 'settings/privacy', label: 'Privacy', icon: SecurityLockIcon },
 ]
