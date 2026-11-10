@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CastingApp.Application.Services.Crews;
 
-public class CrewService(IAppDbContext db, ICurrentUser currentUser) : ICrewService
+public class CrewService(IAppDbContext db, ICurrentUser currentUser, ICrewNotifier notifier) : ICrewService
 {
     public async Task<IReadOnlyList<CrewSummaryDto>> ListAsync(Guid? directorId, CancellationToken ct)
     {
@@ -141,7 +141,13 @@ public class CrewService(IAppDbContext db, ICurrentUser currentUser) : ICrewServ
             throw new ConflictException("The casting director is already a member of this crew.");
         }
 
-        return await GetAsync(crew.Id, ct);
+                var joined = await GetAsync(crew.Id, ct);
+        var member = joined.Members.First(m => m.CastingDirectorId == castingDirectorId);
+
+        await SendAsync(new CrewMemberChangeDto(joined.Id, joined.ProductionName, CrewMemberChange.Joined, castingDirectorId, member.FirstName, member.LastName),
+            [joined.DirectorId, .. joined.Members.Select(m => m.CastingDirectorId)],ct);
+
+        return joined;
     }
 
     public async Task RemoveMemberAsync(Guid crewId, Guid castingDirectorId, CancellationToken ct)
@@ -156,8 +162,30 @@ public class CrewService(IAppDbContext db, ICurrentUser currentUser) : ICrewServ
             .FirstOrDefaultAsync(m => m.CrewId == crewId && m.CastingDirectorId == castingDirectorId, ct)
             ?? throw new NotFoundException("Crew member", castingDirectorId);
 
+                var change = currentUser.Id == castingDirectorId ? CrewMemberChange.Left : CrewMemberChange.Removed;
+        var member = await db.Users.AsNoTracking()
+            .Where(p => p.Id == castingDirectorId)
+            .Select(p => new { p.FirstName, p.LastName })
+            .FirstAsync(ct);
+
         db.CrewMemberships.Remove(membership);
         await db.SaveChangesAsync(ct);
+
+        var members = await db.CrewMemberships.AsNoTracking()
+            .Where(m => m.CrewId == crewId)
+            .Select(m => m.CastingDirectorId)
+            .ToListAsync(ct);
+
+        HashSet<Guid> recipients = [crew.DirectorId, .. members];
+        if (change == CrewMemberChange.Removed) recipients.Add(castingDirectorId);
+
+        await SendAsync(new CrewMemberChangeDto(crewId, crew.ProductionName, change, castingDirectorId, member.FirstName, member.LastName), recipients, ct);
+    }
+
+    private Task SendAsync(CrewMemberChangeDto change, HashSet<Guid> recipients, CancellationToken ct)
+    {
+        recipients.Remove(currentUser.Id);
+        return recipients.Count == 0 ? Task.CompletedTask : notifier.MemberChangedAsync(change, recipients, ct);
     }
 
     private static IQueryable<Crew> WithDetails(IQueryable<Crew> query) => query

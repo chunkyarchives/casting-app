@@ -23,6 +23,19 @@ public class FilmService(IAppDbContext db, ICurrentUser currentUser, IMediaStora
             .ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyList<FilmSummaryDto>> ListMineAsync(CancellationToken ct)
+    {
+        var directorId = currentUser.Id;
+
+        return await db.Films.AsNoTracking()
+            .Where(f => f.DirectorId == directorId)
+            .OrderBy(f => f.CreatedAt)
+            .Select(f => new FilmSummaryDto(
+                f.Id, f.DirectorId, f.Title, f.ContentRating, f.ReleaseYear, f.Status, f.CreatedAt, f.Roles.Count,
+                MediaUrls.Media(f.PosterId)))
+            .ToListAsync(ct);
+    }
+
     public async Task<FilmDto> GetAsync(Guid id, CancellationToken ct)
     {
         var film = await db.Films.AsNoTracking()

@@ -70,6 +70,7 @@ builder.Services.AddCastingRateLimiting();
 // Chat u realnom vremenu: korisnik se prepoznaje po "sub", a Redis povezuje više instanci API-ja
 builder.Services.AddSingleton<IUserIdProvider, SubUserIdProvider>();
 builder.Services.AddSingleton<IChatNotifier, SignalRChatNotifier>();
+builder.Services.AddSingleton<ICrewNotifier, SignalRCrewNotifier>();
 builder.Services.AddSignalR()
     .AddStackExchangeRedis(builder.Configuration.GetConnectionString("Redis")!);
 

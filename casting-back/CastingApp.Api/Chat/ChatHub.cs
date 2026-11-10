@@ -9,9 +9,10 @@ namespace CastingApp.Api.Chat;
 public static class ChatEvents
 {
     public const string MessageReceived = "MessageReceived";
+    public const string CrewMemberChanged = "CrewMemberChanged";
 }
 
-[Authorize(Roles = AppRoles.ActorOrDirector)]
+[Authorize(Roles = AppRoles.ActorDirectorOrCastingDirector)]
 public class ChatHub(IMessageService messages) : Hub
 {
     // Isti servis kao REST endpoint, pa ista pravila: učesnik razgovora, nije zaključan, profil kompletan, ograničenje po minutu

@@ -9,7 +9,6 @@ public record CrewMemberDto(Guid CastingDirectorId, string FirstName, string Las
 
 public record CrewDirectorDto(Guid Id, string FirstName, string LastName);
 
-// ProductionCode vide samo reditelj ekipe, njeni članovi i admin; za sve ostale je null
 public record CrewDto(
     Guid Id,
     Guid DirectorId,
@@ -18,6 +17,16 @@ public record CrewDto(
     string? ProductionCode,
     DateTime CreatedAt,
     IReadOnlyList<CrewMemberDto> Members);
+
+public enum CrewMemberChange { Joined, Left, Removed }
+
+public record CrewMemberChangeDto(
+    Guid CrewId,
+    string ProductionName,
+    CrewMemberChange Change,
+    Guid CastingDirectorId,
+    string FirstName,
+    string LastName);
 
 public record CreateCrewRequest([StringLength(200)] string ProductionName);
 public record UpdateCrewRequest([StringLength(200)] string ProductionName);
