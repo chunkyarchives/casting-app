@@ -7,9 +7,11 @@ public record RoleApplicationDto(
     Guid FilmRoleId,
     string FilmRoleName,
     Guid FilmId,
+    string FilmTitle,
     Guid ActorId,
     string ActorName,
     Guid? ProposedById,        // null = glumac se prijavio sam; inače id castinг direktora
+    string? ProposedByName,
     ApplicationStatus Status,
     DateTime CreatedAt,
     DateTime? DecidedAt);

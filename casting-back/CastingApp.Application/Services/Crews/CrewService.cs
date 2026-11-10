@@ -22,10 +22,7 @@ public class CrewService(IAppDbContext db, ICurrentUser currentUser) : ICrewServ
 
     public async Task<CrewDto> GetAsync(Guid id, CancellationToken ct)
     {
-        var crew = await db.Crews.AsNoTracking()
-            .Include(c => c.Memberships)
-                .ThenInclude(m => m.CastingDirector)
-                    .ThenInclude(cd => cd.Participant)
+        var crew = await WithDetails(db.Crews.AsNoTracking())
             .FirstOrDefaultAsync(c => c.Id == id, ct)
             ?? throw new NotFoundException(nameof(Crew), id);
 
@@ -35,6 +32,19 @@ public class CrewService(IAppDbContext db, ICurrentUser currentUser) : ICrewServ
             || crew.Memberships.Any(m => m.CastingDirectorId == currentUser.Id);
 
         return crew.ToDto(includeCode);
+    }
+
+    public async Task<IReadOnlyList<CrewDto>> ListMineAsync(CancellationToken ct)
+    {
+        var me = currentUser.Id;
+        var crews = await WithDetails(db.Crews.AsNoTracking())
+            .Where(c => c.DirectorId == me || c.Memberships.Any(m => m.CastingDirectorId == me))
+            .ToListAsync(ct);
+
+        return crews
+            .OrderByDescending(c => c.Memberships.FirstOrDefault(m => m.CastingDirectorId == me)?.JoinedAt ?? c.CreatedAt)
+            .Select(c => c.ToDto(includeCode: true))
+            .ToList();
     }
 
     public async Task<CrewDto> CreateAsync(CreateCrewRequest request, CancellationToken ct)
@@ -149,4 +159,8 @@ public class CrewService(IAppDbContext db, ICurrentUser currentUser) : ICrewServ
         db.CrewMemberships.Remove(membership);
         await db.SaveChangesAsync(ct);
     }
+
+    private static IQueryable<Crew> WithDetails(IQueryable<Crew> query) => query
+        .Include(c => c.Director).ThenInclude(d => d.Participant)
+        .Include(c => c.Memberships).ThenInclude(m => m.CastingDirector).ThenInclude(cd => cd.Participant);
 }

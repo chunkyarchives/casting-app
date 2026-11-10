@@ -18,4 +18,5 @@ public static class AppRoles
     public const string ActorDirectorOrAdmin = Actor + "," + Director + "," + Admin;
     public const string ActorCastingDirectorOrAdmin = Actor + "," + CastingDirector + "," + Admin;
     public const string DirectorCastingDirectorOrAdmin = Director + "," + CastingDirector + "," + Admin;
+    public const string DirectorOrCastingDirector = Director + "," + CastingDirector;
 }

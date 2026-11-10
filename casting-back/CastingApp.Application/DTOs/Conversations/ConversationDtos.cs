@@ -14,8 +14,10 @@ public record ConversationDto(
     Guid DirectorId,
     string DirectorName,
     DateTime CreatedAt,
-    LastMessageDto? LastMessage);
+    LastMessageDto? LastMessage,
+    int UnreadCount = 0);
 
+public record UnreadCountDto(int Count);
 public record MessageHistoryDto(IReadOnlyList<MessageDto> Items, bool HasMore, DateTime? NextBefore);
 
 public record StartConversationRequest(Guid ActorId);
@@ -31,7 +33,7 @@ internal static class ConversationMappings
     public static MessageDto ToDto(this Message m) =>
         new(m.Id, m.ConversationId, m.SenderId, m.Content, m.SentAt);
 
-    public static ConversationDto ToDto(this Conversation c)
+    public static ConversationDto ToDto(this Conversation c, int unreadCount = 0)
     {
         var last = c.Messages.FirstOrDefault();
 
@@ -40,7 +42,7 @@ internal static class ConversationMappings
             c.ActorId, FullName(c.Actor.Participant),
             c.DirectorId, FullName(c.Director.Participant),
             c.CreatedAt,
-            last is null ? null : new LastMessageDto(last.SenderId, Preview(last.Content), last.SentAt));
+            last is null ? null : new LastMessageDto(last.SenderId, Preview(last.Content), last.SentAt), unreadCount);
     }
 
     private static string FullName(Participant p) => $"{p.FirstName} {p.LastName}";

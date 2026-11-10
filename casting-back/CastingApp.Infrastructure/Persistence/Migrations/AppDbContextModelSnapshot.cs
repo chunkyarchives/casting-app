@@ -170,6 +170,10 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("actor_id");
 
+                    b.Property<DateTime?>("ActorReadAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("actor_read_at");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -177,6 +181,10 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("DirectorId")
                         .HasColumnType("uuid")
                         .HasColumnName("director_id");
+
+                    b.Property<DateTime?>("DirectorReadAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("director_read_at");
 
                     b.HasKey("Id")
                         .HasName("pk_conversation");

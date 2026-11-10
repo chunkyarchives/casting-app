@@ -24,6 +24,11 @@ public class ConversationsController(IConversationService conversations, IMessag
         CancellationToken ct = default)
         => Ok(await conversations.ListAsync(actorId, directorId, page, pageSize, ct));
 
+    [HttpGet("unread-count")]
+    [Authorize(Roles = AppRoles.ActorOrDirector)]
+    public async Task<ActionResult<UnreadCountDto>> UnreadCount(CancellationToken ct)
+        => Ok(await conversations.UnreadCountAsync(ct));
+
     [HttpGet("{id:guid}")]
     [Authorize(Roles = AppRoles.ActorDirectorOrAdmin)]
     public async Task<ActionResult<ConversationDto>> Get(Guid id, CancellationToken ct)
@@ -37,6 +42,14 @@ public class ConversationsController(IConversationService conversations, IMessag
         return result.Created
             ? CreatedAtAction(nameof(Get), new { id = result.Conversation.Id }, result.Conversation)
             : Ok(result.Conversation);
+    }
+
+    [HttpPost("{id:guid}/read")]
+    [Authorize(Roles = AppRoles.ActorOrDirector)]
+    public async Task<IActionResult> MarkRead(Guid id, CancellationToken ct)
+    {
+        await conversations.MarkReadAsync(id, ct);
+        return NoContent();
     }
 
     [HttpDelete("{id:guid}")]

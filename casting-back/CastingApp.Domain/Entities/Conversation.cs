@@ -8,6 +8,8 @@ public class Conversation
     public Guid DirectorId { get; set; }
     public Director Director { get; set; } = null!;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? ActorReadAt { get; set; }
+    public DateTime? DirectorReadAt { get; set; }
 
     public ICollection<Message> Messages { get; set; } = [];
 }

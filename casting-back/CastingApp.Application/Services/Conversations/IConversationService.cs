@@ -5,9 +5,10 @@ namespace CastingApp.Application.Services.Conversations;
 
 public interface IConversationService
 {
-    Task<PagedResult<ConversationDto>> ListAsync(
-        Guid? actorId, Guid? directorId, int page, int pageSize, CancellationToken ct);
+    Task<PagedResult<ConversationDto>> ListAsync(Guid? actorId, Guid? directorId, int page, int pageSize, CancellationToken ct);
     Task<ConversationDto> GetAsync(Guid id, CancellationToken ct);
     Task<StartConversationResult> StartAsync(StartConversationRequest request, CancellationToken ct);
     Task DeleteAsync(Guid id, CancellationToken ct);
+    Task MarkReadAsync(Guid id, CancellationToken ct);
+    Task<UnreadCountDto> UnreadCountAsync(CancellationToken ct);
 }

@@ -32,8 +32,15 @@ public class ConversationService(IAppDbContext db, ICurrentUser currentUser) : I
             .Take(pageSize)
             .ToListAsync(ct);
 
+        var ids = conversations.Select(c => c.Id).ToList();
+        var unread = await UnreadFor(currentUser.Id)
+            .Where(m => ids.Contains(m.ConversationId))
+            .GroupBy(m => m.ConversationId)
+            .Select(g => new { ConversationId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.ConversationId, x => x.Count, ct);
+
         return new PagedResult<ConversationDto>(
-            conversations.Select(c => c.ToDto()).ToList(), page, pageSize, total);
+            conversations.Select(c => c.ToDto(unread.GetValueOrDefault(c.Id))).ToList(), page, pageSize, total);
     }
 
     public async Task<ConversationDto> GetAsync(Guid id, CancellationToken ct)
@@ -45,7 +52,8 @@ public class ConversationService(IAppDbContext db, ICurrentUser currentUser) : I
         if (!currentUser.IsAdmin() && currentUser.Id != conversation.ActorId && currentUser.Id != conversation.DirectorId)
             throw new ForbiddenException("You are not a participant of this conversation.");
 
-        return conversation.ToDto();
+        var unread = await UnreadFor(currentUser.Id).CountAsync(m => m.ConversationId == id, ct);
+        return conversation.ToDto(unread);
     }
 
     public async Task<StartConversationResult> StartAsync(StartConversationRequest request, CancellationToken ct)
@@ -61,6 +69,10 @@ public class ConversationService(IAppDbContext db, ICurrentUser currentUser) : I
 
         if (await FindIdAsync(actorId, directorId, ct) is { } existingId)
             return new StartConversationResult(await GetAsync(existingId, ct), Created: false);
+
+        var applied = await db.RoleApplications.AnyAsync(a => a.ActorId == actorId && a.FilmRole.Film.DirectorId == directorId, ct);
+        if (!applied)
+            throw new ForbiddenException("You can message only actors who applied for a role in one of your films.");
 
         db.Conversations.Add(new Conversation
         {
@@ -92,6 +104,36 @@ public class ConversationService(IAppDbContext db, ICurrentUser currentUser) : I
         db.Conversations.Remove(conversation);   // poruke briše baza (ON DELETE CASCADE)
         await db.SaveChangesAsync(ct);
     }
+
+        public async Task MarkReadAsync(Guid id, CancellationToken ct)
+    {
+        var viewerId = currentUser.Id;
+        var conversation = await db.Conversations.FirstOrDefaultAsync(c => c.Id == id, ct)
+            ?? throw new NotFoundException(nameof(Conversation), id);
+
+        if (viewerId != conversation.ActorId && viewerId != conversation.DirectorId)
+            throw new ForbiddenException("You are not a participant of this conversation.");
+
+        var readAt = await db.Messages
+            .Where(m => m.ConversationId == id)
+            .MaxAsync(m => (DateTime?)m.SentAt, ct) ?? DateTime.UtcNow;
+
+        if (viewerId == conversation.ActorId)
+            conversation.ActorReadAt = readAt;
+        else
+            conversation.DirectorReadAt = readAt;
+
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task<UnreadCountDto> UnreadCountAsync(CancellationToken ct) => new(await UnreadFor(currentUser.Id).CountAsync(ct));
+
+    private IQueryable<Message> UnreadFor(Guid viewerId) => db.Messages.AsNoTracking().Where(m =>
+        m.SenderId != viewerId &&
+            (m.Conversation.ActorId == viewerId
+            ? m.Conversation.ActorReadAt == null || m.SentAt > m.Conversation.ActorReadAt
+            : m.Conversation.DirectorId == viewerId
+            && (m.Conversation.DirectorReadAt == null || m.SentAt > m.Conversation.DirectorReadAt)));
 
     private Task<Guid?> FindIdAsync(Guid actorId, Guid directorId, CancellationToken ct) =>
         db.Conversations.AsNoTracking()

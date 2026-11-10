@@ -20,6 +20,11 @@ public class CrewsController(ICrewService crews) : ControllerBase
         [FromQuery] Guid? directorId, CancellationToken ct)
         => Ok(await crews.ListAsync(directorId, ct));
 
+    [HttpGet("mine")]
+    [Authorize(Roles = AppRoles.DirectorOrCastingDirector)]
+    public async Task<ActionResult<IReadOnlyList<CrewDto>>> ListMine(CancellationToken ct)
+        => Ok(await crews.ListMineAsync(ct));
+
     [HttpGet("{id:guid}")]
     [Authorize(Roles = AppRoles.DirectorCastingDirectorOrAdmin)]
     public async Task<ActionResult<CrewDto>> Get(Guid id, CancellationToken ct)
