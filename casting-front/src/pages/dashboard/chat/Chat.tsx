@@ -1,5 +1,8 @@
-import { DashboardPage } from '@/components/dashboard/DashboardPage'
+import { useCurrentParticipant } from '@/components/auth/hooks/useCurrentParticipant'
+import { ChatScreen } from '@/components/chat/ChatScreen'
 
 export default function Chat() {
-  return <DashboardPage title="Chat" description="" />
+  const participant = useCurrentParticipant()
+
+  return participant && <ChatScreen viewer={participant} />
 }

@@ -15,11 +15,14 @@ import {
   SidebarMenuItem,
   SidebarRail,
   useSidebar,
+  SidebarMenuBadge
 } from '@/components/ui/sidebar'
 import { rolePath } from '@/lib/routes'
 import type { DashboardNavItem } from './dashboard-nav'
 import { SettingsMenu } from './SettingsMenu'
 import { SidebarProfile } from './SidebarProfile'
+import { unreadLabel } from '@/components/chat/chat-format'
+import { useUnreadTotal } from '@/components/chat/useUnreadTotal'
 
 type Props = {
   items: DashboardNavItem[]
@@ -64,7 +67,7 @@ export function DashboardSidebar({ items }: Props) {
   )
 }
 
-function NavLink({ to, item: { label, icon } }: { to: string; item: DashboardNavItem }) {
+function NavLink({ to, item: { label, icon, showsUnread } }: { to: string; item: DashboardNavItem }) {
   const active = useMatch({ path: to, end: false }) !== null
 
   return (
@@ -73,7 +76,26 @@ function NavLink({ to, item: { label, icon } }: { to: string; item: DashboardNav
         <HugeiconsIcon icon={icon} strokeWidth={2} />
         <span>{label}</span>
       </SidebarMenuButton>
+      {showsUnread && <UnreadBadge />}
     </SidebarMenuItem>
+  )
+}
+
+function UnreadBadge() {
+  const count = useUnreadTotal()
+  if (count === 0) return null
+
+  return (
+    <>
+      <SidebarMenuBadge className="rounded-full bg-primary text-primary-foreground peer-hover/menu-button:text-primary-foreground peer-data-active/menu-button:text-primary-foreground">
+        {unreadLabel(count)}
+        <span className="sr-only"> unread messages</span>
+      </SidebarMenuBadge>
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute top-1 right-1 hidden size-2 rounded-full bg-primary group-data-[collapsible=icon]:block"
+      />
+    </>
   )
 }
 

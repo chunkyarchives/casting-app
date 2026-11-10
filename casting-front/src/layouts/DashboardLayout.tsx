@@ -4,6 +4,7 @@ import { PageLoader } from '@/components/common/states/PageLoader'
 import type { DashboardNavItem } from '@/components/dashboard/dashboard-nav'
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { ChatNotifier } from '@/components/chat/ChatNotifier'
 
 type Props = {
   items: DashboardNavItem[]
@@ -26,6 +27,7 @@ export default function DashboardLayout({ items, preload }: Props) {
           <Outlet />
         </Suspense>
       </SidebarInset>
+      <ChatNotifier />
     </SidebarProvider>
   )
 }

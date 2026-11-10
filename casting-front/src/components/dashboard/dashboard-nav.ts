@@ -16,19 +16,20 @@ export type DashboardNavItem = {
   page: string
   label: string
   icon: IconSvgElement
+  showsUnread?: boolean
 }
 
 export const actorNav: DashboardNavItem[] = [
   { page: 'portfolio', label: 'Portfolio', icon: UserSquareIcon },
   { page: 'roles', label: 'Roles', icon: MaskTheater01Icon },
-  { page: 'chat', label: 'Chat', icon: BubbleChatIcon },
+  { page: 'chat', label: 'Chat', icon: BubbleChatIcon, showsUnread: true },
 ]
 
 export const directorNav: DashboardNavItem[] = [
   { page: 'films', label: 'Films', icon: Film01Icon },
   { page: 'crew', label: 'Crew', icon: UserGroupIcon },
   { page: 'applications', label: 'Applications', icon: DocumentValidationIcon },
-  { page: 'chat', label: 'Chat', icon: BubbleChatIcon },
+  { page: 'chat', label: 'Chat', icon: BubbleChatIcon, showsUnread: true },
 ]
 
 export const castingDirectorNav: DashboardNavItem[] = [

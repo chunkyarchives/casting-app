@@ -76,7 +76,7 @@ async function send(path: string, method: HttpMethod, body: unknown): Promise<Re
 
 let refreshing: Promise<boolean> | null = null
 
-function refreshSession(): Promise<boolean> {
+export function refreshSession(): Promise<boolean> {
   refreshing ??= send('/api/auth/refresh', 'POST', undefined)
     .then((response) => response.ok)
     .catch(() => false)
