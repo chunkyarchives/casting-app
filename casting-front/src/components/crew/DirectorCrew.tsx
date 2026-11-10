@@ -3,9 +3,9 @@ import { useCurrentParticipant } from '@/components/auth/hooks/useCurrentPartici
 import { LoadError } from '@/components/common/states/LoadError'
 import { PageLoader } from '@/components/common/states/PageLoader'
 import { toast } from '@/components/ui/toast'
-import { CreateCrewForm } from './CreateCrewForm'
-import { CrewOverview } from './CrewOverview'
-import { useMyCrews } from './useMyCrews'
+import { CreateCrewForm } from './director/CreateCrewForm'
+import { CrewOverview } from './director/CrewOverview'
+import { useMyCrews } from './hooks/useMyCrews'
 
 export function DirectorCrew() {
   const participant = useCurrentParticipant()

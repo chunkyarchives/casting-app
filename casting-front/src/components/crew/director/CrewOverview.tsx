@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button'
 import { crewsApi } from '@/lib/api/crews'
 import { cn } from '@/lib/utils'
 import type { Crew } from '@/types/crew'
-import { ConfirmCrewDialog } from './ConfirmCrewDialog'
-import { CrewMembers } from './CrewMembers'
-import { ProductionCode } from './ProductionCode'
+import { ConfirmCrewDialog } from '../shared/ConfirmCrewDialog'
+import { CrewMembers } from '../shared/CrewMembers'
+import { ProductionCode } from '../shared/ProductionCode'
 
 type Props = {
   crew: Crew

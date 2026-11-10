@@ -9,7 +9,7 @@ import { prefersReducedMotion } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 import { createCrewSchema, type CreateCrewValues } from '@/lib/validation/crew'
 import type { Crew } from '@/types/crew'
-import { crewErrorMessage } from './crew-errors'
+import { crewErrorMessage } from '../shared/crew-errors'
 
 const leaveMs = 300
 

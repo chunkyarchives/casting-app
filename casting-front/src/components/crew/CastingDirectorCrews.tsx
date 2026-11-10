@@ -4,9 +4,9 @@ import { EmptyMessage } from '@/components/common/states/EmptyMessage'
 import { LoadError } from '@/components/common/states/LoadError'
 import { PageLoader } from '@/components/common/states/PageLoader'
 import { toast } from '@/components/ui/toast'
-import { CrewCard } from './CrewCard'
-import { JoinCrewForm } from './JoinCrewForm'
-import { useMyCrews } from './useMyCrews'
+import { CrewCard } from './casting-director/CrewCard'
+import { JoinCrewForm } from './casting-director/JoinCrewForm'
+import { useMyCrews } from './hooks/useMyCrews'
 
 export function CastingDirectorCrews() {
   const participant = useCurrentParticipant()

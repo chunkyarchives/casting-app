@@ -8,7 +8,7 @@ import { crewsApi } from '@/lib/api/crews'
 import { cn } from '@/lib/utils'
 import { joinCrewSchema, type JoinCrewValues } from '@/lib/validation/crew'
 import type { Crew } from '@/types/crew'
-import { joinErrorMessage } from './crew-errors'
+import { joinErrorMessage } from '../shared/crew-errors'
 
 type Props = {
   onJoined: (crew: Crew) => void
