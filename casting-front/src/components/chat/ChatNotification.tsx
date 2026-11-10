@@ -21,7 +21,7 @@ async function partnerName(conversationId: string, viewerId: string) {
     partnerNames.set(conversationId, name)
     return name
   } catch {
-    return 'New message'
+    return null
   }
 }
 
@@ -29,10 +29,10 @@ export default function ChatNotification({ viewer }: { viewer: CurrentParticipan
   const navigate = useNavigate()
   const chatPath = rolePath(viewer.role, 'chat')
 
-  const announce = async (message: ChatMessage) => {
-    const title = await partnerName(message.conversationId, viewer.id)
+    const announce = async (message: ChatMessage) => {
+    const name = await partnerName(message.conversationId, viewer.id)
     const id = toast.add({
-      title,
+      title: name ? `${name} said:` : 'New message',
       description: preview(message.content),
       timeout: toastTimeoutMs,
       actionProps: {

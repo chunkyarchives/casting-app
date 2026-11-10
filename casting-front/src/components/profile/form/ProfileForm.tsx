@@ -1,4 +1,4 @@
-import { useState, type FormEventHandler, type ReactNode } from 'react'
+  import { useState, type ReactNode, type SubmitEventHandler } from 'react'
 import { FormProvider, useFormState, type FieldValues, type UseFormReturn } from 'react-hook-form'
 import { SettingsFooter } from '@/components/settings/SettingsFooter'
 import { SettingsHintContext } from '@/components/settings/settings-hint'
@@ -8,7 +8,7 @@ type Props<TValues extends FieldValues> = {
   id: string
   form: UseFormReturn<TValues>
   card: ReactNode
-  onSubmit: FormEventHandler<HTMLFormElement>
+  onSubmit: SubmitEventHandler<HTMLFormElement>
   children: ReactNode
 }
 

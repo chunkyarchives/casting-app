@@ -35,6 +35,9 @@ const ActorPortfolio = lazy(actorPages.portfolio)
 const ActorRoles = lazy(actorPages.roles)
 
 const DirectorFilms = lazy(directorPages.films)
+const DirectorFilm = lazy(directorPages.film)
+const DirectorFilmEditor = lazy(directorPages.filmEditor)
+const DirectorRoleEditor = lazy(directorPages.roleEditor)
 const DirectorCrew = lazy(directorPages.crew)
 const DirectorApplications = lazy(directorPages.applications)
 
@@ -75,7 +78,14 @@ export default function App() {
             <Route path={paths.director} element={<DashboardLayout items={directorNav} preload={preloadDirectorPages} />}>
               <Route index element={<Welcome role="Director" />} />
               <Route element={<RequireCompleteProfile />}>
-                <Route path="films" element={<DirectorFilms />} />
+                <Route path="films">
+                  <Route index element={<DirectorFilms />} />
+                  <Route path="new" element={<DirectorFilmEditor />} />
+                  <Route path=":filmId" element={<DirectorFilm />} />
+                  <Route path=":filmId/edit" element={<DirectorFilmEditor />} />
+                  <Route path=":filmId/roles/new" element={<DirectorRoleEditor />} />
+                  <Route path=":filmId/roles/:roleId/edit" element={<DirectorRoleEditor />} />
+                </Route>
                 <Route path="crew" element={<DirectorCrew />} />
                 <Route path="applications" element={<DirectorApplications />} />
                 <Route path="chat" element={<Chat />} />

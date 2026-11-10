@@ -1,5 +1,5 @@
-import { DashboardPage } from '@/components/dashboard/DashboardPage'
+import { DirectorFilms } from '@/components/film/DirectorFilms'
 
 export default function Films() {
-  return <DashboardPage title="Films" />
+  return <DirectorFilms />
 }

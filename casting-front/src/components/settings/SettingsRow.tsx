@@ -9,10 +9,11 @@ type Props = {
   missing?: boolean
   error?: string
   align?: 'center' | 'start'
+  layout?: 'columns' | 'stacked'
   children: ReactNode
 }
 
-export function SettingsRow({ label, hint, missing = false, error, align = 'center', children }: Props) {
+export function SettingsRow({ label, hint, missing = false, error, align = 'center', layout = 'columns', children}: Props) {
   const onHint = use(SettingsHintContext)
   
   const handlePointerLeave = (event: PointerEvent<HTMLDivElement>) => {
@@ -32,7 +33,7 @@ export function SettingsRow({ label, hint, missing = false, error, align = 'cent
       onPointerLeave={handlePointerLeave}
       onFocus={() => onHint(hint)}
       onBlur={handleBlur}
-      className={cn(slotClassName, 'grid gap-x-6 gap-y-2 px-4 py-2 md:grid-cols-2', align === 'start' ? 'items-start' : 'items-center')}
+      className={cn( slotClassName, 'grid gap-x-6 gap-y-2 px-4 py-2', layout === 'columns' && 'md:grid-cols-2', align === 'start' ? 'items-start' : 'items-center')}
     >
       <div className="flex min-h-9 items-center gap-2">
         <span>{label}</span>

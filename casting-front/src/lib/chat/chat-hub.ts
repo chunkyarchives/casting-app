@@ -2,18 +2,23 @@ import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/s
 import { refreshSession } from '@/lib/api/http'
 import { apiBaseUrl } from '@/lib/config'
 import type { ChatMessage } from '@/types/conversation'
+import type { CrewMemberChange } from '@/types/crew'
 
 export type ChatStatus = 'connecting' | 'connected' | 'offline'
 
-type ChatListener = {
-  onMessage: (message: ChatMessage) => void
-  onReconnected: () => void
+type HubListener = {
+  onMessage?: (message: ChatMessage) => void
+  onCrewChange?: (change: CrewMemberChange) => void
+  onReconnected?: () => void
 }
+
+type ChatListener = Required<Pick<HubListener, 'onMessage' | 'onReconnected'>>
+type CrewListener = Required<Pick<HubListener, 'onCrewChange'>> & Pick<HubListener, 'onReconnected'>
 
 const retryDelaysMs = [0, 2000, 5000, 10000, 30000]
 const busyRetryMs = 300
 
-const listeners = new Set<ChatListener>()
+const listeners = new Set<HubListener>()
 const statusListeners = new Set<() => void>()
 
 let status: ChatStatus = 'offline'
@@ -37,7 +42,11 @@ const connection = new HubConnectionBuilder()
   .build()
 
 connection.on('MessageReceived', (message: ChatMessage) => {
-  listeners.forEach((listener) => listener.onMessage(message))
+  listeners.forEach((listener) => listener.onMessage?.(message))
+})
+
+connection.on('CrewMemberChanged', (change: CrewMemberChange) => {
+  listeners.forEach((listener) => listener.onCrewChange?.(change))
 })
 
 connection.onclose(() => {
@@ -86,11 +95,11 @@ async function connect() {
 
   attempt = 0
   setStatus('connected')
-  if (connectedBefore) listeners.forEach((listener) => listener.onReconnected())
+  if (connectedBefore) listeners.forEach((listener) => listener.onReconnected?.())
   connectedBefore = true
 }
 
-export function subscribeToChat(listener: ChatListener) {
+function subscribe(listener: HubListener) {
   listeners.add(listener)
   if (listeners.size === 1) {
     attempt = 0
@@ -106,6 +115,10 @@ export function subscribeToChat(listener: ChatListener) {
     void connection.stop()
   }
 }
+
+export const subscribeToChat = (listener: ChatListener) => subscribe(listener)
+
+export const subscribeToCrew = (listener: CrewListener) => subscribe(listener)
 
 export function subscribeToChatStatus(notify: () => void) {
   statusListeners.add(notify)

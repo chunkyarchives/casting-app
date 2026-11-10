@@ -33,6 +33,18 @@ function remember(key: string, data: unknown) {
   }
 }
 
+export function setCachedQuery<T>(key: string, data: T) {
+  remember(key, data)
+}
+
+export function updateCachedQuery<T>(key: string, change: (data: T) => T) {
+  if (cache.has(key)) remember(key, change(cache.get(key) as T))
+}
+
+export function forgetQuery(key: string) {
+  cache.delete(key)
+}
+
 export type QuerySpec<T> = {
   key: string
   load: () => Promise<T>

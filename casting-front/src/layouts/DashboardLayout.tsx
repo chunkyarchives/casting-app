@@ -1,10 +1,11 @@
 import { Suspense, useEffect } from 'react'
 import { Outlet } from 'react-router'
+import { ChatNotifier } from '@/components/chat/ChatNotifier'
 import { PageLoader } from '@/components/common/states/PageLoader'
+import { CrewNotifier } from '@/components/crew/CrewNotifier'
 import type { DashboardNavItem } from '@/components/dashboard/dashboard-nav'
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
-import { ChatNotifier } from '@/components/chat/ChatNotifier'
 
 type Props = {
   items: DashboardNavItem[]
@@ -28,6 +29,7 @@ export default function DashboardLayout({ items, preload }: Props) {
         </Suspense>
       </SidebarInset>
       <ChatNotifier />
+      <CrewNotifier />
     </SidebarProvider>
   )
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { crewsApi } from '@/lib/api/crews'
+import { subscribeToCrew } from '@/lib/chat/chat-hub'
 import type { Crew } from '@/types/crew'
 
 type CrewsState =
@@ -35,6 +36,11 @@ export function useMyCrews() {
 
     document.addEventListener('visibilitychange', refreshWhenVisible)
     return () => document.removeEventListener('visibilitychange', refreshWhenVisible)
+  }, [])
+
+  useEffect(() => {
+    const refresh = () => setRevision((current) => current + 1)
+    return subscribeToCrew({ onCrewChange: refresh, onReconnected: refresh })
   }, [])
 
   const update = (change: (crews: Crew[]) => Crew[]) => {

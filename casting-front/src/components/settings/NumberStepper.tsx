@@ -10,7 +10,7 @@ type Props = {
   onChange: (value: number | null) => void
   min: number
   max: number
-  unit: string
+  unit?: string
   placeholder?: string
   invalid?: boolean
 }
@@ -24,7 +24,7 @@ export function NumberStepper({ label, value, onChange, min, max, unit, placehol
       max={max}
       step={1}
       largeStep={10}
-      format={{ maximumFractionDigits: 0 }}
+      format={{ maximumFractionDigits: 0, useGrouping: false }}
     >
       <NumberField.Group className="flex items-center gap-1">
         <NumberField.Decrement render={<Button variant="ghost" size="icon-sm" aria-label={`Decrease ${label.toLowerCase()}`} />}>
@@ -34,9 +34,11 @@ export function NumberStepper({ label, value, onChange, min, max, unit, placehol
           <NumberField.Input
             render={<InputGroupInput aria-label={label} aria-invalid={invalid} placeholder={placeholder} className="text-center" />}
           />
-          <InputGroupAddon align="inline-end">
-            <InputGroupText>{unit}</InputGroupText>
-          </InputGroupAddon>
+          {unit && (
+            <InputGroupAddon align="inline-end">
+              <InputGroupText>{unit}</InputGroupText>
+            </InputGroupAddon>
+          )}
         </InputGroup>
         <NumberField.Increment render={<Button variant="ghost" size="icon-sm" aria-label={`Increase ${label.toLowerCase()}`} />}>
           <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} />

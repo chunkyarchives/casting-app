@@ -54,7 +54,7 @@ export function CrewMembers({ crew, viewerId, headingLevel = 2, emptyHint }: Pro
         ))}
       </ul>
 
-      {crew.members.length === 0 && emptyHint && <p className="text-sm text-muted-foreground">{emptyHint}</p>}
+      {crew.members.length === 0 && emptyHint && <p className="text-center text-sm text-muted-foreground">{emptyHint}</p>}
     </section>
   )
 }
