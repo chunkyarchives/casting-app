@@ -21,14 +21,17 @@ function origin(code: string | null): RoleFact | null {
     : { label: 'Origin', value: code }
 }
 
-export function roleFacts(role: FilmRole): RoleFact[] {
-  const facts = [
-    range('Age', role.ageMin, role.ageMax, 'years'),
-    range('Height', role.heightMin, role.heightMax, 'cm'),
-    range('Weight', role.weightMin, role.weightMax, 'kg'),
-    role.gender ? { label: 'Gender', value: role.gender } : null,
-    origin(role.origin),
+const present = (facts: (RoleFact | null)[]) => facts.filter((fact) => fact !== null)
+
+export function roleFacts(role: FilmRole): RoleFact[][] {
+  const groups = [
+    present([role.gender ? { label: 'Gender', value: role.gender } : null, origin(role.origin)]),
+    present([
+      range('Age', role.ageMin, role.ageMax, 'years'),
+      range('Height', role.heightMin, role.heightMax, 'cm'),
+      range('Weight', role.weightMin, role.weightMax, 'kg'),
+    ]),
   ]
 
-  return facts.filter((fact) => fact !== null)
+  return groups.filter((group) => group.length > 0)
 }

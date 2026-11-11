@@ -19,7 +19,7 @@ export function SettingsFooter({ hint, defaultHint, dirty, saving, formId, onDis
         !dirty && 'max-sm:hidden',
       )}
     >
-      <p key={hint ?? ''} className="flex-1 animate-in text-sm text-muted-foreground duration-200 fade-in-0 max-sm:hidden">
+      <p key={hint ?? ''} className="flex-1 animate-in text-center text-sm text-muted-foreground duration-200 fade-in-0 max-sm:hidden">
         {hint ?? defaultHint}
       </p>
       {dirty && (

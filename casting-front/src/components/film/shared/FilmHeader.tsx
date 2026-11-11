@@ -44,7 +44,7 @@ export function FilmHeader({ film, posterAction, aside }: Props) {
         ) : (
           <FilmPoster posterUrl={null} className={posterClass} />
         )}
-        {posterAction && <div className="absolute top-2 right-2">{posterAction}</div>}
+        {posterAction && <div className="absolute top-2 right-2 flex gap-1">{posterAction}</div>}
       </div>
 
       <div className="flex min-w-0 flex-col gap-8">

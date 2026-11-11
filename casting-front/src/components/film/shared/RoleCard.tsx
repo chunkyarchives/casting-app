@@ -21,7 +21,7 @@ export function RoleCard({ role, action }: Props) {
   const expanded = hovered || focused
   const shownIndex = Math.min(index, Math.max(role.conceptArt.length - 1, 0))
   const art = role.conceptArt.at(shownIndex)
-  const facts = roleFacts(role)
+  const factGroups = roleFacts(role)
 
   const enter = (event: PointerEvent<HTMLElement>) => {
     if (event.pointerType !== 'mouse') return
@@ -110,9 +110,9 @@ export function RoleCard({ role, action }: Props) {
               </div>
 
               {role.conceptArt.length > 0 && (
-                <p className="flex gap-2 text-xs text-muted-foreground">
-                  <span className="min-w-0 flex-1 truncate">{art?.caption ?? 'Concept art'}</span>
-                  <span className="tabular-nums">
+                <p className="grid grid-cols-[2.5rem_minmax(0,1fr)_2.5rem] items-center gap-2 text-xs text-muted-foreground">
+                  <span className="col-start-2 truncate text-center">{art?.caption ?? 'Concept art'}</span>
+                  <span className="text-right tabular-nums">
                     {shownIndex + 1} / {role.conceptArt.length}
                   </span>
                 </p>
@@ -120,17 +120,21 @@ export function RoleCard({ role, action }: Props) {
 
               {role.description && <p className="line-clamp-3 text-sm whitespace-pre-line">{role.description}</p>}
 
-              {facts.length > 0 && (
-                <ul aria-label="Requirements" className="flex flex-wrap gap-1.5">
-                  {facts.map((fact) => (
-                    <li key={fact.label}>
-                      <Badge variant="outline" title={fact.label}>
-                        {fact.countryCode && <CountryFlag code={fact.countryCode} decorative className="h-2.5" />}
-                        {fact.value}
-                      </Badge>
-                    </li>
-                  ))}
-                </ul>
+              {factGroups.length > 0 && (
+                  <div role="group" aria-label="Requirements" className="flex flex-col gap-1.5">
+                    {factGroups.map((facts) => (
+                      <ul key={facts[0].label} className="flex flex-wrap gap-1.5">
+                        {facts.map((fact) => (
+                          <li key={fact.label}>
+                            <Badge variant="outline" title={fact.label}>
+                              {fact.countryCode && <CountryFlag code={fact.countryCode} decorative className="h-2.5" />}
+                              {fact.value}
+                            </Badge>
+                          </li>
+                        ))}
+                      </ul>
+                    ))}
+                  </div>
               )}
             </div>
           </div>

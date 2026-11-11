@@ -8,6 +8,7 @@ export type QueryState<T> =
 export type QueryResult<T> = QueryState<T> & {
   stale: boolean
   reload: () => void
+  setData: (data: T) => void
 }
 
 type Options = {
@@ -96,10 +97,16 @@ export function useApiQuery<T>(key: string, load: () => Promise<T>, options: Opt
 
   const reload = () => setRevision((current) => current + 1)
 
-  if (settled?.key === key) return { ...settled.state, stale: false, reload }
-  if (cache.has(key)) return { status: 'success', data: cache.get(key) as T, stale: false, reload }
-  if (options.keepPreviousData && settled?.state.status === 'success') {
-    return { ...settled.state, stale: true, reload }
+  const setData = (data: T) => {
+    remember(key, data)
+    setSettled({ key, state: { status: 'success', data } })
   }
-  return { status: 'loading', stale: false, reload }
+
+  if (settled?.key === key) return { ...settled.state, stale: false, reload, setData }
+  if (cache.has(key)) return { status: 'success', data: cache.get(key) as T, stale: false, reload, setData }
+  if (options.keepPreviousData && settled?.state.status === 'success') {
+    return { ...settled.state, stale: true, reload, setData }
+  }
+  return { status: 'loading', stale: false, reload, setData }
 }
+

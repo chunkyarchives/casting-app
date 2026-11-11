@@ -107,7 +107,7 @@ export default function App() {
               <Route index element={<Welcome role="CastingDirector" />} />
               <Route element={<RequireCompleteProfile />}>
                 <Route path="crew" element={<CastingDirectorCrew />} />
-                <Route path="roles" element={<CastingDirectorRoles />} />
+                <Route path="matchmaking" element={<CastingDirectorRoles />} />
                 <Route path="proposals" element={<CastingDirectorProposals />} />
               </Route>
               <Route path="settings">

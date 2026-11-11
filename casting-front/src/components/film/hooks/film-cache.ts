@@ -39,5 +39,7 @@ export function rememberRole(film: Film, role: FilmRole) {
 }
 
 export function forgetRole(film: Film, roleId: string) {
-  rememberFilm({ ...film, roles: film.roles.filter((role) => role.id !== roleId) })
+  const next = { ...film, roles: film.roles.filter((role) => role.id !== roleId) }
+  rememberFilm(next)
+  return next
 }

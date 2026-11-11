@@ -34,7 +34,7 @@ export const directorNav: DashboardNavItem[] = [
 
 export const castingDirectorNav: DashboardNavItem[] = [
   { page: 'crew', label: 'Crew', icon: UserGroupIcon },
-  { page: 'roles', label: 'Roles', icon: MaskTheater01Icon },
+  { page: 'matchmaking', label: 'Matchmaking', icon: MaskTheater01Icon },
   { page: 'proposals', label: 'Proposals', icon: Agreement01Icon },
 ]
 
