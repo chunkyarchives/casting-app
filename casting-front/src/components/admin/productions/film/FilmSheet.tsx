@@ -21,7 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useApiQuery } from '@/hooks/useApiQuery'
 import { adminApi } from '@/lib/api/admin'
 import { mediaUrl } from '@/lib/api/media'
-import { formatCount, formatDateTime } from '@/lib/format'
+import { formatDateTime } from '@/lib/format'
 import type { AdminFilm, AdminFilmDetail } from '@/types/admin'
 import { FilmRoleCard } from './FilmRoleCard'
 
@@ -113,9 +113,7 @@ function FilmDetailGroups({ details: { film, applications } }: { details: AdminF
       <Separator />
 
       <section className="flex flex-col gap-3 text-sm">
-        <h3 className="font-medium">
-          Roles <span className="text-muted-foreground tabular-nums">{formatCount(film.roles.length)}</span>
-        </h3>
+        <h3 className="font-medium">Roles</h3>
 
         {film.roles.length === 0 ? (
           <EmptyMessage icon={MaskTheater01Icon} title="No roles yet" className="p-6" />

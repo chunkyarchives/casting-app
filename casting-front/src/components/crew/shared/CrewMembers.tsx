@@ -29,10 +29,7 @@ export function CrewMembers({ crew, viewerId, headingLevel = 2, emptyHint }: Pro
 
   return (
     <section className="flex flex-col gap-3">
-      <div className="flex items-baseline gap-2">
-        <Heading className="font-semibold">Members</Heading>
-        <span className="text-sm text-muted-foreground tabular-nums">{people.length}</span>
-      </div>
+      <Heading className="font-semibold">Members</Heading>
       <Separator />
 
       <ul className="flex flex-wrap gap-3">

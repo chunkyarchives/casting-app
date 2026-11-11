@@ -10,7 +10,6 @@ import { AuditTable, AuditTableError, AuditTableSkeleton } from '@/components/ad
 import { PagedList } from '@/components/common/list/PagedList'
 import { useApiQuery } from '@/hooks/useApiQuery'
 import { useListFilters } from '@/hooks/useListFilters'
-import { formatCount } from '@/lib/format'
 
 export default function AuditLogs() {
   const { filters, hasFilters, setFilters, setPage, clearFilters } = useListFilters(auditFilterCodec)
@@ -38,7 +37,6 @@ export default function AuditLogs() {
           id="audit-title"
           as="h1"
           title="Audit logs"
-          aside={entries.status === 'success' ? formatCount(entries.data.totalCount) : undefined}
         />
 
         <div className="flex flex-col gap-6">

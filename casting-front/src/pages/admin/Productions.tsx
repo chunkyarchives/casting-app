@@ -14,7 +14,6 @@ import { toast } from '@/components/ui/toast'
 import { useApiQuery } from '@/hooks/useApiQuery'
 import { useListFilters } from '@/hooks/useListFilters'
 import { useOverlay } from '@/hooks/useOverlay'
-import { formatCount } from '@/lib/format'
 import type { AdminFilm } from '@/types/admin'
 
 export default function Productions() {
@@ -47,7 +46,6 @@ export default function Productions() {
           id="productions-title"
           as="h1"
           title="Productions"
-          aside={rows.status === 'success' ? formatCount(rows.data.totalCount) : undefined}
         />
 
         <div className="flex flex-col gap-6">

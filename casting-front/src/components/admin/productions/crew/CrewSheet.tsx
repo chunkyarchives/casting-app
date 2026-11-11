@@ -170,13 +170,10 @@ type SiteMemberListProps = {
 }
 
 function SiteMemberList({ director, members, onRemove }: SiteMemberListProps) {
-  const memberCount = (members?.length ?? 0) + 1
 
   return (
     <section className="flex flex-col gap-3 text-sm">
-      <h3 className="font-medium">
-        Site members <span className="text-muted-foreground tabular-nums">{formatCount(memberCount)}</span>
-      </h3>
+      <h3 className="font-medium">Site members</h3>
 
       <ul className="flex flex-col divide-y">
         <MemberRow participantId={director.id} name={director.name} email={director.email}>

@@ -16,12 +16,13 @@ type Props = {
 
 export function RoleEditor({ filmId, roleId }: Props) {
   const film = useFilm(filmId)
+  const backLabel = film.status === 'success' ? `Back to ${film.data.title}` : 'Back to film'
 
   return (
     <SettingsScreen
       title={roleId ? 'Edit role' : 'New role'}
       icon={MaskTheater01Icon}
-      back={<BackButton to={filmPaths.film(filmId)} label={film.status === 'success' ? film.data.title : 'Film'} />}
+      back={<BackButton to={filmPaths.film(filmId)} label={backLabel} />}
     >
       {film.status === 'loading' && <PageLoader />}
       {film.status === 'error' && <LoadError title="This film could not be loaded" error={film.error} onRetry={film.reload} />}

@@ -11,7 +11,6 @@ import { FilmHeader } from '@/components/film/shared/FilmHeader'
 import { RoleCard } from '@/components/film/shared/RoleCard'
 import { buttonVariants } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { formatCount } from '@/lib/format'
 import { filmPaths } from '@/lib/routes'
 import { cn } from '@/lib/utils'
 import type { Film } from '@/types/film'
@@ -21,7 +20,7 @@ export function DirectorFilm({ filmId }: { filmId: string }) {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 pt-2 pb-32">
-    {film.status !== 'success' && <BackButton to={filmPaths.library} label="Back to library" prominent />}
+    {film.status !== 'success' && <BackButton to={filmPaths.library} label="Back to library"/>}
 
       {film.status === 'loading' && <PageLoader />}
       {film.status === 'error' && <LoadError title="This film could not be loaded" error={film.error} onRetry={film.reload} />}
@@ -39,7 +38,7 @@ function FilmOverview({ film }: { film: Film }) {
     <>
       <FilmHeader
         film={film}
-        aside={<BackButton to={filmPaths.library} label="Back to library" prominent />}
+        aside={<BackButton to={filmPaths.library} label="Back to library"/>}
         posterAction={
           owner && (
             <Link
@@ -55,10 +54,7 @@ function FilmOverview({ film }: { film: Film }) {
       />
 
       <section className="flex flex-col gap-4">
-        <div className="flex items-baseline gap-2">
-          <h2 className="text-2xl font-bold">Roles</h2>
-          <span className="text-muted-foreground tabular-nums">{formatCount(film.roles.length)}</span>
-        </div>
+        <h2 className="text-2xl font-bold">Roles</h2>
         <Separator />
 
         {film.roles.length === 0 && canAddRoles && (

@@ -13,7 +13,6 @@ import { PagedList } from '@/components/common/list/PagedList'
 import { useApiQuery } from '@/hooks/useApiQuery'
 import { useListFilters } from '@/hooks/useListFilters'
 import { useOverlay } from '@/hooks/useOverlay'
-import { formatCount } from '@/lib/format'
 import type { AdminAccount } from '@/types/admin'
 
 export default function Accounts() {
@@ -49,7 +48,6 @@ export default function Accounts() {
           id="accounts-title"
           as="h1"
           title="Accounts"
-          aside={accounts.status === 'success' ? formatCount(accounts.data.totalCount) : undefined}
         />
 
         <div className="flex flex-col gap-6">

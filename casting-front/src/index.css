@@ -460,6 +460,11 @@
     font-size: 112.5%;
     scrollbar-gutter: stable;
   }
+  
+  html:has([data-slot='chat-screen']) {
+  scrollbar-gutter: auto;
+  }
+
   input,
   textarea,
   [contenteditable='true'] {

@@ -13,12 +13,7 @@ export function DirectorFilms() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 pt-2 pb-16">
-      <header className="flex items-baseline gap-3">
-        <h1 className="text-4xl font-bold">Films</h1>
-        {films.status === 'success' && (
-          <span className="text-muted-foreground tabular-nums">{films.data.length}</span>
-        )}
-      </header>
+      <h1 className="text-4xl font-bold">Films</h1>
 
       {films.status === 'loading' && (
         <div aria-busy className={posterGrid}>

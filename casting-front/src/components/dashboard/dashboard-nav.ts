@@ -26,7 +26,7 @@ export const actorNav: DashboardNavItem[] = [
 ]
 
 export const directorNav: DashboardNavItem[] = [
-  { page: 'films', label: 'Films', icon: Film01Icon },
+  { page: 'films', label: 'Film library', icon: Film01Icon },
   { page: 'crew', label: 'Crew', icon: UserGroupIcon },
   { page: 'applications', label: 'Applications', icon: DocumentValidationIcon },
   { page: 'chat', label: 'Chat', icon: BubbleChatIcon, showsUnread: true },

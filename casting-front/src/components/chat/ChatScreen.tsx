@@ -38,7 +38,7 @@ export function ChatScreen({ viewer }: { viewer: CurrentParticipant }) {
   const compose = isDirector ? () => setComposing(true) : undefined
 
   return (
-    <div className="flex h-[calc(100svh-3rem)] min-h-0 border-t">
+    <div data-slot="chat-screen" className="flex h-[calc(100svh-3rem)] min-h-0 border-t">
       <aside className={cn('flex w-full min-w-0 flex-col md:w-80 md:shrink-0 md:border-r', openId && 'max-md:hidden')}>
         <ConversationList
           viewerId={viewer.id}

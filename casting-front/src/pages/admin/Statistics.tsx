@@ -33,17 +33,17 @@ export default function Statistics() {
 
       {stats.status === 'success' && (
         <>
-          <StatisticsSection id="accounts" count={stats.data.accounts.total}>
+          <StatisticsSection id="accounts">
             <StatPieCharts pies={accountPies(stats.data.accounts)}>
               <MediaStatistics media={stats.data.media} />
             </StatPieCharts>
           </StatisticsSection>
 
-          <StatisticsSection id="productions" count={stats.data.films.total}>
+          <StatisticsSection id="productions">
             <StatPieCharts pies={filmPies(stats.data.films)} />
           </StatisticsSection>
 
-          <StatisticsSection id="applications" count={stats.data.applications.total}>
+          <StatisticsSection id="applications">
             <StatPieCharts pies={applicationPies(stats.data.applications)}>
               <ChatStatistics chat={stats.data.chat} />
             </StatPieCharts>

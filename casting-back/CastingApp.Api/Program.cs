@@ -72,6 +72,7 @@ builder.Services.AddSingleton<IUserIdProvider, SubUserIdProvider>();
 builder.Services.AddSingleton<IChatNotifier, SignalRChatNotifier>();
 builder.Services.AddSingleton<ICrewNotifier, SignalRCrewNotifier>();
 builder.Services.AddSignalR()
+    .AddJsonProtocol(o => o.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()))
     .AddStackExchangeRedis(builder.Configuration.GetConnectionString("Redis")!);
 
 builder.Services.AddCors(o => o.AddPolicy("frontend", p => p

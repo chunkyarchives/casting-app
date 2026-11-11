@@ -1,9 +1,9 @@
-import type { ReactNode } from 'react'
+import { useId, type ReactNode } from 'react'
 import { StatusDot } from '@/components/common/display/StatusDot'
 import { FilmPoster } from '@/components/common/media/FilmPoster'
 import { ImageZoom } from '@/components/common/media/ImageZoom'
 import { mediaUrl } from '@/lib/api/media'
-import { formatCount, formatDate } from '@/lib/format'
+import { formatDate } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { Film } from '@/types/film'
 
@@ -16,7 +16,7 @@ type Props = {
 const posterClass = 'w-full overflow-hidden rounded-xl shadow-lg ring-1 ring-border'
 
 export function FilmHeader({ film, posterAction, aside }: Props) {
-  const openRoles = film.roles.filter((role) => role.status === 'Open').length
+  const detailsId = useId()
   const facts = [
     {
       label: 'Status',
@@ -24,8 +24,6 @@ export function FilmHeader({ film, posterAction, aside }: Props) {
     },
     { label: 'Release year', value: film.releaseYear ?? '-' },
     { label: 'Content rating', value: film.contentRating ?? '-' },
-    { label: 'Roles', value: formatCount(film.roles.length) },
-    { label: 'Open roles', value: formatCount(openRoles) },
     { label: 'Created', value: formatDate(film.createdAt) },
   ]
 
@@ -49,21 +47,30 @@ export function FilmHeader({ film, posterAction, aside }: Props) {
         {posterAction && <div className="absolute top-2 right-2">{posterAction}</div>}
       </div>
 
-      <div className="flex min-w-0 flex-col gap-6">
-        <h1 className="text-4xl font-bold text-balance wrap-break-word">{film.title}</h1>
+      <div className="flex min-w-0 flex-col gap-8">
+        <div className="flex flex-col gap-4">
+          <h1 className="text-4xl font-bold text-balance wrap-break-word">{film.title}</h1>
+          <p className={cn('max-w-prose leading-relaxed whitespace-pre-line', !film.description && 'text-muted-foreground')}>
+            {film.description ?? 'No description yet.'}
+          </p>
+        </div>
 
-        <dl className="flex flex-wrap gap-x-10 gap-y-4 border-y py-4">
-          {facts.map((fact) => (
-            <div key={fact.label} className="flex flex-col gap-1">
-              <dt className="text-xs text-muted-foreground">{fact.label}</dt>
-              <dd className="font-semibold tabular-nums">{fact.value}</dd>
-            </div>
-          ))}
-        </dl>
+        <section aria-labelledby={detailsId} className="flex max-w-lg flex-col">
+          <div className="border-b">
+            <h2 id={detailsId} className="-mb-px inline-block border-b-2 border-foreground pb-3 font-semibold">
+              Film details
+            </h2>
+          </div>
 
-        <p className={cn('leading-relaxed whitespace-pre-line', !film.description && 'text-muted-foreground')}>
-          {film.description ?? 'No description yet.'}
-        </p>
+          <dl className="grid grid-cols-[8.5rem_minmax(0,1fr)] gap-x-6 gap-y-3 py-4 text-sm">
+            {facts.map((fact) => (
+              <div key={fact.label} className="contents">
+                <dt className="text-muted-foreground">{fact.label}</dt>
+                <dd className="tabular-nums">{fact.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
       </div>
     </section>
   )
