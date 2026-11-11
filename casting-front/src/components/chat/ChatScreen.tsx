@@ -56,7 +56,6 @@ export function ChatScreen({ viewer }: { viewer: CurrentParticipant }) {
             key={conversation.id}
             conversation={conversation}
             viewerId={viewer.id}
-            canViewProfile={isDirector}
             onBack={() => open(null)}
             onSent={noteMessage}
             onRead={markRead}

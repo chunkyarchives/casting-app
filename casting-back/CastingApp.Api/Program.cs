@@ -71,6 +71,7 @@ builder.Services.AddCastingRateLimiting();
 builder.Services.AddSingleton<IUserIdProvider, SubUserIdProvider>();
 builder.Services.AddSingleton<IChatNotifier, SignalRChatNotifier>();
 builder.Services.AddSingleton<ICrewNotifier, SignalRCrewNotifier>();
+builder.Services.AddSingleton<IApplicationNotifier, SignalRApplicationNotifier>();
 builder.Services.AddSignalR()
     .AddJsonProtocol(o => o.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()))
     .AddStackExchangeRedis(builder.Configuration.GetConnectionString("Redis")!);

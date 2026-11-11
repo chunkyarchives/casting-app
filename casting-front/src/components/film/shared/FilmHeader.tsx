@@ -1,4 +1,5 @@
 import { useId, type ReactNode } from 'react'
+import { SectionTitle } from '@/components/common/display/SectionTitle'
 import { StatusDot } from '@/components/common/display/StatusDot'
 import { FilmPoster } from '@/components/common/media/FilmPoster'
 import { ImageZoom } from '@/components/common/media/ImageZoom'
@@ -56,11 +57,7 @@ export function FilmHeader({ film, posterAction, aside }: Props) {
         </div>
 
         <section aria-labelledby={detailsId} className="flex max-w-lg flex-col">
-          <div className="border-b">
-            <h2 id={detailsId} className="-mb-px inline-block border-b-2 border-foreground pb-3 font-semibold">
-              Film details
-            </h2>
-          </div>
+          <SectionTitle id={detailsId}>Film details</SectionTitle>
 
           <dl className="grid grid-cols-[8.5rem_minmax(0,1fr)] gap-x-6 gap-y-3 py-4 text-sm">
             {facts.map((fact) => (

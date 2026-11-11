@@ -2,13 +2,14 @@ import type {
   Film,
   FilmRole,
   FilmSummary,
+  OpenRole,
   SaveFilmRequest,
   SaveFilmRoleRequest,
   UpdateFilmRequest,
   UpdateFilmRoleRequest,
 } from '@/types/film'
 import type { MediaItem } from '@/types/media'
-import { request } from './http'
+import { request, withQuery } from './http'
 
 const pictureForm = (picture: Blob, name: string, caption?: string | null) => {
   const form = new FormData()
@@ -19,6 +20,8 @@ const pictureForm = (picture: Blob, name: string, caption?: string | null) => {
 
 export const filmsApi = {
   mine: () => request<FilmSummary[]>('/api/films/mine'),
+
+  byDirector: (directorId: string) => request<FilmSummary[]>(withQuery('/api/films', { directorId })),
 
   get: (filmId: string) => request<Film>(`/api/films/${filmId}`),
 
@@ -35,6 +38,8 @@ export const filmsApi = {
 }
 
 export const filmRolesApi = {
+  open: () => request<OpenRole[]>('/api/roles/open'),
+
   get: (roleId: string) => request<FilmRole>(`/api/roles/${roleId}`),
 
   create: (filmId: string, body: SaveFilmRoleRequest) =>

@@ -1,6 +1,7 @@
+import { AddTile } from '@/components/common/actions/AddTile'
+import { SectionTitle } from '@/components/common/display/SectionTitle'
 import { LoadError } from '@/components/common/states/LoadError'
-import { AddTile } from '@/components/film/director/AddTitle'
-import { PosterTile } from '@/components/film/director/PosterTitle'
+import { PosterTile } from '@/components/film/director/PosterTile'
 import { useMyFilms } from '@/components/film/hooks/useFilms'
 import { Skeleton } from '@/components/ui/skeleton'
 import { filmPaths } from '@/lib/routes'
@@ -13,7 +14,9 @@ export function DirectorFilms() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 pt-2 pb-16">
-      <h1 className="text-4xl font-bold">Films</h1>
+      <SectionTitle as="h1" size="page">
+        Film library
+      </SectionTitle>
 
       {films.status === 'loading' && (
         <div aria-busy className={posterGrid}>

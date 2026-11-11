@@ -23,6 +23,22 @@ public class FilmRoleService(IAppDbContext db, ICurrentUser currentUser, IMediaS
         return roles.Select(r => r.ToDto()).ToList();
     }
 
+    public async Task<IReadOnlyList<OpenRoleDto>> ListOpenForActorAsync(CancellationToken ct)
+    {
+        var actorId = currentUser.Id;
+
+        var roles = await db.FilmRoles.AsNoTracking()
+            .Include(r => r.ConceptArt)
+            .Include(r => r.Film)
+            .Where(r => r.Status == FilmRoleStatus.Open && r.Film.Status == FilmStatus.Active)
+            .Where(r => !db.RoleApplications.Any(a => a.FilmRoleId == r.Id && a.ActorId == actorId))
+            .OrderByDescending(r => r.Film.CreatedAt)
+            .ThenBy(r => r.Name)
+            .ToListAsync(ct);
+
+        return roles.Select(r => new OpenRoleDto(r.FilmId, r.Film.Title, r.ToDto())).ToList();
+    }
+
     public async Task<FilmRoleDto> GetAsync(Guid id, CancellationToken ct)
     {
         var role = await db.FilmRoles.AsNoTracking()

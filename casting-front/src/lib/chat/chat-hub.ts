@@ -1,6 +1,7 @@
 import { HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr'
 import { refreshSession } from '@/lib/api/http'
 import { apiBaseUrl } from '@/lib/config'
+import type { RoleApplication } from '@/types/application'
 import type { ChatMessage } from '@/types/conversation'
 import type { CrewMemberChange } from '@/types/crew'
 
@@ -9,11 +10,13 @@ export type ChatStatus = 'connecting' | 'connected' | 'offline'
 type HubListener = {
   onMessage?: (message: ChatMessage) => void
   onCrewChange?: (change: CrewMemberChange) => void
+  onApplication?: (application: RoleApplication) => void
   onReconnected?: () => void
 }
 
 type ChatListener = Required<Pick<HubListener, 'onMessage' | 'onReconnected'>>
 type CrewListener = Required<Pick<HubListener, 'onCrewChange'>> & Pick<HubListener, 'onReconnected'>
+type ApplicationListener = Required<Pick<HubListener, 'onApplication'>>
 
 const retryDelaysMs = [0, 2000, 5000, 10000, 30000]
 const busyRetryMs = 300
@@ -47,6 +50,10 @@ connection.on('MessageReceived', (message: ChatMessage) => {
 
 connection.on('CrewMemberChanged', (change: CrewMemberChange) => {
   listeners.forEach((listener) => listener.onCrewChange?.(change))
+})
+
+connection.on('ApplicationReceived', (application: RoleApplication) => {
+  listeners.forEach((listener) => listener.onApplication?.(application))
 })
 
 connection.onclose(() => {
@@ -119,6 +126,8 @@ function subscribe(listener: HubListener) {
 export const subscribeToChat = (listener: ChatListener) => subscribe(listener)
 
 export const subscribeToCrew = (listener: CrewListener) => subscribe(listener)
+
+export const subscribeToApplications = (listener: ApplicationListener) => subscribe(listener)
 
 export function subscribeToChatStatus(notify: () => void) {
   statusListeners.add(notify)

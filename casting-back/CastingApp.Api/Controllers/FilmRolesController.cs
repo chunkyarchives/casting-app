@@ -14,6 +14,11 @@ namespace CastingApp.Api.Controllers;
 [RequireCompleteProfile]
 public class FilmRolesController(IFilmRoleService roles, IRoleApplicationService applications) : ControllerBase
 {
+    [HttpGet("open")]
+    [Authorize(Roles = AppRoles.Actor)]
+    public async Task<ActionResult<IReadOnlyList<OpenRoleDto>>> ListOpen(CancellationToken ct)
+        => Ok(await roles.ListOpenForActorAsync(ct));
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<FilmRoleDto>> Get(Guid id, CancellationToken ct)
         => Ok(await roles.GetAsync(id, ct));

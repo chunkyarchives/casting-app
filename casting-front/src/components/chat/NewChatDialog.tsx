@@ -78,7 +78,13 @@ function ApplicantPicker({ onStarted }: { onStarted: (conversation: Conversation
 
   return (
     <div className="flex flex-col gap-3">
-      <SearchField value={search} onChange={setSearch} placeholder="Search applicants" label="Search applicants" />
+      <SearchField
+        value={search}
+        onChange={setSearch}
+        placeholder="Search applicants"
+        label="Search applicants"
+        className="self-center"
+      />
 
       <div className="-mx-2 h-80 overflow-y-auto">
         {applications.status === 'loading' && <PageLoader />}

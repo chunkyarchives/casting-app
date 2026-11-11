@@ -9,10 +9,12 @@ import { roleFacts } from './role-facts'
 
 type Props = {
   role: FilmRole
+  subtitle?: string
   action?: ReactNode
+  footer?: ReactNode
 }
 
-export function RoleCard({ role, action }: Props) {
+export function RoleCard({ role, subtitle, action, footer }: Props) {
   const pointer = useRef<string | null>(null)
   const [hovered, setHovered] = useState(false)
   const [focused, setFocused] = useState(false)
@@ -80,7 +82,10 @@ export function RoleCard({ role, action }: Props) {
               expanded && 'opacity-0',
             )}
           >
-            <span className="truncate font-bold">{role.name}</span>
+            <span className="flex min-w-0 flex-col">
+              <span className="truncate font-bold">{role.name}</span>
+              {subtitle && <span className="truncate text-xs text-white/70">{subtitle}</span>}
+            </span>
             {role.status === 'Filled' && <span className="shrink-0 text-xs text-white/75">Filled</span>}
           </div>
 
@@ -105,7 +110,10 @@ export function RoleCard({ role, action }: Props) {
           <div className="min-h-0 overflow-hidden">
             <div className="flex flex-col gap-3 p-4">
               <div className="flex items-start justify-between gap-3">
-                <h3 className="min-w-0 font-bold wrap-break-word">{role.name}</h3>
+                <div className="flex min-w-0 flex-col">
+                  <h3 className="font-bold wrap-break-word">{role.name}</h3>
+                  {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
+                </div>
                 <StatusDot tone={role.status === 'Open' ? 'positive' : 'neutral'}>{role.status}</StatusDot>
               </div>
 
@@ -121,21 +129,23 @@ export function RoleCard({ role, action }: Props) {
               {role.description && <p className="line-clamp-3 text-sm whitespace-pre-line">{role.description}</p>}
 
               {factGroups.length > 0 && (
-                  <div role="group" aria-label="Requirements" className="flex flex-col gap-1.5">
-                    {factGroups.map((facts) => (
-                      <ul key={facts[0].label} className="flex flex-wrap gap-1.5">
-                        {facts.map((fact) => (
-                          <li key={fact.label}>
-                            <Badge variant="outline" title={fact.label}>
-                              {fact.countryCode && <CountryFlag code={fact.countryCode} decorative className="h-2.5" />}
-                              {fact.value}
-                            </Badge>
-                          </li>
-                        ))}
-                      </ul>
-                    ))}
-                  </div>
+                <div role="group" aria-label="Requirements" className="flex flex-col gap-1.5">
+                  {factGroups.map((facts) => (
+                    <ul key={facts[0].label} className="flex flex-wrap gap-1.5">
+                      {facts.map((fact) => (
+                        <li key={fact.label}>
+                          <Badge variant="outline" title={fact.label}>
+                            {fact.countryCode && <CountryFlag code={fact.countryCode} decorative className="h-2.5" />}
+                            {fact.value}
+                          </Badge>
+                        </li>
+                      ))}
+                    </ul>
+                  ))}
+                </div>
               )}
+
+              {footer}
             </div>
           </div>
         </div>

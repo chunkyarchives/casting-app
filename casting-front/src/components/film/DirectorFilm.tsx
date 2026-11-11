@@ -2,24 +2,21 @@ import { PencilEdit02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Link, useNavigate } from 'react-router'
 import { useCurrentParticipant } from '@/components/auth/hooks/useCurrentParticipant'
+import { AddTile } from '@/components/common/actions/AddTile'
+import { DeleteButton } from '@/components/common/actions/DeleteButton'
+import { overlayActionClass } from '@/components/common/actions/overlay-action'
+import { SectionTitle } from '@/components/common/display/SectionTitle'
 import { LoadError } from '@/components/common/states/LoadError'
 import { PageLoader } from '@/components/common/states/PageLoader'
-import { AddTile } from '@/components/film/director/AddTitle'
 import { BackButton } from '@/components/film/director/BackButton'
-import { DeleteButton } from '@/components/film/director/DeleteButton'
 import { forgetFilm, forgetRole } from '@/components/film/hooks/film-cache'
 import { useFilm } from '@/components/film/hooks/useFilms'
 import { FilmHeader } from '@/components/film/shared/FilmHeader'
 import { RoleCard } from '@/components/film/shared/RoleCard'
-import { buttonVariants } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/toast'
 import { filmRolesApi, filmsApi } from '@/lib/api/films'
 import { filmPaths } from '@/lib/routes'
-import { cn } from '@/lib/utils'
 import type { Film, FilmRole } from '@/types/film'
-
-const editClass = cn(buttonVariants({ variant: 'secondary', size: 'icon-sm' }), 'shadow-md')
 
 export function DirectorFilm({ filmId }: { filmId: string }) {
   const film = useFilm(filmId)
@@ -67,7 +64,7 @@ function FilmOverview({ film, onChange }: OverviewProps) {
         posterAction={
           owner && (
             <>
-              <Link to={filmPaths.edit(film.id)} aria-label={`Edit ${film.title}`} title="Edit film" className={editClass}>
+              <Link to={filmPaths.edit(film.id)} aria-label={`Edit ${film.title}`} title="Edit film" className={overlayActionClass}>
                 <HugeiconsIcon icon={PencilEdit02Icon} strokeWidth={2} />
               </Link>
               <DeleteButton
@@ -83,8 +80,7 @@ function FilmOverview({ film, onChange }: OverviewProps) {
       />
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-2xl font-bold">Roles</h2>
-        <Separator />
+        <SectionTitle>Roles</SectionTitle>
 
         {film.roles.length === 0 && canAddRoles && (
           <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -108,7 +104,7 @@ function FilmOverview({ film, onChange }: OverviewProps) {
                         to={filmPaths.editRole(film.id, role.id)}
                         aria-label={`Edit ${role.name}`}
                         title="Edit role"
-                        className={editClass}
+                        className={overlayActionClass}
                       >
                         <HugeiconsIcon icon={PencilEdit02Icon} strokeWidth={2} />
                       </Link>

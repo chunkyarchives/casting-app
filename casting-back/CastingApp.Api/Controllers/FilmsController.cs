@@ -14,14 +14,17 @@ namespace CastingApp.Api.Controllers;
 public class FilmsController(IFilmService films, IFilmRoleService roles) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<FilmSummaryDto>>> List([FromQuery] FilmStatus? status, CancellationToken ct)
-        => Ok(await films.ListAsync(status, ct));
+    public async Task<ActionResult<IReadOnlyList<FilmSummaryDto>>> List(
+        [FromQuery] FilmStatus? status,
+        [FromQuery] Guid? directorId,
+        CancellationToken ct)
+        => Ok(await films.ListAsync(status, directorId, ct));
 
     [HttpGet("mine")]
     [Authorize(Roles = AppRoles.Director)]
     public async Task<ActionResult<IReadOnlyList<FilmSummaryDto>>> ListMine(CancellationToken ct)
         => Ok(await films.ListMineAsync(ct));
-    
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<FilmDto>> Get(Guid id, CancellationToken ct)
         => Ok(await films.GetAsync(id, ct));

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import Cropper from 'react-easy-crop'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -12,13 +12,27 @@ type Props = {
   title: string
   round?: boolean
   saving: boolean
+  confirmLabel?: string
+  savingLabel?: string
+  children?: ReactNode
   onCancel: () => void
   onConfirm: (area: CropArea) => void
 }
 
 const maxZoom = 3
 
-export function ImageCropDialog({ image, shape, title, round = false, saving, onCancel, onConfirm }: Props) {
+export function ImageCropDialog({
+  image,
+  shape,
+  title,
+  round = false,
+  saving,
+  confirmLabel = 'Save picture',
+  savingLabel = 'Saving…',
+  children,
+  onCancel,
+  onConfirm,
+}: Props) {
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
   const [area, setArea] = useState<CropArea | null>(null)
@@ -64,12 +78,14 @@ export function ImageCropDialog({ image, shape, title, round = false, saving, on
           onValueChange={(value) => setZoom(Array.isArray(value) ? value[0] : value)}
         />
 
+        {children}
+
         <DialogFooter>
           <Button variant="outline" disabled={saving} onClick={onCancel}>
             Cancel
           </Button>
           <Button disabled={saving || area === null} onClick={() => area && onConfirm(area)}>
-            {saving ? 'Saving…' : 'Save picture'}
+            {saving ? savingLabel : confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

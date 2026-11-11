@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Delete02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { ConfirmDeleteDialog } from './ConfirmDeleteDialog'
+import { overlayActionClass } from './overlay-action'
 
 type Props = {
   label: string
@@ -17,17 +18,15 @@ export function DeleteButton({ label, title, description, confirmLabel, onDelete
 
   return (
     <>
-      <Button
+      <button
         type="button"
-        variant="secondary"
-        size="icon-sm"
         aria-label={label}
         title={confirmLabel}
         onClick={() => setOpen(true)}
-        className="text-destructive shadow-md hover:bg-destructive hover:text-white"
+        className={cn(overlayActionClass, 'text-destructive hover:bg-destructive hover:text-white')}
       >
         <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
-      </Button>
+      </button>
 
       <ConfirmDeleteDialog
         open={open}

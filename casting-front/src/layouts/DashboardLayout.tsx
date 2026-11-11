@@ -1,5 +1,6 @@
 import { Suspense, useEffect } from 'react'
 import { Outlet } from 'react-router'
+import { ApplicationNotifier } from '@/components/application/ApplicationNotifier'
 import { ChatNotifier } from '@/components/chat/ChatNotifier'
 import { PageLoader } from '@/components/common/states/PageLoader'
 import { CrewNotifier } from '@/components/crew/CrewNotifier'
@@ -30,6 +31,7 @@ export default function DashboardLayout({ items, preload }: Props) {
       </SidebarInset>
       <ChatNotifier />
       <CrewNotifier />
+      <ApplicationNotifier />
     </SidebarProvider>
   )
 }

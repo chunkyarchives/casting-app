@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Delete02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { ConfirmDeleteDialog } from '@/components/film/director/ConfirmDeleteDialog'
+import { ConfirmDeleteDialog } from '@/components/common/actions/ConfirmDeleteDialog'
 import { SettingsRow } from '@/components/settings/SettingsRow'
 import { Button } from '@/components/ui/button'
 

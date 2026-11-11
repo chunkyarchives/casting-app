@@ -1,5 +1,5 @@
-import { DashboardPage } from '@/components/dashboard/DashboardPage'
+import { ActorRoles } from '@/components/film/ActorRoles'
 
 export default function Roles() {
-  return <DashboardPage title="Roles" description="" />
+  return <ActorRoles />
 }

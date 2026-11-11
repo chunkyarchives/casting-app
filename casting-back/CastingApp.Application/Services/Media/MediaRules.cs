@@ -52,6 +52,7 @@ internal static class MediaRules
         MediaKind.ProfilePicture => new ImageShape(1000, 1000),
         MediaKind.FilmPoster => new ImageShape(1000, 1500),
         MediaKind.RoleConceptArt => new ImageShape(1200, 1200),
+        MediaKind.Headshot or MediaKind.FullBody or MediaKind.ProductionStill => new ImageShape(1200, 1200),
         _ => null
     };
 

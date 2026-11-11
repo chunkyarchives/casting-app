@@ -1,18 +1,17 @@
 import { Link04Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { CountryFlag } from '@/components/common/display/CountryFlag'
-import { CloseProfileAvatar } from '@/components/common/media/CloseProfileAvatar'
 import { LoadError } from '@/components/common/states/LoadError'
 import { PageLoader } from '@/components/common/states/PageLoader'
+import { PortfolioGallery } from '@/components/portfolio/PortfolioGallery'
 import { Badge } from '@/components/ui/badge'
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { useApiQuery } from '@/hooks/useApiQuery'
 import { actorsApi } from '@/lib/api/actors'
 import { applicationsApi } from '@/lib/api/applications'
-import { countryName } from '@/lib/countries'
 import { formatDate } from '@/lib/format'
 import type { Actor } from '@/types/actor'
 import type { ApplicationStatus, RoleApplication } from '@/types/application'
+import { ProfileBasics } from './ProfileBasics'
+import { ProfileSheet } from './ProfileSheet'
 
 const statusLabels: Record<ApplicationStatus, string> = {
   Proposed: 'Pending',
@@ -35,17 +34,14 @@ type Props = {
 
 export function ActorInfoSheet({ actorId, name, open, onOpenChange }: Props) {
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full gap-0 sm:max-w-md">
-        <SheetHeader className="border-b">
-          <SheetTitle>{name}</SheetTitle>
-          <SheetDescription>Profile and applications to your films</SheetDescription>
-        </SheetHeader>
-        <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-4">
-          {open && <ActorInfo actorId={actorId} name={name} />}
-        </div>
-      </SheetContent>
-    </Sheet>
+    <ProfileSheet
+      name={name}
+      description="Profile, portfolio and applications to your films"
+      open={open}
+      onOpenChange={onOpenChange}
+    >
+      <ActorInfo actorId={actorId} name={name} />
+    </ProfileSheet>
   )
 }
 
@@ -58,6 +54,8 @@ function ActorInfo({ actorId, name }: { actorId: string; name: string }) {
       {actor.status === 'loading' && <PageLoader />}
       {actor.status === 'error' && <LoadError title="The profile could not be loaded" error={actor.error} onRetry={actor.reload} />}
       {actor.status === 'success' && <ActorProfile actor={actor.data} name={name} />}
+
+      <PortfolioGallery actorId={actorId} name={name} />
 
       <section className="flex flex-col gap-3">
         <h3 className="text-sm font-semibold">Applications</h3>
@@ -88,21 +86,10 @@ function ActorProfile({ actor, name }: { actor: Actor; name: string }) {
     actor.gender,
     actor.height !== null ? `${actor.height} cm` : null,
     actor.weight !== null ? `${actor.weight} kg` : null,
-  ].filter((fact) => fact !== null)
+  ]
 
   return (
-    <section className="flex flex-col items-center gap-3 text-center">
-      <CloseProfileAvatar participantId={actor.id} name={name} className="size-24" />
-      <div className="flex flex-col items-center gap-1">
-        <p className="text-sm text-muted-foreground">{facts.join(' · ')}</p>
-        {actor.origin && (
-          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <CountryFlag code={actor.origin} decorative className="h-3" />
-            {countryName(actor.origin)}
-          </p>
-        )}
-      </div>
-
+    <ProfileBasics participantId={actor.id} name={name} facts={facts} origin={actor.origin}>
       {actor.roleInterests.length > 0 && (
         <div className="flex flex-wrap justify-center gap-1.5">
           {actor.roleInterests.map((interest) => (
@@ -132,7 +119,7 @@ function ActorProfile({ actor, name }: { actor: Actor; name: string }) {
           ))}
         </ul>
       )}
-    </section>
+    </ProfileBasics>
   )
 }
 

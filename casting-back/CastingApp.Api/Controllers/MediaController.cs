@@ -130,6 +130,10 @@ public class MediaController(IMediaService media) : ControllerBase
         return NoContent();
     }
 
+    [HttpPut("me/media/{id:guid}/caption")]
+    public async Task<ActionResult<MediaItemDto>> UpdateCaption(Guid id, UpdateCaptionRequest request, CancellationToken ct)
+        => Ok(await media.UpdateCaptionAsync(id, request.Caption, ct));
+
     [HttpDelete("me/media/{id:guid}")]
     public async Task<IActionResult> DeleteMedia(Guid id, CancellationToken ct)
     {
@@ -165,6 +169,8 @@ public class AddShowreelForm
     [StringLength(140)] public string? Caption { get; set; }
     [Required] public IFormFile File { get; set; } = null!;
 }
+
+public record UpdateCaptionRequest([StringLength(140)] string? Caption);
 
 public class AddConceptArtForm
 {

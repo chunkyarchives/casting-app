@@ -61,6 +61,12 @@ export type UpdateFilmRoleRequest = SaveFilmRoleRequest & {
   rowVersion: number
 }
 
+export type OpenRole = {
+  filmId: string
+  filmTitle: string
+  role: FilmRole
+}
+
 export type Film = {
   id: string
   directorId: string

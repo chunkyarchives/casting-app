@@ -9,4 +9,7 @@ export type ApplicationQuery = {
 
 export const applicationsApi = {
   list: (query: ApplicationQuery = {}) => request<RoleApplication[]>(withQuery('/api/applications', query)),
+
+  apply: (roleId: string) =>
+    request<RoleApplication>(`/api/roles/${roleId}/applications`, { method: 'POST', body: {} }),
 }

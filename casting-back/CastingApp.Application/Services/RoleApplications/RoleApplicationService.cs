@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CastingApp.Application.Services.RoleApplications;
 
-public class RoleApplicationService(IAppDbContext db, ICurrentUser currentUser) : IRoleApplicationService
+public class RoleApplicationService(IAppDbContext db, ICurrentUser currentUser, IApplicationNotifier notifier) : IRoleApplicationService
 {
     public async Task<IReadOnlyList<RoleApplicationDto>> ListAsync(
         Guid? filmRoleId, Guid? actorId, ApplicationStatus? status, CancellationToken ct)
@@ -97,7 +97,9 @@ public class RoleApplicationService(IAppDbContext db, ICurrentUser currentUser) 
             throw new ConflictException("This actor is already proposed for this role.");
         }
 
-        return await GetAsync(application.Id, ct);
+        var created = await GetAsync(application.Id, ct);
+        await notifier.ApplicationCreatedAsync(created, role.Film.DirectorId, ct);
+        return created;
     }
 
     public async Task<RoleApplicationDto> AcceptAsync(Guid id, CancellationToken ct)
@@ -202,7 +204,7 @@ public class RoleApplicationService(IAppDbContext db, ICurrentUser currentUser) 
         {
             await db.SaveChangesAsync(ct);
         }
-        catch (DbUpdateException)  
+        catch (DbUpdateException)
         {
             throw new ConflictException(
                 "Another decision for this role was made at the same time. Reload and try again.");

@@ -87,7 +87,7 @@ public class MediaService(
         return await OpenAsync(meta, ct);
     }
 
-        public async Task<MediaFile> GetPublicProfilePictureAsync(Guid participantId, CancellationToken ct)
+    public async Task<MediaFile> GetPublicProfilePictureAsync(Guid participantId, CancellationToken ct)
     {
         var visible = await db.Users.AsNoTracking()
             .Where(u => u.Id == participantId)
@@ -142,7 +142,7 @@ public class MediaService(
         }
         catch
         {
-            await storage.DeleteAsync(asset.StorageKey, CancellationToken.None);   
+            await storage.DeleteAsync(asset.StorageKey, CancellationToken.None);
             throw;
         }
 
@@ -189,6 +189,25 @@ public class MediaService(
         }
 
         return await OpenAsync(meta, ct);
+    }
+
+    public async Task<MediaItemDto> UpdateCaptionAsync(Guid mediaId, string? caption, CancellationToken ct)
+    {
+        var userId = currentUser.Id;
+
+        var asset = await db.MediaAssets.FirstOrDefaultAsync(m => m.Id == mediaId && m.OwnerId == userId, ct)
+            ?? throw new NotFoundException("Media", mediaId);
+
+        if (asset.Kind is not (MediaKind.Headshot or MediaKind.FullBody or MediaKind.ProductionStill or MediaKind.Showreel))
+            throw new BadRequestException("Only portfolio pictures and showreels have a caption you can change here.");
+
+        var text = string.IsNullOrWhiteSpace(caption) ? null : caption.Trim();
+        if (text is { Length: > 140 })
+            throw new BadRequestException("The caption is too long (max 140 characters).");
+
+        asset.Caption = text;
+        await db.SaveChangesAsync(ct);
+        return asset.ToItemDto();
     }
 
     public async Task DeleteAsync(Guid mediaId, CancellationToken ct)

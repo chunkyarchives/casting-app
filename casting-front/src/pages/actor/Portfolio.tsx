@@ -1,5 +1,5 @@
-import { DashboardPage } from '@/components/dashboard/DashboardPage'
+import { ActorPortfolio } from '@/components/portfolio/ActorPortfolio'
 
 export default function Portfolio() {
-  return <DashboardPage title="Portfolio" description="" />
+  return <ActorPortfolio />
 }

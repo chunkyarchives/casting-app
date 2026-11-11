@@ -21,6 +21,8 @@ public record FilmRoleDto(
     int RowVersion,
     IReadOnlyList<MediaItemDto> ConceptArt);
 
+public record OpenRoleDto(Guid FilmId, string FilmTitle, FilmRoleDto Role);
+
 public record CreateFilmRoleRequest(
     [StringLength(200)] string Name,
     [StringLength(2000)] string? Description,

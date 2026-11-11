@@ -10,12 +10,12 @@ public static class ChatEvents
 {
     public const string MessageReceived = "MessageReceived";
     public const string CrewMemberChanged = "CrewMemberChanged";
+    public const string ApplicationReceived = "ApplicationReceived";
 }
 
 [Authorize(Roles = AppRoles.ActorDirectorOrCastingDirector)]
 public class ChatHub(IMessageService messages) : Hub
 {
-    // Isti servis kao REST endpoint, pa ista pravila: učesnik razgovora, nije zaključan, profil kompletan, ograničenje po minutu
     public async Task<MessageDto> SendMessage(Guid conversationId, string content)
     {
         if (!Guid.TryParse(Context.UserIdentifier, out var senderId))

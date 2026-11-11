@@ -10,10 +10,11 @@ namespace CastingApp.Application.Services.Films;
 
 public class FilmService(IAppDbContext db, ICurrentUser currentUser, IMediaStorage storage) : IFilmService
 {
-    public async Task<IReadOnlyList<FilmSummaryDto>> ListAsync(FilmStatus? status, CancellationToken ct)
+    public async Task<IReadOnlyList<FilmSummaryDto>> ListAsync(FilmStatus? status, Guid? directorId, CancellationToken ct)
     {
         var query = db.Films.AsNoTracking();
         if (status is not null) query = query.Where(f => f.Status == status);
+        if (directorId is not null) query = query.Where(f => f.DirectorId == directorId);
 
         return await query
             .OrderByDescending(f => f.CreatedAt)
@@ -48,7 +49,7 @@ public class FilmService(IAppDbContext db, ICurrentUser currentUser, IMediaStora
 
     public async Task<FilmDto> CreateAsync(CreateFilmRequest request, CancellationToken ct)
     {
-        var directorId = currentUser.Id;   
+        var directorId = currentUser.Id;
         if (!await db.Directors.AnyAsync(d => d.ParticipantId == directorId, ct))
             throw new NotFoundException(nameof(Director), directorId);
 
@@ -90,7 +91,7 @@ public class FilmService(IAppDbContext db, ICurrentUser currentUser, IMediaStora
         var film = await db.Films.FirstOrDefaultAsync(f => f.Id == id, ct) ?? throw new NotFoundException(nameof(Film), id);
         currentUser.EnsureOwnerOrAdmin(film.DirectorId);
 
-        var files = await FilmRemoval.RemoveAsync(db, film, ct);   
+        var files = await FilmRemoval.RemoveAsync(db, film, ct);
         await db.SaveChangesAsync(ct);
         await storage.TryDeleteAsync(files);
     }

@@ -15,6 +15,7 @@ public interface IMediaService
     Task<MediaItemDto> AddAsync(MediaKind kind, string? caption, Stream content, long length, CancellationToken ct);
     Task<IReadOnlyList<MediaItemDto>> ListAsync(Guid actorId, bool showreels, CancellationToken ct);
     Task<MediaFile> GetAsync(Guid mediaId, CancellationToken ct);
+    Task<MediaItemDto> UpdateCaptionAsync(Guid mediaId, string? caption, CancellationToken ct);
     Task DeleteAsync(Guid mediaId, CancellationToken ct);
     Task<MediaItemDto> SetFilmPosterAsync(Guid filmId, Stream content, long length, CancellationToken ct);
     Task DeleteFilmPosterAsync(Guid filmId, CancellationToken ct);

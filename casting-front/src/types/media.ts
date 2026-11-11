@@ -7,6 +7,8 @@ export type MediaKind =
   | 'FilmPoster'
   | 'RoleConceptArt'
 
+export type PhotoKind = Extract<MediaKind, 'Headshot' | 'FullBody' | 'ProductionStill'>
+
 export type MediaItem = {
   id: string
   kind: MediaKind
