@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using CastingApp.Domain.Enums;
 
 namespace CastingApp.Application.DTOs.RoleApplications;
@@ -6,6 +7,7 @@ public record RoleApplicationDto(
     Guid Id,
     Guid FilmRoleId,
     string FilmRoleName,
+    string? RoleImageUrl,
     Guid FilmId,
     string FilmTitle,
     Guid ActorId,
@@ -18,3 +20,5 @@ public record RoleApplicationDto(
 
 // Glumac salje prazno telo ({}), casting director salje ActorId glumca koga predlaze, ziveo dnd
 public record CreateRoleApplicationRequest(Guid? ActorId);
+
+public record ReorderApplicationsRequest([Required, MaxLength(500)] IReadOnlyList<Guid> ApplicationIds);

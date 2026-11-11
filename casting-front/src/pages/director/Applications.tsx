@@ -1,5 +1,5 @@
-import { DashboardPage } from '@/components/dashboard/DashboardPage'
+import { DirectorApplications } from '@/components/application/DirectorApplications'
 
 export default function Applications() {
-  return <DashboardPage title="Applications" />
+  return <DirectorApplications />
 }

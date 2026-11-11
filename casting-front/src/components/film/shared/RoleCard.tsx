@@ -7,6 +7,8 @@ import type { FilmRole } from '@/types/film'
 import { ConceptArtCarousel } from './ConceptArtCarousel'
 import { roleFacts } from './role-facts'
 
+const filledFilter = '[filter:saturate(0%)_sepia(100%)_contrast(150%)_saturate(150%)]'
+
 type Props = {
   role: FilmRole
   subtitle?: string
@@ -21,6 +23,7 @@ export function RoleCard({ role, subtitle, action, footer }: Props) {
   const [opened, setOpened] = useState(false)
   const [index, setIndex] = useState(0)
   const expanded = hovered || focused
+  const filled = role.status === 'Filled'
   const shownIndex = Math.min(index, Math.max(role.conceptArt.length - 1, 0))
   const art = role.conceptArt.at(shownIndex)
   const factGroups = roleFacts(role)
@@ -63,18 +66,20 @@ export function RoleCard({ role, subtitle, action, footer }: Props) {
       <div
         className={cn(
           'absolute top-0 left-1/2 w-full -translate-x-1/2 overflow-hidden rounded-2xl border bg-card shadow-sm transition-[width,translate,box-shadow] duration-200 ease-out motion-reduce:transition-none',
-          expanded && 'z-30 w-[calc(100%+2.5rem)] -translate-y-5 shadow-2xl ring-1 ring-primary/40',
+          expanded && 'z-30 w-[calc(100%+1.875rem)] -translate-y-[0.9375rem] shadow-2xl ring-1 ring-primary/40',
         )}
       >
         <div className="relative">
-          <ConceptArtCarousel
-            items={role.conceptArt}
-            roleName={role.name}
-            index={shownIndex}
-            onIndexChange={setIndex}
-            controls={expanded}
-            loadAll={opened}
-          />
+          <div className={cn(filled && filledFilter)}>
+            <ConceptArtCarousel
+              items={role.conceptArt}
+              roleName={role.name}
+              index={shownIndex}
+              onIndexChange={setIndex}
+              controls={expanded}
+              loadAll={opened}
+            />
+          </div>
 
           <div
             className={cn(
@@ -86,7 +91,7 @@ export function RoleCard({ role, subtitle, action, footer }: Props) {
               <span className="truncate font-bold">{role.name}</span>
               {subtitle && <span className="truncate text-xs text-white/70">{subtitle}</span>}
             </span>
-            {role.status === 'Filled' && <span className="shrink-0 text-xs text-white/75">Filled</span>}
+            {filled && <span className="shrink-0 text-xs text-white/75">Filled</span>}
           </div>
 
           {action && (

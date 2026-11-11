@@ -4,6 +4,7 @@ export type RoleApplication = {
   id: string
   filmRoleId: string
   filmRoleName: string
+  roleImageUrl: string | null
   filmId: string
   filmTitle: string
   actorId: string

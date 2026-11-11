@@ -22,6 +22,19 @@ public class ApplicationsController(IRoleApplicationService applications) : Cont
         CancellationToken ct)
         => Ok(await applications.ListAsync(filmRoleId, actorId, status, ct));
 
+    [HttpGet("pending")]
+    [Authorize(Roles = AppRoles.Director)]
+    public async Task<ActionResult<IReadOnlyList<RoleApplicationDto>>> ListPending(CancellationToken ct)
+        => Ok(await applications.ListPendingAsync(ct));
+
+    [HttpPut("pending/order")]
+    [Authorize(Roles = AppRoles.Director)]
+    public async Task<IActionResult> ReorderPending(ReorderApplicationsRequest request, CancellationToken ct)
+    {
+        await applications.ReorderPendingAsync(request.ApplicationIds, ct);
+        return NoContent();
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<RoleApplicationDto>> Get(Guid id, CancellationToken ct)
         => Ok(await applications.GetAsync(id, ct));

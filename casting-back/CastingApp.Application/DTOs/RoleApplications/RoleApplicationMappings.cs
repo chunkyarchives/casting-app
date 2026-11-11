@@ -1,3 +1,4 @@
+using CastingApp.Application.Services.Media;
 using CastingApp.Domain.Entities;
 
 namespace CastingApp.Application.DTOs.RoleApplications;
@@ -9,6 +10,7 @@ internal static class ApplicationMappings
             a.Id,
             a.FilmRoleId,
             a.FilmRole.Name,
+            MediaUrls.Media(a.FilmRole.ConceptArt.OrderBy(m => m.CreatedAt).Select(m => (Guid?)m.Id).FirstOrDefault()),
             a.FilmRole.FilmId,
             a.FilmRole.Film.Title,
             a.ActorId,

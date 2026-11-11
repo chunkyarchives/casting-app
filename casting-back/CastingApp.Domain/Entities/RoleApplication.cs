@@ -13,6 +13,7 @@ public class RoleApplication
     public CastingDirector? ProposedBy { get; set; }
 
     public ApplicationStatus Status { get; set; } = ApplicationStatus.Proposed;
+    public int Position { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? DecidedAt { get; set; }
 }

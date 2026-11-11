@@ -31,7 +31,8 @@ public class FilmRoleService(IAppDbContext db, ICurrentUser currentUser, IMediaS
             .Include(r => r.ConceptArt)
             .Include(r => r.Film)
             .Where(r => r.Status == FilmRoleStatus.Open && r.Film.Status == FilmStatus.Active)
-            .Where(r => !db.RoleApplications.Any(a => a.FilmRoleId == r.Id && a.ActorId == actorId))
+            .Where(r => !db.RoleApplications.Any(a =>
+                a.FilmRoleId == r.Id && a.ActorId == actorId && a.Status != ApplicationStatus.Rejected))
             .OrderByDescending(r => r.Film.CreatedAt)
             .ThenBy(r => r.Name)
             .ToListAsync(ct);

@@ -2,14 +2,16 @@ import { lazy, Suspense } from 'react'
 import { useCurrentParticipant } from '@/components/auth/hooks/useCurrentParticipant'
 
 const ApplicationNotifications = lazy(() => import('@/components/application/notifications/ApplicationNotifications'))
+const DecisionNotifications = lazy(() => import('@/components/application/notifications/DecisionNotifications'))
 
 export function ApplicationNotifier() {
   const participant = useCurrentParticipant()
-  if (!participant?.profileComplete || participant.role !== 'Director') return null
+  if (!participant?.profileComplete) return null
 
   return (
     <Suspense fallback={null}>
-      <ApplicationNotifications />
+      {participant.role === 'Director' && <ApplicationNotifications />}
+      {participant.role === 'Actor' && <DecisionNotifications />}
     </Suspense>
   )
 }

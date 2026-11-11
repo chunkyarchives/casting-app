@@ -11,10 +11,11 @@ type Props = {
   participantId: string
   pictureUrl?: string | null
   className?: string
+  fade?: boolean
   onLoadedChange?: (loaded: boolean) => void
 }
 
-export function ProfileAvatar({ participantId, pictureUrl, className, onLoadedChange }: Props) {
+export function ProfileAvatar({ participantId, pictureUrl, className, fade = true, onLoadedChange }: Props) {
   const src = profilePictureSource(participantId, pictureUrl)
   const [picture, setPicture] = useState<PictureState>('loading')
   const [loadingSrc, setLoadingSrc] = useState(src)
@@ -23,6 +24,7 @@ export function ProfileAvatar({ participantId, pictureUrl, className, onLoadedCh
     setPicture('loading')
   }
   const shown = src ? picture : 'missing'
+  const fadeClass = fade && 'animate-in duration-300 fade-in-0'
 
   preload(defaultProfilePicture, { as: 'image' })
 
@@ -37,7 +39,7 @@ export function ProfileAvatar({ participantId, pictureUrl, className, onLoadedCh
             setPicture(next)
             onLoadedChange?.(next === 'loaded')
           }}
-          className="animate-in duration-300 fade-in-0"
+          className={cn(fadeClass)}
         />
       )}
       {shown === 'missing' && (
@@ -45,7 +47,7 @@ export function ProfileAvatar({ participantId, pictureUrl, className, onLoadedCh
           <img
             src={defaultProfilePicture}
             alt=""
-            className="size-full animate-in rounded-full object-cover duration-300 fade-in-0"
+            className={cn('size-full rounded-full object-cover', fadeClass)}
           />
         </AvatarFallback>
       )}

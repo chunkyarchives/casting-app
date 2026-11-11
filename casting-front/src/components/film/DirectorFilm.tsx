@@ -13,6 +13,7 @@ import { forgetFilm, forgetRole } from '@/components/film/hooks/film-cache'
 import { useFilm } from '@/components/film/hooks/useFilms'
 import { FilmHeader } from '@/components/film/shared/FilmHeader'
 import { RoleCard } from '@/components/film/shared/RoleCard'
+import { roleGrid } from '@/components/film/shared/role-grid'
 import { toast } from '@/components/ui/toast'
 import { filmRolesApi, filmsApi } from '@/lib/api/films'
 import { filmPaths } from '@/lib/routes'
@@ -92,7 +93,7 @@ function FilmOverview({ film, onChange }: OverviewProps) {
           <p className="text-sm text-muted-foreground">This film is archived, so it can't get new roles.</p>
         )}
 
-        <ul className="grid grid-cols-2 gap-4 pt-2 sm:grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] sm:gap-6">
+        <ul className={roleGrid}>
           {film.roles.map((role) => (
             <li key={role.id}>
               <RoleCard

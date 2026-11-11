@@ -12,4 +12,15 @@ export const applicationsApi = {
 
   apply: (roleId: string) =>
     request<RoleApplication>(`/api/roles/${roleId}/applications`, { method: 'POST', body: {} }),
+
+  pending: () => request<RoleApplication[]>('/api/applications/pending'),
+
+  reorder: (applicationIds: string[]) =>
+    request<void>('/api/applications/pending/order', { method: 'PUT', body: { applicationIds } }),
+
+  accept: (applicationId: string) =>
+    request<RoleApplication>(`/api/applications/${applicationId}/accept`, { method: 'POST' }),
+
+  reject: (applicationId: string) =>
+    request<RoleApplication>(`/api/applications/${applicationId}/reject`, { method: 'POST' }),
 }

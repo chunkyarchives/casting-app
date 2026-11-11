@@ -5,4 +5,5 @@ namespace CastingApp.Application.Abstractions;
 public interface IApplicationNotifier
 {
     Task ApplicationCreatedAsync(RoleApplicationDto application, Guid directorId, CancellationToken ct);
+    Task ApplicationDecidedAsync(RoleApplicationDto application, CancellationToken ct);
 }

@@ -1,0 +1,1 @@
+export const roleGrid = 'grid grid-cols-2 gap-4.5 pt-2 sm:grid-cols-[repeat(auto-fill,10.5rem)] sm:gap-7'
