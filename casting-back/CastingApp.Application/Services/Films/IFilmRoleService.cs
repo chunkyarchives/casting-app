@@ -6,6 +6,7 @@ public interface IFilmRoleService
 {
     Task<IReadOnlyList<FilmRoleDto>> ListByFilmAsync(Guid filmId, CancellationToken ct);
     Task<IReadOnlyList<OpenRoleDto>> ListOpenForActorAsync(CancellationToken ct);
+    Task<IReadOnlyList<MatchmakingRoleDto>> ListForMatchmakingAsync(CancellationToken ct);
     Task<FilmRoleDto> GetAsync(Guid id, CancellationToken ct);
     Task<FilmRoleDto> CreateAsync(Guid filmId, CreateFilmRoleRequest request, CancellationToken ct);
     Task<FilmRoleDto> UpdateAsync(Guid id, UpdateFilmRoleRequest request, CancellationToken ct);

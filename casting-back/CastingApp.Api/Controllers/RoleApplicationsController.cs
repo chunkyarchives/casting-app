@@ -35,6 +35,19 @@ public class ApplicationsController(IRoleApplicationService applications) : Cont
         return NoContent();
     }
 
+    [HttpGet("proposals")]
+    [Authorize(Roles = AppRoles.CastingDirector)]
+    public async Task<ActionResult<IReadOnlyList<RoleApplicationDto>>> ListProposals(CancellationToken ct)
+        => Ok(await applications.ListProposalsAsync(ct));
+
+    [HttpPut("proposals/order")]
+    [Authorize(Roles = AppRoles.CastingDirector)]
+    public async Task<IActionResult> ReorderProposals(ReorderApplicationsRequest request, CancellationToken ct)
+    {
+        await applications.ReorderProposalsAsync(request.ApplicationIds, ct);
+        return NoContent();
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<RoleApplicationDto>> Get(Guid id, CancellationToken ct)
         => Ok(await applications.GetAsync(id, ct));

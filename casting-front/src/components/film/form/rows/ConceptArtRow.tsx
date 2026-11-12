@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type ChangeEvent } from 'react'
+import { useRef, useState, type ChangeEvent } from 'react'
 import { Cancel01Icon, PlusSignIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { BlobImage } from '@/components/common/media/BlobImage'
 import { ImageCropDialog } from '@/components/common/media/ImageCropDialog'
 import { MediaImage } from '@/components/common/media/MediaImage'
 import { SettingsRow } from '@/components/settings/SettingsRow'
@@ -46,10 +47,7 @@ export function ConceptArtRow({ field, error }: { field: RowField<ConceptArtValu
       toast.add({ type: 'error', title: 'The picture could not be cropped' })
       return
     }
-    field.onChange([
-      ...items,
-      { kind: 'new', id: crypto.randomUUID(), picture, preview: URL.createObjectURL(picture), caption: '' },
-    ])
+    field.onChange([...items, { kind: 'new', id: crypto.randomUUID(), picture, caption: '' }])
     closeCrop()
   }
 
@@ -109,18 +107,13 @@ type ItemProps = {
 }
 
 function ConceptArtItem({ art, position, onChange }: ItemProps) {
-  useEffect(() => {
-    if (art.kind !== 'new') return
-    return () => URL.revokeObjectURL(art.preview)
-  }, [art])
-
   const label = `concept art ${position + 1}`
 
   return (
     <li className="flex min-w-0 flex-col gap-1.5">
       <div className="relative">
         {art.kind === 'new' ? (
-          <img src={art.preview} alt="" className="aspect-square w-full rounded-xl object-cover ring-1 ring-border" />
+          <BlobImage blob={art.picture} className="aspect-square w-full rounded-xl object-cover ring-1 ring-border" />
         ) : (
           <MediaImage src={mediaUrl(art.media.url)} alt="" className="aspect-square w-full rounded-xl ring-1 ring-border" />
         )}

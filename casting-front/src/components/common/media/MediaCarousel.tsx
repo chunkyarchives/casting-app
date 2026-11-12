@@ -1,5 +1,5 @@
-import { ArrowLeft01Icon, ArrowRight01Icon, ImageNotFound01Icon, MaskTheater01Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
+import { ArrowLeft01Icon, ArrowRight01Icon, ImageNotFound01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react'
 import { MediaImage } from '@/components/common/media/MediaImage'
 import { mediaUrl } from '@/lib/api/media'
 import { cn } from '@/lib/utils'
@@ -7,7 +7,9 @@ import type { MediaItem } from '@/types/media'
 
 type Props = {
   items: MediaItem[]
-  roleName: string
+  label: string
+  itemLabel: (position: number) => string
+  emptyIcon: IconSvgElement
   index: number
   onIndexChange: (index: number) => void
   controls: boolean
@@ -17,11 +19,11 @@ type Props = {
 const arrowClass =
   'absolute top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm transition-opacity duration-200 hover:bg-black/75 focus-visible:ring-[3px] focus-visible:ring-ring/60 focus-visible:outline-none'
 
-export function ConceptArtCarousel({ items, roleName, index, onIndexChange, controls, loadAll }: Props) {
+export function MediaCarousel({ items, label, itemLabel, emptyIcon, index, onIndexChange, controls, loadAll }: Props) {
   if (items.length === 0) {
     return (
       <div className="flex aspect-square items-center justify-center bg-muted text-muted-foreground">
-        <HugeiconsIcon icon={MaskTheater01Icon} strokeWidth={1.5} className="size-1/3" />
+        <HugeiconsIcon icon={emptyIcon} strokeWidth={1.5} className="size-1/3" />
       </div>
     )
   }
@@ -34,16 +36,16 @@ export function ConceptArtCarousel({ items, roleName, index, onIndexChange, cont
     <div
       role="group"
       aria-roledescription="carousel"
-      aria-label={`Concept art for ${roleName}`}
+      aria-label={label}
       className="relative aspect-square overflow-hidden bg-muted"
     >
       <div
         className="flex size-full transition-transform duration-300 ease-out motion-reduce:transition-none"
         style={{ transform: `translateX(-${index * 100}%)` }}
       >
-        {items.map((art, position) => (
+        {items.map((item, position) => (
           <div
-            key={art.id}
+            key={item.id}
             role="group"
             aria-roledescription="slide"
             aria-label={`${position + 1} of ${items.length}`}
@@ -52,10 +54,10 @@ export function ConceptArtCarousel({ items, roleName, index, onIndexChange, cont
           >
             {(position === index || loadAll) && (
               <MediaImage
-                src={mediaUrl(art.url)}
-                alt={art.caption ?? `Concept art ${position + 1} for ${roleName}`}
+                src={mediaUrl(item.url)}
+                alt={item.caption ?? itemLabel(position)}
                 className="size-full"
-                fallback={<MissingArt />}
+                fallback={<MissingPicture />}
               />
             )}
           </div>
@@ -89,9 +91,9 @@ export function ConceptArtCarousel({ items, roleName, index, onIndexChange, cont
               !shown && 'pointer-events-none opacity-0',
             )}
           >
-            {items.map((art, position) => (
+            {items.map((item, position) => (
               <button
-                key={art.id}
+                key={item.id}
                 type="button"
                 aria-label={`Show picture ${position + 1}`}
                 aria-current={position === index}
@@ -110,7 +112,7 @@ export function ConceptArtCarousel({ items, roleName, index, onIndexChange, cont
   )
 }
 
-function MissingArt() {
+function MissingPicture() {
   return (
     <div className="flex size-full items-center justify-center text-muted-foreground">
       <HugeiconsIcon icon={ImageNotFound01Icon} strokeWidth={1.5} className="size-1/3" />

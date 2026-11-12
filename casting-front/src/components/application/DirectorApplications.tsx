@@ -6,7 +6,7 @@ import { SectionTitle } from '@/components/common/display/SectionTitle'
 import { EmptyMessage } from '@/components/common/states/EmptyMessage'
 import { LoadError } from '@/components/common/states/LoadError'
 import { Skeleton } from '@/components/ui/skeleton'
-import { subscribeToApplications } from '@/lib/chat/chat-hub'
+import { subscribeToApplications, subscribeToApplicationWithdrawals } from '@/lib/chat/chat-hub'
 import type { RoleApplication } from '@/types/application'
 
 const placeholders = Array.from({ length: 3 }, (_, index) => index)
@@ -20,7 +20,19 @@ export function DirectorApplications() {
     applications.setData([...applications.data, application])
   })
 
-  useEffect(() => subscribeToApplications({ onApplication: (application) => received(application) }), [])
+  const withdrawn = useEffectEvent((application: RoleApplication) => {
+    if (applications.status !== 'success') return
+    applications.setData(applications.data.filter((item) => item.id !== application.id))
+  })
+
+  useEffect(() => {
+    const stopReceived = subscribeToApplications({ onApplication: (application) => received(application) })
+    const stopWithdrawn = subscribeToApplicationWithdrawals({ onApplicationWithdrawn: (application) => withdrawn(application) })
+    return () => {
+      stopReceived()
+      stopWithdrawn()
+    }
+  }, [])
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 pt-2 pb-16">

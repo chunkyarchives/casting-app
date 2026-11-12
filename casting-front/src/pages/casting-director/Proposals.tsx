@@ -1,5 +1,5 @@
-import { DashboardPage } from '@/components/dashboard/DashboardPage'
+import { CastingDirectorProposals } from '@/components/application/CastingDirectorProposals'
 
 export default function Proposals() {
-  return <DashboardPage title="Proposals" />
+  return <CastingDirectorProposals />
 }

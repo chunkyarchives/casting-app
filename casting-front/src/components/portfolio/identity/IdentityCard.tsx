@@ -26,9 +26,9 @@ type Props = {
 
 const missing = <span className="text-muted-foreground">Not set</span>
 
-function FactList({ facts }: { facts: Fact[] }) {
+function FactList({ facts, className }: { facts: Fact[]; className?: string }) {
   return (
-    <dl className="grid grid-cols-[6.5rem_minmax(0,1fr)] content-start gap-x-4 gap-y-3 text-sm">
+    <dl className={cn('grid grid-cols-[auto_minmax(0,1fr)] content-start gap-x-4 gap-y-2.5 text-base', className)}>
       {facts.map((fact) => (
         <div key={fact.label} className="contents">
           <dt className="text-muted-foreground">{fact.label}</dt>
@@ -54,44 +54,46 @@ export function IdentityCard({ actor, email, pictureUrl, editTo }: Props) {
     { label: 'Gender', value: actor.gender ?? missing },
     { label: 'Height', value: actor.height !== null ? `${actor.height} cm` : missing },
     { label: 'Weight', value: actor.weight !== null ? `${actor.weight} kg` : missing },
-    {
-      label: 'Origin',
-      value: actor.origin ? (
-        <span className="inline-flex items-center gap-2">
-          {countryName(actor.origin)}
-          <CountryFlag code={actor.origin} decorative className="h-3.5" />
-        </span>
-      ) : (
-        missing
-      ),
-    },
   ]
 
   return (
     <section
       aria-label="Your details"
-      className="grid gap-6 rounded-2xl border bg-card p-6 shadow-sm md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
+      className="grid gap-6 rounded-2xl border bg-card p-6 shadow-sm md:grid-cols-[auto_minmax(0,1fr)_auto_auto] md:gap-x-10"
     >
-      <div className="relative order-first size-36 self-start md:order-last md:size-44">
-        {picture ? (
-          <ImageZoom
-            src={picture}
-            alt={`Profile picture of ${name}`}
-            label={`Show the profile picture of ${name}`}
-            className="block size-full overflow-hidden rounded-xl ring-1 ring-border"
-          >
-            <MediaImage src={picture} alt="" className="size-full" />
-          </ImageZoom>
-        ) : (
-          <img src={defaultProfilePicture} alt="" className="size-full rounded-xl object-cover ring-1 ring-border" />
-        )}
-        <Link to={editTo} aria-label="Edit your details" title="Edit your details" className={cn(overlayActionClass, 'absolute top-2 right-2')}>
-          <HugeiconsIcon icon={PencilEdit02Icon} strokeWidth={2} />
-        </Link>
+      <div className="flex flex-col items-start gap-3 md:col-start-4 md:row-start-1 md:items-center">
+        <div className="relative size-36 md:size-40">
+          {picture ? (
+            <ImageZoom
+              src={picture}
+              alt={`Profile picture of ${name}`}
+              label={`Show the profile picture of ${name}`}
+              className="block size-full overflow-hidden rounded-xl ring-1 ring-border"
+            >
+              <MediaImage src={picture} alt="" className="size-full" />
+            </ImageZoom>
+          ) : (
+            <img src={defaultProfilePicture} alt="" className="size-full rounded-xl object-cover ring-1 ring-border" />
+          )}
+          <Link to={editTo} aria-label="Edit your details" title="Edit your details" className={cn(overlayActionClass, 'absolute top-2 right-2')}>
+            <HugeiconsIcon icon={PencilEdit02Icon} strokeWidth={2} />
+          </Link>
+        </div>
+        <p className="inline-flex items-center gap-2 text-base">
+          <span className="sr-only">Origin: </span>
+          {actor.origin ? (
+            <>
+              {countryName(actor.origin)}
+              <CountryFlag code={actor.origin} decorative className="h-3.5" />
+            </>
+          ) : (
+            <span className="text-muted-foreground">Origin not set</span>
+          )}
+        </p>
       </div>
 
-      <FactList facts={personal} />
-      <FactList facts={physical} />
+      <FactList facts={personal} className="md:col-start-1 md:row-start-1" />
+      <FactList facts={physical} className="md:col-start-3 md:row-start-1" />
     </section>
   )
 }

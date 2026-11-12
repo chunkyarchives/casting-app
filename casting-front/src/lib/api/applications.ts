@@ -23,4 +23,14 @@ export const applicationsApi = {
 
   reject: (applicationId: string) =>
     request<RoleApplication>(`/api/applications/${applicationId}/reject`, { method: 'POST' }),
+
+  propose: (roleId: string, actorId: string) =>
+    request<RoleApplication>(`/api/roles/${roleId}/applications`, { method: 'POST', body: { actorId } }),
+
+  proposals: () => request<RoleApplication[]>('/api/applications/proposals'),
+
+  reorderProposals: (applicationIds: string[]) =>
+    request<void>('/api/applications/proposals/order', { method: 'PUT', body: { applicationIds } }),
+
+  withdraw: (applicationId: string) => request<void>(`/api/applications/${applicationId}`, { method: 'DELETE' }),
 }

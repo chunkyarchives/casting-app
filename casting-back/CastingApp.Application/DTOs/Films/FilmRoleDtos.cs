@@ -23,6 +23,8 @@ public record FilmRoleDto(
 
 public record OpenRoleDto(Guid FilmId, string FilmTitle, FilmRoleDto Role);
 
+public record MatchmakingRoleDto(Guid FilmId, string FilmTitle, FilmRoleDto Role, IReadOnlyList<Guid> ProposedActorIds);
+
 public record CreateFilmRoleRequest(
     [StringLength(200)] string Name,
     [StringLength(2000)] string? Description,

@@ -12,6 +12,7 @@ type HubListener = {
   onCrewChange?: (change: CrewMemberChange) => void
   onApplication?: (application: RoleApplication) => void
   onApplicationDecided?: (application: RoleApplication) => void
+  onApplicationWithdrawn?: (application: RoleApplication) => void
   onReconnected?: () => void
 }
 
@@ -19,6 +20,7 @@ type ChatListener = Required<Pick<HubListener, 'onMessage' | 'onReconnected'>>
 type CrewListener = Required<Pick<HubListener, 'onCrewChange'>> & Pick<HubListener, 'onReconnected'>
 type ApplicationListener = Required<Pick<HubListener, 'onApplication'>>
 type DecisionListener = Required<Pick<HubListener, 'onApplicationDecided'>>
+type WithdrawalListener = Required<Pick<HubListener, 'onApplicationWithdrawn'>>
 
 const retryDelaysMs = [0, 2000, 5000, 10000, 30000]
 const busyRetryMs = 300
@@ -60,6 +62,10 @@ connection.on('ApplicationReceived', (application: RoleApplication) => {
 
 connection.on('ApplicationDecided', (application: RoleApplication) => {
   listeners.forEach((listener) => listener.onApplicationDecided?.(application))
+})
+
+connection.on('ApplicationWithdrawn', (application: RoleApplication) => {
+  listeners.forEach((listener) => listener.onApplicationWithdrawn?.(application))
 })
 
 connection.onclose(() => {
@@ -136,6 +142,8 @@ export const subscribeToCrew = (listener: CrewListener) => subscribe(listener)
 export const subscribeToApplications = (listener: ApplicationListener) => subscribe(listener)
 
 export const subscribeToApplicationDecisions = (listener: DecisionListener) => subscribe(listener)
+
+export const subscribeToApplicationWithdrawals = (listener: WithdrawalListener) => subscribe(listener)
 
 export function subscribeToChatStatus(notify: () => void) {
   statusListeners.add(notify)

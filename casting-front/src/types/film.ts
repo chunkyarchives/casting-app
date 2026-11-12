@@ -79,3 +79,7 @@ export type Film = {
   roles: FilmRole[]
   posterUrl: string | null
 }
+
+export type MatchmakingRole = OpenRole & {
+  proposedActorIds: string[]
+}

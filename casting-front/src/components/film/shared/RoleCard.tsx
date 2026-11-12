@@ -1,79 +1,60 @@
-import { useRef, useState, type FocusEvent, type PointerEvent, type ReactNode } from 'react'
+import { useState, type ReactNode, type Ref } from 'react'
+import { MaskTheater01Icon } from '@hugeicons/core-free-icons'
+import { cardStripClass, dropTargetClass, dropZoneClass } from '@/components/common/cards/card-styles'
+import { DropVortex } from '@/components/common/cards/DropVortex'
+import { Collapse, ExpandingDetails, ExpandingPanel } from '@/components/common/cards/ExpandingPanel'
+import { useCardExpansion } from '@/components/common/cards/useCardExpansion'
 import { CountryFlag } from '@/components/common/display/CountryFlag'
 import { StatusDot } from '@/components/common/display/StatusDot'
+import { MediaCarousel } from '@/components/common/media/MediaCarousel'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import type { FilmRole } from '@/types/film'
-import { ConceptArtCarousel } from './ConceptArtCarousel'
 import { roleFacts } from './role-facts'
-
-const filledFilter = '[filter:saturate(0%)_sepia(100%)_contrast(150%)_saturate(150%)]'
 
 type Props = {
   role: FilmRole
   subtitle?: string
   action?: ReactNode
   footer?: ReactNode
+  ref?: Ref<HTMLElement>
+  dropTarget?: boolean
+  locked?: boolean
 }
 
-export function RoleCard({ role, subtitle, action, footer }: Props) {
-  const pointer = useRef<string | null>(null)
-  const [hovered, setHovered] = useState(false)
-  const [focused, setFocused] = useState(false)
-  const [opened, setOpened] = useState(false)
+export function RoleCard({ role, subtitle, action, footer, ref, dropTarget, locked = false }: Props) {
+  const { expanded, opened, cardProps } = useCardExpansion(locked)
   const [index, setIndex] = useState(0)
-  const expanded = hovered || focused
   const filled = role.status === 'Filled'
+  const droppable = dropTarget !== undefined
   const shownIndex = Math.min(index, Math.max(role.conceptArt.length - 1, 0))
   const art = role.conceptArt.at(shownIndex)
   const factGroups = roleFacts(role)
 
-  const enter = (event: PointerEvent<HTMLElement>) => {
-    if (event.pointerType !== 'mouse') return
-    setHovered(true)
-    setOpened(true)
-  }
-
-  const leave = (event: PointerEvent<HTMLElement>) => {
-    if (event.pointerType === 'mouse') setHovered(false)
-  }
-
-  const focus = (event: FocusEvent<HTMLElement>) => {
-    if (!event.target.matches(':focus-visible') && pointer.current !== 'touch') return
-    setFocused(true)
-    setOpened(true)
-  }
-
-  const blur = (event: FocusEvent<HTMLElement>) => {
-    if (event.currentTarget.contains(event.relatedTarget)) return
-    pointer.current = null
-    setFocused(false)
-  }
-
   return (
     <article
-      tabIndex={0}
+      ref={ref}
+      {...cardProps}
       aria-label={role.name}
-      onPointerDown={(event) => {
-        pointer.current = event.pointerType
-      }}
-      onPointerEnter={enter}
-      onPointerLeave={leave}
-      onFocus={focus}
-      onBlur={blur}
-      className="relative aspect-square rounded-2xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+      className={cn(
+        'relative rounded-2xl outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
+        droppable && dropZoneClass,
+        dropTarget && dropTargetClass,
+      )}
     >
-      <div
-        className={cn(
-          'absolute top-0 left-1/2 w-full -translate-x-1/2 overflow-hidden rounded-2xl border bg-card shadow-sm transition-[width,translate,box-shadow] duration-200 ease-out motion-reduce:transition-none',
-          expanded && 'z-30 w-[calc(100%+1.875rem)] -translate-y-[0.9375rem] shadow-2xl ring-1 ring-primary/40',
-        )}
-      >
+      <div aria-hidden className="invisible flex flex-col">
+        <div className="aspect-square" />
+        <div className={cardStripClass} />
+      </div>
+
+      <ExpandingPanel expanded={expanded}>
         <div className="relative">
-          <div className={cn(filled && filledFilter)}>
-            <ConceptArtCarousel
+          <div className={cn(filled && 'opacity-70 grayscale')}>
+            <MediaCarousel
               items={role.conceptArt}
-              roleName={role.name}
+              label={`Concept art for ${role.name}`}
+              itemLabel={(position) => `Concept art ${position + 1} for ${role.name}`}
+              emptyIcon={MaskTheater01Icon}
               index={shownIndex}
               onIndexChange={setIndex}
               controls={expanded}
@@ -81,18 +62,7 @@ export function RoleCard({ role, subtitle, action, footer }: Props) {
             />
           </div>
 
-          <div
-            className={cn(
-              'pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-linear-to-t from-black/85 via-black/45 to-transparent px-3 pt-10 pb-2.5 text-white transition-opacity duration-200',
-              expanded && 'opacity-0',
-            )}
-          >
-            <span className="flex min-w-0 flex-col">
-              <span className="truncate font-bold">{role.name}</span>
-              {subtitle && <span className="truncate text-xs text-white/70">{subtitle}</span>}
-            </span>
-            {filled && <span className="shrink-0 text-xs text-white/75">Filled</span>}
-          </div>
+          {droppable && <DropVortex active={dropTarget} />}
 
           {action && (
             <div
@@ -106,55 +76,57 @@ export function RoleCard({ role, subtitle, action, footer }: Props) {
           )}
         </div>
 
-        <div
-          className={cn(
-            'grid transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none',
-            expanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
-          )}
-        >
-          <div className="min-h-0 overflow-hidden">
-            <div className="flex flex-col gap-3 p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex min-w-0 flex-col">
-                  <h3 className="font-bold wrap-break-word">{role.name}</h3>
-                  {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
-                </div>
-                <StatusDot tone={role.status === 'Open' ? 'positive' : 'neutral'}>{role.status}</StatusDot>
-              </div>
-
-              {role.conceptArt.length > 0 && (
-                <p className="grid grid-cols-[2.5rem_minmax(0,1fr)_2.5rem] items-center gap-2 text-xs text-muted-foreground">
-                  <span className="col-start-2 truncate text-center">{art?.caption ?? 'Concept art'}</span>
-                  <span className="text-right tabular-nums">
-                    {shownIndex + 1} / {role.conceptArt.length}
-                  </span>
-                </p>
-              )}
-
-              {role.description && <p className="line-clamp-3 text-sm whitespace-pre-line">{role.description}</p>}
-
-              {factGroups.length > 0 && (
-                <div role="group" aria-label="Requirements" className="flex flex-col gap-1.5">
-                  {factGroups.map((facts) => (
-                    <ul key={facts[0].label} className="flex flex-wrap gap-1.5">
-                      {facts.map((fact) => (
-                        <li key={fact.label}>
-                          <Badge variant="outline" title={fact.label}>
-                            {fact.countryCode && <CountryFlag code={fact.countryCode} decorative className="h-2.5" />}
-                            {fact.value}
-                          </Badge>
-                        </li>
-                      ))}
-                    </ul>
-                  ))}
-                </div>
-              )}
-
-              {footer}
-            </div>
+        <Collapse open={!expanded}>
+          <div className={cn(cardStripClass, 'flex items-center gap-2 bg-black px-2.5 text-xs text-white')}>
+            <span className="min-w-0 flex-1 truncate">
+              <span className="font-semibold">{role.name}</span>
+              {subtitle && <span className="text-white/60"> · {subtitle}</span>}
+            </span>
+            {filled && <span className="shrink-0 text-white/60">Filled</span>}
           </div>
-        </div>
-      </div>
+        </Collapse>
+
+        <ExpandingDetails expanded={expanded}>
+          <div className="flex flex-col items-center gap-1 text-center">
+            <h3 className="font-bold wrap-break-word">{role.name}</h3>
+            {subtitle && <span className="text-xs text-muted-foreground">{subtitle}</span>}
+            <StatusDot tone={role.status === 'Open' ? 'positive' : 'neutral'}>{role.status}</StatusDot>
+          </div>
+
+          {role.conceptArt.length > 0 && (
+            <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+              <span className="min-w-0 truncate">{art?.caption ?? 'Concept art'}</span>
+              <span aria-hidden>·</span>
+              <span className="shrink-0 tabular-nums">
+                {shownIndex + 1} / {role.conceptArt.length}
+              </span>
+            </p>
+          )}
+
+          {role.description && (
+            <p className="line-clamp-3 text-center text-sm whitespace-pre-line">{role.description}</p>
+          )}
+
+          {factGroups.length > 0 && (
+            <div role="group" aria-label="Requirements" className="flex flex-col items-center gap-1.5">
+              {factGroups.map((facts) => (
+                <ul key={facts[0].label} className="flex flex-wrap justify-center gap-1.5">
+                  {facts.map((fact) => (
+                    <li key={fact.label}>
+                      <Badge variant="outline" title={fact.label}>
+                        {fact.countryCode && <CountryFlag code={fact.countryCode} decorative className="h-2.5" />}
+                        {fact.value}
+                      </Badge>
+                    </li>
+                  ))}
+                </ul>
+              ))}
+            </div>
+          )}
+
+          {footer}
+        </ExpandingDetails>
+      </ExpandingPanel>
     </article>
   )
 }

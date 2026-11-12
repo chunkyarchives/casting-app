@@ -19,12 +19,12 @@ export const roleWeightRange = { min: 0, max: 500 }
 
 export type PosterValue =
   | { kind: 'saved'; url: string }
-  | { kind: 'new'; picture: Blob; preview: string }
+  | { kind: 'new'; picture: Blob }
   | { kind: 'none' }
 
 export type ConceptArtValue =
   | { kind: 'saved'; media: MediaItem }
-  | { kind: 'new'; id: string; picture: Blob; preview: string; caption: string }
+  | { kind: 'new'; id: string; picture: Blob; caption: string }
 
 const wholeNumber = (range: { min: number; max: number }, message: string) =>
   z.number().int(message).min(range.min, message).max(range.max, message).nullable()

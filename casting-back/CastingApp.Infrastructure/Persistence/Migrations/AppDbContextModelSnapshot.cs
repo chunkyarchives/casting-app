@@ -744,6 +744,10 @@ namespace CastingApp.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("position");
 
+                    b.Property<int>("ProposalPosition")
+                        .HasColumnType("integer")
+                        .HasColumnName("proposal_position");
+
                     b.Property<Guid?>("ProposedById")
                         .HasColumnType("uuid")
                         .HasColumnName("proposed_by_id");

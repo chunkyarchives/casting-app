@@ -2,6 +2,7 @@ import type {
   Film,
   FilmRole,
   FilmSummary,
+  MatchmakingRole,
   OpenRole,
   SaveFilmRequest,
   SaveFilmRoleRequest,
@@ -39,6 +40,8 @@ export const filmsApi = {
 
 export const filmRolesApi = {
   open: () => request<OpenRole[]>('/api/roles/open'),
+
+  matchmaking: () => request<MatchmakingRole[]>('/api/roles/matchmaking'),
 
   get: (roleId: string) => request<FilmRole>(`/api/roles/${roleId}`),
 

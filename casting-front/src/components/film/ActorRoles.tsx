@@ -1,12 +1,12 @@
 import { useEffect, useEffectEvent } from 'react'
 import { MaskTheater01Icon } from '@hugeicons/core-free-icons'
+import { CardSkeleton } from '@/components/common/cards/CardSkeleton'
 import { SectionTitle } from '@/components/common/display/SectionTitle'
 import { EmptyMessage } from '@/components/common/states/EmptyMessage'
 import { LoadError } from '@/components/common/states/LoadError'
 import { ApplyButton } from '@/components/film/actor/ApplyButton'
 import { RoleCard } from '@/components/film/shared/RoleCard'
 import { roleGrid } from '@/components/film/shared/role-grid'
-import { Skeleton } from '@/components/ui/skeleton'
 import { useApiQuery } from '@/hooks/useApiQuery'
 import { filmRolesApi } from '@/lib/api/films'
 import { subscribeToApplicationDecisions } from '@/lib/chat/chat-hub'
@@ -29,7 +29,7 @@ export function ActorRoles() {
         <ul aria-hidden className={roleGrid}>
           {placeholders.map((index) => (
             <li key={index}>
-              <Skeleton className="aspect-square rounded-2xl" />
+              <CardSkeleton />
             </li>
           ))}
         </ul>

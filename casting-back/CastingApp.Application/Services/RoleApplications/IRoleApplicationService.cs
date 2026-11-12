@@ -10,6 +10,8 @@ public interface IRoleApplicationService
     Task<RoleApplicationDto> GetAsync(Guid id, CancellationToken ct);
     Task<IReadOnlyList<RoleApplicationDto>> ListPendingAsync(CancellationToken ct);
     Task ReorderPendingAsync(IReadOnlyList<Guid> applicationIds, CancellationToken ct);
+    Task<IReadOnlyList<RoleApplicationDto>> ListProposalsAsync(CancellationToken ct);
+    Task ReorderProposalsAsync(IReadOnlyList<Guid> applicationIds, CancellationToken ct);
     Task<RoleApplicationDto> CreateAsync(Guid filmRoleId, CreateRoleApplicationRequest request, CancellationToken ct);
     Task<RoleApplicationDto> AcceptAsync(Guid id, CancellationToken ct);
     Task<RoleApplicationDto> RejectAsync(Guid id, CancellationToken ct);

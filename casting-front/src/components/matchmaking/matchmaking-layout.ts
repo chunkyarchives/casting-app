@@ -1,0 +1,1 @@
+export const matchmakingGridClass = 'grid-cols-2 gap-4 pt-2 sm:grid-cols-[repeat(auto-fill,minmax(8rem,1fr))]'

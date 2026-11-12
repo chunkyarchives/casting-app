@@ -13,7 +13,7 @@ import { toast } from '@/components/ui/toast'
 import { applicationsApi } from '@/lib/api/applications'
 import { apiErrorMessage } from '@/lib/api/errors'
 import type { RoleApplication } from '@/types/application'
-import { decisionButtonClass, type Decision } from './decision-styles'
+import { decisionButtonClass, type Decision } from './strip-styles'
 
 const copy: Record<Decision, { action: string; pending: string; description: string }> = {
   accept: {

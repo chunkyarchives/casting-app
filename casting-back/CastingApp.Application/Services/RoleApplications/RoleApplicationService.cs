@@ -3,6 +3,7 @@ using CastingApp.Application.Common;
 using CastingApp.Application.DTOs.RoleApplications;
 using CastingApp.Domain.Entities;
 using CastingApp.Domain.Enums;
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 
 namespace CastingApp.Application.Services.RoleApplications;
@@ -46,19 +47,38 @@ public class RoleApplicationService(IAppDbContext db, ICurrentUser currentUser, 
 
     public async Task ReorderPendingAsync(IReadOnlyList<Guid> applicationIds, CancellationToken ct)
     {
-        if (applicationIds.Distinct().Count() != applicationIds.Count)
-            throw new BadRequestException("Each application can appear only once.");
-
         var directorId = currentUser.Id;
-        var pending = await db.RoleApplications
-            .Where(a => applicationIds.Contains(a.Id)
-                        && a.Status == ApplicationStatus.Proposed
-                        && a.FilmRole.Film.DirectorId == directorId)
-            .ToListAsync(ct);
+        var pending = await LoadForOrderingAsync(applicationIds, a => a.FilmRole.Film.DirectorId == directorId, ct);
 
-        var positions = applicationIds.Select((id, index) => (id, index)).ToDictionary(p => p.id, p => p.index + 1);
+        var positions = OrderPositions(applicationIds);
         foreach (var application in pending)
             application.Position = positions[application.Id];
+
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<RoleApplicationDto>> ListProposalsAsync(CancellationToken ct)
+    {
+        var castingDirectorId = currentUser.Id;
+
+        return await db.RoleApplications.AsNoTracking()
+            .Where(a => a.Status == ApplicationStatus.Proposed
+                        && a.ProposedById == castingDirectorId
+                        && a.FilmRole.Film.Status == FilmStatus.Active)
+            .OrderBy(a => a.ProposalPosition)
+            .ThenBy(a => a.CreatedAt)
+            .ProjectToDto()
+            .ToListAsync(ct);
+    }
+
+    public async Task ReorderProposalsAsync(IReadOnlyList<Guid> applicationIds, CancellationToken ct)
+    {
+        var castingDirectorId = currentUser.Id;
+        var proposals = await LoadForOrderingAsync(applicationIds, a => a.ProposedById == castingDirectorId, ct);
+
+        var positions = OrderPositions(applicationIds);
+        foreach (var application in proposals)
+            application.ProposalPosition = positions[application.Id];
 
         await db.SaveChangesAsync(ct);
     }
@@ -110,6 +130,7 @@ public class RoleApplicationService(IAppDbContext db, ICurrentUser currentUser, 
         }
 
         var position = await NextPositionAsync(role.Film.DirectorId, ct);
+        var proposalPosition = proposedById is { } proposerId ? await NextProposalPositionAsync(proposerId, ct) : 0;
         var application = await db.RoleApplications
             .FirstOrDefaultAsync(a => a.FilmRoleId == filmRoleId && a.ActorId == actorId, ct);
 
@@ -120,7 +141,8 @@ public class RoleApplicationService(IAppDbContext db, ICurrentUser currentUser, 
                 FilmRoleId = filmRoleId,
                 ActorId = actorId,
                 ProposedById = proposedById,
-                Position = position
+                Position = position,
+                ProposalPosition = proposalPosition
             };
             db.RoleApplications.Add(application);
         }
@@ -131,6 +153,7 @@ public class RoleApplicationService(IAppDbContext db, ICurrentUser currentUser, 
             application.CreatedAt = DateTime.UtcNow;
             application.DecidedAt = null;
             application.Position = position;
+            application.ProposalPosition = proposalPosition;
         }
         else
         {
@@ -221,10 +244,16 @@ public class RoleApplicationService(IAppDbContext db, ICurrentUser currentUser, 
 
         EnsureProposed(application);
 
+        var withdrawn = await db.RoleApplications.AsNoTracking()
+            .Where(a => a.Id == id)
+            .ProjectToDto()
+            .FirstAsync(ct);
+
         TouchRole(application.FilmRole);
         db.RoleApplications.Remove(application);
 
         await SaveDecisionAsync(ct);
+        await notifier.ApplicationWithdrawnAsync(withdrawn, application.FilmRole.Film.DirectorId, ct);
     }
 
     // Sta ko sme da vidi: glumac svoje, reziser prijave na svojim filmovima, casting director prijave na filmovima rezisera cijoj ekipi pripada, admin sve
@@ -249,6 +278,29 @@ public class RoleApplicationService(IAppDbContext db, ICurrentUser currentUser, 
             .Include(a => a.FilmRole).ThenInclude(r => r.Film)
             .FirstOrDefaultAsync(a => a.Id == id, ct)
         ?? throw new NotFoundException("Application", id);
+
+    private async Task<List<RoleApplication>> LoadForOrderingAsync(
+        IReadOnlyList<Guid> applicationIds, Expression<Func<RoleApplication, bool>> owned, CancellationToken ct)
+    {
+        if (applicationIds.Distinct().Count() != applicationIds.Count)
+            throw new BadRequestException("Each application can appear only once.");
+
+        return await db.RoleApplications
+            .Where(a => applicationIds.Contains(a.Id) && a.Status == ApplicationStatus.Proposed)
+            .Where(owned)
+            .ToListAsync(ct);
+    }
+
+    private static Dictionary<Guid, int> OrderPositions(IReadOnlyList<Guid> applicationIds) =>
+        applicationIds.Select((id, index) => (id, index)).ToDictionary(p => p.id, p => p.index + 1);
+
+    private async Task<int> NextProposalPositionAsync(Guid castingDirectorId, CancellationToken ct)
+    {
+        var last = await db.RoleApplications
+            .Where(a => a.Status == ApplicationStatus.Proposed && a.ProposedById == castingDirectorId)
+            .MaxAsync(a => (int?)a.ProposalPosition, ct);
+        return (last ?? 0) + 1;
+    }
 
     private async Task<int> NextPositionAsync(Guid directorId, CancellationToken ct)
     {

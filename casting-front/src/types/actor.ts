@@ -18,4 +18,12 @@ export type Actor = {
   roleInterests: string[]
 }
 
+export type ActorSummary = Pick<Actor, 'id' | 'firstName' | 'lastName' | 'age' | 'height' | 'weight' | 'origin' | 'gender'>
+
+export type ActorListQuery = {
+  search?: string
+  page: number
+  pageSize: number
+}
+
 export type UpdateActorRequest = Pick<Actor,'dateOfBirth' | 'height' | 'weight' | 'origin' | 'gender' | 'bio' | 'links' | 'roleInterests'>

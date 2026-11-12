@@ -6,4 +6,5 @@ public interface IApplicationNotifier
 {
     Task ApplicationCreatedAsync(RoleApplicationDto application, Guid directorId, CancellationToken ct);
     Task ApplicationDecidedAsync(RoleApplicationDto application, CancellationToken ct);
+    Task ApplicationWithdrawnAsync(RoleApplicationDto application, Guid directorId, CancellationToken ct);
 }

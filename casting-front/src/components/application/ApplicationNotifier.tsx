@@ -3,6 +3,7 @@ import { useCurrentParticipant } from '@/components/auth/hooks/useCurrentPartici
 
 const ApplicationNotifications = lazy(() => import('@/components/application/notifications/ApplicationNotifications'))
 const DecisionNotifications = lazy(() => import('@/components/application/notifications/DecisionNotifications'))
+const ProposalNotifications = lazy(() => import('@/components/application/notifications/ProposalNotifications'))
 
 export function ApplicationNotifier() {
   const participant = useCurrentParticipant()
@@ -12,6 +13,7 @@ export function ApplicationNotifier() {
     <Suspense fallback={null}>
       {participant.role === 'Director' && <ApplicationNotifications />}
       {participant.role === 'Actor' && <DecisionNotifications />}
+      {participant.role === 'CastingDirector' && <ProposalNotifications />}
     </Suspense>
   )
 }

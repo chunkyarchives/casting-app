@@ -19,6 +19,11 @@ public class FilmRolesController(IFilmRoleService roles, IRoleApplicationService
     public async Task<ActionResult<IReadOnlyList<OpenRoleDto>>> ListOpen(CancellationToken ct)
         => Ok(await roles.ListOpenForActorAsync(ct));
 
+    [HttpGet("matchmaking")]
+    [Authorize(Roles = AppRoles.CastingDirector)]
+    public async Task<ActionResult<IReadOnlyList<MatchmakingRoleDto>>> ListForMatchmaking(CancellationToken ct)
+        => Ok(await roles.ListForMatchmakingAsync(ct));
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<FilmRoleDto>> Get(Guid id, CancellationToken ct)
         => Ok(await roles.GetAsync(id, ct));

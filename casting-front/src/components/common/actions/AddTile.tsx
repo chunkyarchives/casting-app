@@ -3,7 +3,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { Link } from 'react-router'
 import { cn } from '@/lib/utils'
 
-type Shape = 'poster' | 'square' | 'video'
+type Shape = 'poster' | 'square' | 'card' | 'video'
 
 type Props = {
   label: string
@@ -14,6 +14,7 @@ type Props = {
 const shapeClass: Record<Shape, string> = {
   poster: 'aspect-2/3 rounded-xl',
   square: 'aspect-square rounded-2xl',
+  card: 'box-content aspect-square w-auto py-3 rounded-2xl',
   video: 'aspect-video rounded-2xl',
 }
 

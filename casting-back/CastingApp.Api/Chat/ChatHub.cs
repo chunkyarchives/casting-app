@@ -12,6 +12,7 @@ public static class ChatEvents
     public const string CrewMemberChanged = "CrewMemberChanged";
     public const string ApplicationReceived = "ApplicationReceived";
     public const string ApplicationDecided = "ApplicationDecided";
+    public const string ApplicationWithdrawn = "ApplicationWithdrawn";
 }
 
 [Authorize(Roles = AppRoles.ActorDirectorOrCastingDirector)]

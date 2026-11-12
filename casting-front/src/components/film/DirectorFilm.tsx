@@ -124,7 +124,7 @@ function FilmOverview({ film, onChange }: OverviewProps) {
           ))}
           {canAddRoles && (
             <li>
-              <AddTile to={filmPaths.createRole(film.id)} label="Add a role" shape="square" />
+              <AddTile to={filmPaths.createRole(film.id)} label="Add a role" shape="card" />
             </li>
           )}
         </ul>

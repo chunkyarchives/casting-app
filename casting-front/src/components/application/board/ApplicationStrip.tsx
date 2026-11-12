@@ -1,29 +1,24 @@
-import { useState } from 'react'
+import type { ReactNode } from 'react'
 import { GripIcon, HandshakeIcon, MaskTheater01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { useSortable } from '@dnd-kit/react/sortable'
 import { MediaImage } from '@/components/common/media/MediaImage'
 import { ProfileAvatar } from '@/components/common/media/ProfileAvatar'
-import { Button } from '@/components/ui/button'
 import { mediaUrl } from '@/lib/api/media'
-import { formatDate } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { RoleApplication } from '@/types/application'
-import { decisionButtonClass, type Decision } from './decision-styles'
-import { DecisionDialog } from './DecisionDialog'
 
 type Props = {
   application: RoleApplication
   index: number
-  onDecided: (application: RoleApplication, decision: Decision) => void
-  onFailed: () => void
+  note: string
+  children: ReactNode
 }
 
 const circleClass = 'size-12 justify-self-center sm:size-18'
 const dashClass = 'h-0 border-t-2 border-dashed border-muted-foreground/35'
 const labelClass = 'line-clamp-2 text-center text-sm font-semibold wrap-break-word'
 const noteClass = 'line-clamp-2 text-center text-xs text-muted-foreground'
-const buttonClass = 'flex-1 sm:min-w-20 sm:flex-none'
 
 function RolePlaceholder() {
   return (
@@ -33,12 +28,8 @@ function RolePlaceholder() {
   )
 }
 
-export function ApplicationStrip({ application, index, onDecided, onFailed }: Props) {
+export function ApplicationStrip({ application, index, note, children }: Props) {
   const { ref, handleRef, isDragging } = useSortable({ id: application.id, index })
-  const [decision, setDecision] = useState<Decision | null>(null)
-  const source = application.proposedByName
-    ? `Proposed by ${application.proposedByName}`
-    : `Applied ${formatDate(application.createdAt)}`
 
   return (
     <li
@@ -79,25 +70,12 @@ export function ApplicationStrip({ application, index, onDecided, onFailed }: Pr
           )}
         </span>
 
-        <span className={cn('col-start-1 row-start-3', noteClass)}>{source}</span>
-        <div className="col-span-5 row-start-4 flex gap-2 pt-1 sm:col-span-1 sm:col-start-3 sm:row-start-3 sm:pt-0">
-          <Button size="sm" className={cn(buttonClass, decisionButtonClass.accept)} onClick={() => setDecision('accept')}>
-            Accept
-          </Button>
-          <Button size="sm" className={cn(buttonClass, decisionButtonClass.reject)} onClick={() => setDecision('reject')}>
-            Reject
-          </Button>
+        <span className={cn('col-start-1 row-start-3', noteClass)}>{note}</span>
+        <div className="col-span-5 row-start-4 flex justify-center gap-2 pt-1 sm:col-span-1 sm:col-start-3 sm:row-start-3 sm:pt-0">
+          {children}
         </div>
         <span className={cn('col-start-5 row-start-3', noteClass)}>{application.filmTitle}</span>
       </div>
-
-      <DecisionDialog
-        application={application}
-        decision={decision}
-        onClose={() => setDecision(null)}
-        onDecided={(made) => onDecided(application, made)}
-        onFailed={onFailed}
-      />
     </li>
   )
 }

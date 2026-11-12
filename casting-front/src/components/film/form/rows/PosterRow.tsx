@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type ChangeEvent } from 'react'
+import { useRef, useState, type ChangeEvent } from 'react'
 import { Delete02Icon, ImageUpload01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
+import { BlobImage } from '@/components/common/media/BlobImage'
 import { FilmPoster } from '@/components/common/media/FilmPoster'
 import { ImageCropDialog } from '@/components/common/media/ImageCropDialog'
 import { SettingsRow } from '@/components/settings/SettingsRow'
@@ -16,11 +17,6 @@ export function PosterRow({ field }: { field: RowField<PosterValue> }) {
   const [source, setSource] = useState<string | null>(null)
   const [cropping, setCropping] = useState(false)
   const poster = field.value
-
-  useEffect(() => {
-    if (poster.kind !== 'new') return
-    return () => URL.revokeObjectURL(poster.preview)
-  }, [poster])
 
   const closeCrop = () => {
     if (source) URL.revokeObjectURL(source)
@@ -47,7 +43,7 @@ export function PosterRow({ field }: { field: RowField<PosterValue> }) {
       toast.add({ type: 'error', title: 'The picture could not be cropped' })
       return
     }
-    field.onChange({ kind: 'new', picture, preview: URL.createObjectURL(picture) })
+    field.onChange({ kind: 'new', picture })
     closeCrop()
   }
 
@@ -59,7 +55,7 @@ export function PosterRow({ field }: { field: RowField<PosterValue> }) {
     >
       <div className="flex items-center gap-4">
         {poster.kind === 'new' ? (
-          <img src={poster.preview} alt="" className="aspect-2/3 w-20 shrink-0 rounded-lg object-cover ring-1 ring-border" />
+          <BlobImage blob={poster.picture} className="aspect-2/3 w-20 shrink-0 rounded-lg object-cover ring-1 ring-border" />
         ) : (
           <FilmPoster
             posterUrl={poster.kind === 'saved' ? poster.url : null}

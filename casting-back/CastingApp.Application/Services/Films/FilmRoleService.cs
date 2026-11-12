@@ -40,6 +40,35 @@ public class FilmRoleService(IAppDbContext db, ICurrentUser currentUser, IMediaS
         return roles.Select(r => new OpenRoleDto(r.FilmId, r.Film.Title, r.ToDto())).ToList();
     }
 
+    public async Task<IReadOnlyList<MatchmakingRoleDto>> ListForMatchmakingAsync(CancellationToken ct)
+    {
+        var castingDirectorId = currentUser.Id;
+        var directorIds = db.CrewMemberships
+            .Where(m => m.CastingDirectorId == castingDirectorId)
+            .Select(m => m.Crew.DirectorId);
+
+        var roles = await db.FilmRoles.AsNoTracking()
+            .Include(r => r.ConceptArt)
+            .Include(r => r.Film)
+            .Where(r => r.Status == FilmRoleStatus.Open
+                        && r.Film.Status == FilmStatus.Active
+                        && directorIds.Contains(r.Film.DirectorId))
+            .OrderByDescending(r => r.Film.CreatedAt)
+            .ThenBy(r => r.Name)
+            .ToListAsync(ct);
+
+        var roleIds = roles.Select(r => r.Id).ToList();
+        var proposed = await db.RoleApplications.AsNoTracking()
+            .Where(a => roleIds.Contains(a.FilmRoleId) && a.Status == ApplicationStatus.Proposed)
+            .Select(a => new { a.FilmRoleId, a.ActorId })
+            .ToListAsync(ct);
+        var actorsByRole = proposed.ToLookup(a => a.FilmRoleId, a => a.ActorId);
+
+        return roles
+            .Select(r => new MatchmakingRoleDto(r.FilmId, r.Film.Title, r.ToDto(), actorsByRole[r.Id].ToList()))
+            .ToList();
+    }
+
     public async Task<FilmRoleDto> GetAsync(Guid id, CancellationToken ct)
     {
         var role = await db.FilmRoles.AsNoTracking()
